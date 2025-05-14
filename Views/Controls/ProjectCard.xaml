@@ -14,17 +14,32 @@
             </Grid.ColumnDefinitions>
 
             <!-- Project Icon -->
+            <!-- Project Icon -->
             <Border 
-                Grid.Column="0" 
-                Width="64" 
-                Height="64" 
-                Background="{DynamicResource ControlFillColorDefaultBrush}"
-                CornerRadius="8">
-                <Image 
-                    x:Name="ProjectIconImage"
-                    RenderOptions.BitmapScalingMode="HighQuality"
-                    Stretch="UniformToFill"/>
+    Grid.Column="0" 
+    Width="64" 
+    Height="64" 
+    Background="{DynamicResource ControlFillColorDefaultBrush}"
+    CornerRadius="8">
+                <Grid>
+                    <!-- Default Text Icon (shows when no image) -->
+                    <TextBlock 
+                        x:Name="DefaultIconText"
+                        Text=""
+                        FontSize="32"
+                        FontWeight="SemiBold"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                    <!-- Project Image Icon -->
+                    <Image 
+                        x:Name="ProjectIconImage"
+                        RenderOptions.BitmapScalingMode="HighQuality"
+                        Stretch="UniformToFill"/>
+                </Grid>
             </Border>
+
 
             <!-- Project Info -->
             <StackPanel 

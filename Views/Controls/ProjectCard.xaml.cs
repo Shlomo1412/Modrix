@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Modrix.Models;
@@ -51,15 +52,27 @@ namespace Modrix.Views.Controls
             ModTypeText.Text = data.ModType;
             VersionText.Text = data.MinecraftVersion;
 
-            if (!string.IsNullOrEmpty(data.IconPath))
+            if (!string.IsNullOrEmpty(data.IconPath) && File.Exists(data.IconPath))
             {
+                // יש אייקון - נציג אותו
                 ProjectIconImage.Source = new BitmapImage(new Uri(data.IconPath));
+                ProjectIconImage.Visibility = Visibility.Visible;
+                DefaultIconText.Visibility = Visibility.Collapsed;
             }
             else
             {
+                // אין אייקון - נציג את האות הראשונה של שם הפרויקט
                 ProjectIconImage.Source = null;
+                ProjectIconImage.Visibility = Visibility.Collapsed;
+                DefaultIconText.Visibility = Visibility.Visible;
+
+                // מקבל את האות הראשונה של השם ומעביר אותה לאותיות גדולות
+                DefaultIconText.Text = !string.IsNullOrEmpty(data.Name)
+                    ? data.Name.Substring(0, 1).ToUpper()
+                    : "?";
             }
         }
+
     }
 
 }
