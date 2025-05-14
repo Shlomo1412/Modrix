@@ -1,0 +1,68 @@
+buildscript {
+    repositories {
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+}
+
+apply plugin: 'org.spongepowered.mixin'
+
+group = '{{ package }}'
+version = '{{ minecraft_version }}-{{ forge_version }}'
+base {
+    archivesName = '{{ modid }}'
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+minecraft {
+    mappings channel: 'official', version: '{{ minecraft_version }}'
+    runs {
+        // common run settings
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+        }
+        client {}
+        server { args '--nogui' }
+        gameTestServer {}
+        data {
+            workingDirectory project.file('run-data')
+            args '--mod', '{{ modid }}', '--all',
+                 '--output', file('src/generated/resources/'),
+                 '--existing', file('src/main/resources/')
+        }
+    }
+}
+
+repositories {
+    // for dependencies beyond Forge
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:{{ minecraft_version }}-{{ forge_version }}"
+}
+
+mixin {
+    add sourceSets.main, "{{ modid }}.refmap.json"
+    config "{{ modid }}.mixins.json"
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}

@@ -1,0 +1,23 @@
+# JVM args
+org.gradle.jvmargs=-Xmx3G
+org.gradle.daemon=false
+
+# Minecraft & Forge versions
+minecraft_version={{ minecraft_version }}
+minecraft_version_range=[{{ minecraft_version }},1.22)
+forge_version={{ forge_version }}
+forge_version_range=[{{ forge_version_major }},)
+loader_version_range=[{{ forge_version_major }},)
+
+# Mappings
+mapping_channel={{ mapping_channel }}
+mapping_version={{ minecraft_version }}
+
+# Mod metadata
+mod_id={{ modid }}
+mod_name={{ name }}
+mod_license={{ mod_license }}
+mod_version={{ mod_version }}
+mod_group_id={{ package }}
+mod_authors={{ authors }}
+mod_description={{ description }}

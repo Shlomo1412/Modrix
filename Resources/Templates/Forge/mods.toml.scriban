@@ -1,0 +1,7 @@
+modLoader="javafml"
+loaderVersion="[{{ forge_version }},)"
+[[mods]]
+modId="{{ modid }}"
+version="{{ minecraft_version }}-{{ forge_version }}"
+displayName="{{ name }}"
+description='${project.findProperty("mod_description") ?: ""}'
