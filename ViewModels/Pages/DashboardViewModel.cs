@@ -40,12 +40,12 @@ public partial class DashboardViewModel : ObservableObject
 
         if (newProjectWindow.ShowDialog() == true && newProjectWindow.ProjectData != null)
         {
-            // טען מחדש את הרשימה מיד לאחר יצירת הפרויקט
             LoadProjects();
+            RefreshProjects();
         }
     }
 
-    [RelayCommand] // הוספת פקודת ריענון
+    [RelayCommand]
     private void RefreshProjects()
     {
         LoadProjects();
@@ -58,19 +58,41 @@ public partial class DashboardViewModel : ObservableObject
         {
             if (project != null)
             {
-                // מחיקת תיקיית הפרויקט המלאה
-                string projectDir = project.Location; // זה הנתיב המלא לתיקיית הפרויקט
+                string projectDir = project.Location;
                 if (Directory.Exists(projectDir))
                 {
-                    // ננסה למחוק את כל הקבצים (גם אם הם read-only)
-                    foreach (string file in Directory.GetFiles(projectDir, "*.*", SearchOption.AllDirectories))
+                    // קודם נשחרר את כל הקבצים והתיקיות מ-read-only באופן רקורסיבי
+                    foreach (var file in Directory.EnumerateFiles(projectDir, "*.*", SearchOption.AllDirectories))
                     {
                         File.SetAttributes(file, FileAttributes.Normal);
                     }
+                    foreach (var dir in Directory.EnumerateDirectories(projectDir, "*", SearchOption.AllDirectories))
+                    {
+                        File.SetAttributes(dir, FileAttributes.Normal);  // שימוש ב-File.SetAttributes במקום Directory.SetAttributes
+                    }
+                    // הסרת read-only מהתיקייה הראשית
+                    File.SetAttributes(projectDir, FileAttributes.Normal);
 
-                    Directory.Delete(projectDir, true);
+                    // ננסה למחוק את התיקייה באופן רקורסיבי
+                    try
+                    {
+                        Directory.Delete(projectDir, true);
+                    }
+                    catch
+                    {
+                        // אם נכשל, ננסה למחוק קודם את הקבצים ואז את התיקיות
+                        foreach (var file in Directory.EnumerateFiles(projectDir, "*.*", SearchOption.AllDirectories))
+                        {
+                            File.Delete(file);
+                        }
+                        foreach (var dir in Directory.EnumerateDirectories(projectDir, "*", SearchOption.TopDirectoryOnly).Reverse())
+                        {
+                            Directory.Delete(dir, true);
+                        }
+                        Directory.Delete(projectDir);
+                    }
+
                     _projects.Remove(project);
-                    // רענון הרשימה
                     LoadProjects();
                 }
             }
@@ -78,9 +100,10 @@ public partial class DashboardViewModel : ObservableObject
         catch (Exception ex)
         {
             Debug.WriteLine($"Error deleting project: {ex.Message}");
-            // אפשר להוסיף פה הודעת שגיאה למשתמש
         }
     }
+
+
 
 
     [RelayCommand]

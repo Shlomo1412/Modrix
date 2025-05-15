@@ -6,6 +6,7 @@ using Modrix.Models;
 using Modrix.Views.Controls;
 using Modrix.Views.Windows;
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Modrix.Views.Pages
 {
@@ -48,14 +49,13 @@ namespace Modrix.Views.Pages
         {
             if (sender is ProjectCard card && card.ProjectData is ModProjectData project)
             {
-                var editWindow = new NewProject(project)
+                // יצירת חלון חדש של ProjectWorkspace עם הפרויקט הנבחר
+                var workspaceWindow = App.Services.GetService<ProjectWorkspace>();
+                if (workspaceWindow != null)
                 {
-                    Owner = App.Current.MainWindow
-                };
-
-                if (editWindow.ShowDialog() == true)
-                {
-                    //ViewModel.RefreshProjects();
+                    // העברת המידע של הפרויקט ל-ViewModel
+                    //workspaceWindow.ViewModel.LoadProject(project);
+                    workspaceWindow.Show();
                 }
             }
         }

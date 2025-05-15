@@ -68,7 +68,10 @@ namespace Modrix
                 services.AddSingleton<DataViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>();
-                
+                services.AddSingleton<ProjectWorkspace>();
+                services.AddSingleton<ProjectWorkspaceViewModel>();
+
+
             }).Build();
 
         /// <summary>

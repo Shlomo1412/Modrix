@@ -48,16 +48,31 @@ namespace Modrix.ViewModels.Pages
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Light);
                     CurrentTheme = ApplicationTheme.Light;
-
                     break;
 
-                default:
+                case "theme_dark":
                     if (CurrentTheme == ApplicationTheme.Dark)
                         break;
 
                     ApplicationThemeManager.Apply(ApplicationTheme.Dark);
                     CurrentTheme = ApplicationTheme.Dark;
+                    break;
 
+                case "theme_highcontrast":
+                    if (CurrentTheme == ApplicationTheme.HighContrast)
+                        break;
+
+                    ApplicationThemeManager.Apply(ApplicationTheme.HighContrast);
+                    CurrentTheme = ApplicationTheme.HighContrast;
+                    break;
+
+                default:
+                    // נשאר בברירת המחדל - Dark Theme
+                    if (CurrentTheme == ApplicationTheme.Dark)
+                        break;
+
+                    ApplicationThemeManager.Apply(ApplicationTheme.Dark);
+                    CurrentTheme = ApplicationTheme.Dark;
                     break;
             }
         }

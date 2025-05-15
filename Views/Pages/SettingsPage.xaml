@@ -26,7 +26,7 @@
         FontWeight="Medium"
         Text="Personalization" />
 
-        <!-- Existing theme selection controls -->
+        <!-- Theme selection controls -->
         <TextBlock Margin="0,12,0,0" Text="Theme" />
         <RadioButton
         Margin="0,12,0,0"
@@ -42,6 +42,13 @@
         Content="Dark"
         GroupName="themeSelect"
         IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+        <RadioButton
+        Margin="0,8,0,0"
+        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+        CommandParameter="theme_highcontrast"
+        Content="High Contrast"
+        GroupName="themeSelect"
+        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
 
         <!-- New Installation section -->
         <TextBlock 
