@@ -51,20 +51,37 @@ public partial class DashboardViewModel : ObservableObject
         LoadProjects();
     }
 
+    [RelayCommand]
     public async Task DeleteProject(ModProjectData project)
     {
         try
         {
-            Directory.Delete(project.Location, true);
-            _projects.Remove(project);
-            // טען מחדש את הרשימה לאחר מחיקת פרויקט
-            LoadProjects();
+            if (project != null)
+            {
+                // מחיקת תיקיית הפרויקט המלאה
+                string projectDir = project.Location; // זה הנתיב המלא לתיקיית הפרויקט
+                if (Directory.Exists(projectDir))
+                {
+                    // ננסה למחוק את כל הקבצים (גם אם הם read-only)
+                    foreach (string file in Directory.GetFiles(projectDir, "*.*", SearchOption.AllDirectories))
+                    {
+                        File.SetAttributes(file, FileAttributes.Normal);
+                    }
+
+                    Directory.Delete(projectDir, true);
+                    _projects.Remove(project);
+                    // רענון הרשימה
+                    LoadProjects();
+                }
+            }
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error deleting project: {ex.Message}");
+            // אפשר להוסיף פה הודעת שגיאה למשתמש
         }
     }
+
 
     [RelayCommand]
     private void OpenProjectsFolder()

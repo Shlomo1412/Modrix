@@ -21,21 +21,16 @@ namespace Modrix.Views.Controls
             set => SetValue(ProjectDataProperty, value);
         }
 
-        public event RoutedEventHandler EditClicked
-        {
-            add => EditButton.Click += value;
-            remove => EditButton.Click -= value;
-        }
-
-        public event RoutedEventHandler DeleteClicked
-        {
-            add => DeleteButton.Click += value;
-            remove => DeleteButton.Click -= value;
-        }
+        public event RoutedEventHandler EditClicked;
+        public event RoutedEventHandler DeleteClicked;
 
         public ProjectCard()
         {
             InitializeComponent();
+
+            // הוספת טיפול באירועי הלחיצה
+            EditButton.Click += (s, e) => EditClicked?.Invoke(this, e);
+            DeleteButton.Click += (s, e) => DeleteClicked?.Invoke(this, e);
         }
 
         private static void OnProjectDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -72,8 +67,9 @@ namespace Modrix.Views.Controls
                     : "?";
             }
         }
-
     }
+
+
 
 }
 
