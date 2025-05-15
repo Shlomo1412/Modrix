@@ -19,7 +19,7 @@ namespace Modrix.Views.Windows
         private readonly Regex packageRegex = new("[^a-z0-9._]"); // Only lowercase letters, numbers, dots and underscore
         private bool isAutoCompleting = false;
         private bool _areFieldsValid;
-        private string _projectLocation;
+        
         private string? _selectedIconPath;
         private readonly string[] _supportedImageExtensions = { ".png" };
 
@@ -28,19 +28,7 @@ namespace Modrix.Views.Windows
 
         private readonly TemplateManager _templateManager = new();
 
-        public string ProjectLocation
-        {
-            get => _projectLocation;
-            set
-            {
-                if (_projectLocation != value)
-                {
-                    _projectLocation = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ProjectLocation)));
-                    ValidateFields();
-                }
-            }
-        }
+        
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -68,7 +56,7 @@ namespace Modrix.Views.Windows
                 ProjectNameBox.Text = existingProject.Name;
                 ModIdBox.Text = existingProject.ModId;
                 PackageBox.Text = existingProject.Package;
-                LocationBox.Text = Path.GetDirectoryName(existingProject.Location);
+                
                 _selectedIconPath = existingProject.IconPath;
 
                 if (existingProject.IconPath != null)
@@ -116,7 +104,7 @@ namespace Modrix.Views.Windows
                 ValidateFields();
             };
 
-            LocationBox.TextChanged += (s, e) => ValidateFields();
+            
 
             ModTypeComboBox.SelectionChanged += (s, e) => ValidateFields();
             MinecraftVersionComboBox.SelectionChanged += (s, e) => ValidateFields();
@@ -127,23 +115,12 @@ namespace Modrix.Views.Windows
             AreFieldsValid = !string.IsNullOrWhiteSpace(ProjectNameBox.Text) &&
                            !string.IsNullOrWhiteSpace(ModIdBox.Text) &&
                            !string.IsNullOrWhiteSpace(PackageBox.Text) &&
-                           !string.IsNullOrWhiteSpace(LocationBox.Text) && // Add location validation
+                           
                            ModTypeComboBox.SelectedItem != null &&
                            MinecraftVersionComboBox.SelectedItem != null;
         }
 
-        private void BrowseButton_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new Microsoft.Win32.OpenFolderDialog
-            {
-                Title = "Select Project Location"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                LocationBox.Text = dialog.FolderName;
-            }
-        }
+        
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
@@ -188,7 +165,7 @@ namespace Modrix.Views.Windows
                 Name = ProjectNameBox.Text,
                 ModId = ModIdBox.Text,
                 Package = PackageBox.Text,
-                Location = Path.Combine(LocationBox.Text, ModIdBox.Text),
+                Location = Path.Combine("Yo", ModIdBox.Text),
                 IconPath = _selectedIconPath,
                 ModType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString(),
                 MinecraftVersion = ((ComboBoxItem)MinecraftVersionComboBox.SelectedItem).Content.ToString(),

@@ -226,29 +226,7 @@
                         </StackPanel>
                     </Grid>
 
-                    <TextBlock 
-                    Margin="0,0,0,4"
-                    FontWeight="Medium" 
-                    Text="Location" />
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <ui:TextBox
-                        x:Name="LocationBox"
-                        Grid.Column="0"
-                        PlaceholderText="Select project location"
-                        Icon="Folder24"
-                        ToolTip="The folder where your project will be created"/>
-                        <ui:Button
-                        x:Name="BrowseButton"
-                        Grid.Column="1"
-                        Margin="8,0,0,0"
-                        Content="Browse..."
-                        Click="BrowseButton_Click"
-                        ToolTip="Choose a folder for your project"/>
-                    </Grid>
+                    
                 </StackPanel>
             </ScrollViewer>
             <ui:DynamicScrollBar 
