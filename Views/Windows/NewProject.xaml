@@ -121,6 +121,7 @@
                         <ui:CardControl.Content>
                             <ComboBox
                                  x:Name="LicenseComboBox"
+                                IsEditable="True"
                                 Width="371"
                                 MinWidth="200">
                                 <ComboBoxItem Content="MIT License" />
