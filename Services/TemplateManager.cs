@@ -232,6 +232,11 @@ namespace Modrix.Services
                     name = data.Name
                 });
 
+            progress.Report(("Writing .mixins.json...", 65));
+            await RenderTemplateAsync("mixins.json.scriban",
+                Path.Combine(data.ResourcesDir, ".mixins.json"),
+                new { modid = data.ModId });
+
             // MainMod.java
             progress.Report(("Writing MainMod.java...", 80));
             await RenderTemplateAsync("MainMod.java.scriban",
