@@ -88,6 +88,7 @@
                                 MinWidth="200">
                                 
                                 <ComboBoxItem Content="Forge Mod" />
+                                <ComboBoxItem Content="Fabric Mod" />
                             </ComboBox>
                         </ui:CardControl.Content>
                     </ui:CardControl>

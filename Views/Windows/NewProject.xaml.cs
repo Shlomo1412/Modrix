@@ -171,7 +171,8 @@ namespace Modrix.Views.Windows
                 MinecraftVersion = ((ComboBoxItem)MinecraftVersionComboBox.SelectedItem).Content.ToString(),
                 Description = DescriptionBox.Text,
                 Authors = AuthorsBox.Text,
-                License = ((ComboBoxItem)LicenseComboBox.SelectedItem).Content.ToString()
+                License = ((ComboBoxItem)LicenseComboBox.SelectedItem).Content.ToString(),
+                Version = "1.0.0"
             };
 
             var progress = new Progress<(string Message, int Progress)>(update =>
@@ -179,8 +180,18 @@ namespace Modrix.Views.Windows
                 loadingWindow.UpdateStatus(update.Message, update.Progress);
             });
 
-            var manager = new TemplateManager();
-            await manager.FullSetupWithGradle(ProjectData, progress); // Use the window's ProjectData
+            var modType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString();
+
+            if (modType == "Fabric Mod")
+            {
+                var manager = new FabricTemplateManager();
+                await manager.FullSetupWithGradle(ProjectData, progress);
+            }
+            else
+            {
+                var manager = new TemplateManager();
+                await manager.FullSetupWithGradle(ProjectData, progress);
+            }
         }
 
         // Implementation methods

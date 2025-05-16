@@ -22,6 +22,8 @@ namespace Modrix.Models
         public string ResourcesDir { get; set; }
         public string PackageDir { get; set; }
 
+        public string Version { get; set; } = "1.0.0";
+
         public ModProjectData()
         {
             // אתחול ערכים ריקים למניעת null
