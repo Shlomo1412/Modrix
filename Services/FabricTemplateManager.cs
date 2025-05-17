@@ -17,6 +17,7 @@ namespace Modrix.Services
                 await UpdateModMetadataAsync(data, progress);
                 await UpdateBuildFilesAsync(data, progress);
                 await CopyIconAsync(data);
+                await UpdateMixinConfigs(data);
                 progress.Report(("Project ready!", 100));
             }
             catch (Exception ex)
@@ -139,7 +140,7 @@ namespace Modrix.Services
                 var srcPath = Path.Combine(data.Location, "src");
                 var packagePath = data.Package.Replace('.', Path.DirectorySeparatorChar);
 
-                // שלב 1: מציאת כל הקבצים המקוריים
+                
                 var allJavaFiles = Directory.GetFiles(srcPath, "*.java", SearchOption.AllDirectories)
                     .Where(f => f.Contains("com" + Path.DirectorySeparatorChar + "example") ||
                               f.Contains("net" + Path.DirectorySeparatorChar + "fabricmc"))
@@ -216,6 +217,47 @@ namespace Modrix.Services
                         CleanEmptyAncestorDirectories(Path.GetDirectoryName(path));
                     }
                 }
+            }
+        }
+
+        private async Task UpdateMixinConfigs(ModProjectData data)
+        {
+            var mixinConfigPath = Path.Combine(
+                data.Location,
+                "src",
+                "main",
+                "resources",
+                $"{data.ModId}.mixins.json"
+            );
+
+            var clientMixinConfigPath = Path.Combine(
+                data.Location,
+                "src",
+                "main",
+                "resources",
+                $"{data.ModId}.client.mixins.json"
+            );
+
+            // עדכון קובץ המיקסין הראשי
+            if (File.Exists(mixinConfigPath))
+            {
+                var content = await File.ReadAllTextAsync(mixinConfigPath);
+                content = content
+                    .Replace("\"package\": \"com.example.mixin\"",
+                            $"\"package\": \"{data.Package}.mixin\"");
+
+                await File.WriteAllTextAsync(mixinConfigPath, content);
+            }
+
+            // עדכון קובץ המיקסין של הקליינט
+            if (File.Exists(clientMixinConfigPath))
+            {
+                var content = await File.ReadAllTextAsync(clientMixinConfigPath);
+                content = content
+                    .Replace("\"package\": \"com.example.mixin.client\"",
+                            $"\"package\": \"{data.Package}.mixin.client\"");
+
+                await File.WriteAllTextAsync(clientMixinConfigPath, content);
             }
         }
 
