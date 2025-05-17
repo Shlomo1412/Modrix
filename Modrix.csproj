@@ -50,4 +50,9 @@
 		</Content>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Templates\FabricMod\src\client\java\com\example\mixin\client\" />
+	  <Folder Include="Templates\FabricMod\src\main\java\com\example\mixin\" />
+	</ItemGroup>
+
 </Project>
