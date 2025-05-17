@@ -221,55 +221,7 @@ namespace Modrix.Views.Windows
             }
         }
 
-        // Implementation methods
-        private async Task CreateProjectStructureAsync(ModProjectData data)
-        {
-            await Task.Run(() =>
-            {
-                var srcPath = Path.Combine(data.Location, "src", "main");
-                Directory.CreateDirectory(Path.Combine(srcPath, "java"));
-                Directory.CreateDirectory(Path.Combine(srcPath, "resources"));
-                // Add more directory creation as needed
-            });
-        }
-
-        private async Task CopyIconAsync(ModProjectData data)
-        {
-            if (string.IsNullOrEmpty(data.IconPath)) return;
-
-            await Task.Run(() =>
-            {
-                var destPath = Path.Combine(data.Location, "src", "main", "resources", "icon.png");
-                File.Copy(data.IconPath, destPath, true);
-            });
-        }
-
-        private async Task GenerateGradleFilesAsync(ModProjectData data)
-        {
-            await Task.Run(() =>
-            {
-                // Generate build.gradle, settings.gradle, etc.
-                // Will implement actual file generation later
-            });
-        }
-
-        private async Task InitializeGitAsync(ModProjectData data)
-        {
-            await Task.Run(() =>
-            {
-                // Initialize git repository
-                // Will implement actual git initialization later
-            });
-        }
-
-        private async Task RunGradleSetupAsync(ModProjectData data)
-        {
-            await Task.Run(() =>
-            {
-                // Run gradle setup commands
-                // Will implement actual gradle setup later
-            });
-        }
+       
 
         
 
