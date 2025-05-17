@@ -19,7 +19,7 @@ namespace Modrix.Views.Windows
         private readonly Regex packageRegex = new("[^a-z0-9._]"); // Only lowercase letters, numbers, dots and underscore
         private bool isAutoCompleting = false;
         private bool _areFieldsValid;
-        
+
         private string? _selectedIconPath;
         private readonly string[] _supportedImageExtensions = { ".png" };
 
@@ -28,7 +28,7 @@ namespace Modrix.Views.Windows
 
         private readonly TemplateManager _templateManager = new();
 
-        
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -56,7 +56,7 @@ namespace Modrix.Views.Windows
                 ProjectNameBox.Text = existingProject.Name;
                 ModIdBox.Text = existingProject.ModId;
                 PackageBox.Text = existingProject.Package;
-                
+
                 _selectedIconPath = existingProject.IconPath;
 
                 if (existingProject.IconPath != null)
@@ -86,7 +86,13 @@ namespace Modrix.Views.Windows
 
         private void SetupEventHandlers()
         {
+            // Only validate on text change
             ProjectNameBox.TextChanged += (s, e) =>
+            {
+                ValidateFields();
+            };
+            // Perform auto-complete when name field loses focus
+            ProjectNameBox.LostFocus += (s, e) =>
             {
                 ProjectNameBox_TextChanged(s, e);
                 ValidateFields();
@@ -104,7 +110,7 @@ namespace Modrix.Views.Windows
                 ValidateFields();
             };
 
-            
+
 
             ModTypeComboBox.SelectionChanged += (s, e) => ValidateFields();
             MinecraftVersionComboBox.SelectionChanged += (s, e) => ValidateFields();
@@ -115,12 +121,12 @@ namespace Modrix.Views.Windows
             AreFieldsValid = !string.IsNullOrWhiteSpace(ProjectNameBox.Text) &&
                            !string.IsNullOrWhiteSpace(ModIdBox.Text) &&
                            !string.IsNullOrWhiteSpace(PackageBox.Text) &&
-                           
+
                            ModTypeComboBox.SelectedItem != null &&
                            MinecraftVersionComboBox.SelectedItem != null;
         }
 
-        
+
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
@@ -136,7 +142,7 @@ namespace Modrix.Views.Windows
                 loadingWindow.Show();
                 await CreateModProjectAsync(loadingWindow);
 
-                
+
                 if (Directory.Exists(ProjectData.Location))
                 {
                     var checkFile = Path.Combine(ProjectData.Location, "build.gradle");
@@ -166,7 +172,7 @@ namespace Modrix.Views.Windows
                     Content = $"Failed to create project:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}"
                 }.ShowDialog();
 
-                
+
                 try
                 {
                     if (ProjectData?.Location != null && Directory.Exists(ProjectData.Location))
@@ -221,9 +227,9 @@ namespace Modrix.Views.Windows
             }
         }
 
-       
 
-        
+
+
 
 
 

@@ -16,6 +16,7 @@ namespace Modrix.Services
                 await CopyTemplateFilesAsync(data.Location, progress);
                 await UpdateModMetadataAsync(data, progress);
                 await UpdateBuildFilesAsync(data, progress);
+                await CopyIconAsync(data);
                 progress.Report(("Project ready!", 100));
             }
             catch (Exception ex)
@@ -34,15 +35,10 @@ namespace Modrix.Services
             );
 
             if (!Directory.Exists(templatePath))
-            {
-                await ShowMessageAsync($"Template not found at: {templatePath}", "Missing Template");
                 throw new DirectoryNotFoundException($"Template directory missing: {templatePath}");
-            }
 
             if (Directory.Exists(targetPath))
-            {
                 await RetryDeleteDirectoryAsync(targetPath);
-            }
 
             Directory.CreateDirectory(targetPath);
 
@@ -117,38 +113,222 @@ namespace Modrix.Services
         {
             await Task.Run(async () =>
             {
-                progress.Report(("Updating gradle properties...", 35));
+                // עדכון gradle.properties
+                progress.Report(("Updating gradle.properties...", 35));
                 var gradlePropsPath = Path.Combine(data.Location, "gradle.properties");
-                var gradleProps = (await File.ReadAllTextAsync(gradlePropsPath))
+                var gradleContent = await File.ReadAllTextAsync(gradlePropsPath);
+
+                gradleContent = gradleContent
                     .Replace("mod_version=0.0.1", $"mod_version={data.Version}")
                     .Replace("maven_group=com.example", $"maven_group={data.Package}")
-                    .Replace("archives_base_name=modid", $"archives_base_name={data.ModId}");
+                    .Replace("archives_base_name=modid", $"archives_base_name={data.ModId}")
+                    .Replace("minecraft_version=1.21.4", $"minecraft_version={data.MinecraftVersion}");
 
-                await File.WriteAllTextAsync(gradlePropsPath, gradleProps);
+                await File.WriteAllTextAsync(gradlePropsPath, gradleContent);
 
-                progress.Report(("Updating main class...", 50));
-                var packagePath = data.Package.Replace('.', Path.DirectorySeparatorChar);
-                var srcPath = Path.Combine(data.Location, "src", "main", "java", packagePath);
-                var examplePath = Path.Combine(data.Location, "src", "main", "java", "net", "fabricmc", "example");
-
-                if (Directory.Exists(examplePath))
-                {
-                    Directory.Move(examplePath, srcPath);
-                }
-
-                var modFile = Path.Combine(srcPath, "ExampleMod.java");
-                if (File.Exists(modFile))
-                {
-                    var newFileName = Path.Combine(srcPath, $"{data.ModId}Mod.java");
-                    File.Move(modFile, newFileName);
-
-                    var content = (await File.ReadAllTextAsync(newFileName))
-                        .Replace("net.fabricmc.example", data.Package)
-                        .Replace("ExampleMod", $"{SanitizeClassName(data.Name)}Mod");
-
-                    await File.WriteAllTextAsync(newFileName, content);
-                }
+                // שינוי שם הקבצים והחבילה
+                progress.Report(("Renaming main classes...", 50));
+                await UpdatePackageStructure(data);
             });
+        }
+
+        private async Task UpdatePackageStructure(ModProjectData data)
+        {
+            try
+            {
+                var srcPath = Path.Combine(data.Location, "src");
+                var packagePath = data.Package.Replace('.', Path.DirectorySeparatorChar);
+
+                // שלב 1: מציאת כל הקבצים המקוריים
+                var allJavaFiles = Directory.GetFiles(srcPath, "*.java", SearchOption.AllDirectories)
+                    .Where(f => f.Contains("com" + Path.DirectorySeparatorChar + "example") ||
+                              f.Contains("net" + Path.DirectorySeparatorChar + "fabricmc"))
+                    .ToList();
+
+                // שלב 2: יצירת מבנה התיקיות החדש
+                var newMainPath = Path.Combine(srcPath, "main", "java", packagePath);
+                var newClientPath = Path.Combine(srcPath, "client", "java", packagePath);
+                Directory.CreateDirectory(newMainPath);
+                Directory.CreateDirectory(newClientPath);
+
+                // שלב 3: העברה ועדכון קבצים
+                foreach (var filePath in allJavaFiles)
+                {
+                    var content = await File.ReadAllTextAsync(filePath);
+
+                    // החלפת package
+                    content = content.Replace("com.example", data.Package)
+                                     .Replace("net.fabricmc.example", data.Package);
+
+                    // החלפת שמות מחלקות
+                    if (filePath.Contains("ExampleMod"))
+                    {
+                        content = content.Replace("ExampleMod", $"{data.ModId}Mod");
+                    }
+                    if (filePath.Contains("ExampleModClient"))
+                    {
+                        content = content.Replace("ExampleModClient", $"{data.ModId}ModClient");
+                    }
+
+                    // קביעת מיקום חדש
+                    var newPath = filePath
+                        .Replace("com" + Path.DirectorySeparatorChar + "example", packagePath)
+                        .Replace("net" + Path.DirectorySeparatorChar + "fabricmc" + Path.DirectorySeparatorChar + "example", packagePath)
+                        .Replace("ExampleMod", $"{data.ModId}Mod");
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+                    await File.WriteAllTextAsync(newPath, content);
+                }
+
+                // שלב 4: מחיקת תיקיות מקור
+                await DeleteOldPackages(srcPath);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"שגיאה בעדכון מבנה החבילה: {ex.Message}");
+            }
+        }
+
+        private async Task DeleteOldPackages(string srcPath)
+        {
+            var oldPaths = new[]
+            {
+        Path.Combine(srcPath, "main", "java", "com", "example"),
+        Path.Combine(srcPath, "main", "java", "net", "fabricmc", "example"),
+        Path.Combine(srcPath, "client", "java", "com", "example"),
+        Path.Combine(srcPath, "client", "java", "net", "fabricmc", "example")
+    };
+
+            foreach (var path in oldPaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    try
+                    {
+                        Directory.Delete(path, true);
+                        
+                        CleanEmptyAncestorDirectories(Path.GetDirectoryName(path));
+                    }
+                    catch
+                    {
+                        await Task.Delay(500);
+                        Directory.Delete(path, true);
+                        CleanEmptyAncestorDirectories(Path.GetDirectoryName(path));
+                    }
+                }
+            }
+        }
+
+        private string FindExampleRoot(string srcPath)
+        {
+            // חיפוש רקורסיבי אחר התיקייה המכילה את דוגמת הקוד
+            var directories = Directory.GetDirectories(
+                Path.Combine(srcPath, "main", "java"),
+                "*",
+                SearchOption.AllDirectories
+            );
+
+            foreach (var dir in directories)
+            {
+                if (dir.EndsWith("com" + Path.DirectorySeparatorChar + "example") ||
+                    dir.EndsWith("net" + Path.DirectorySeparatorChar + "fabricmc" + Path.DirectorySeparatorChar + "example"))
+                {
+                    return Directory.GetParent(dir).FullName;
+                }
+            }
+            return null;
+        }
+
+        private async Task MoveDirectoryContentsAsync(string sourceDir, string targetDir, string package, string modId)
+        {
+            if (!Directory.Exists(sourceDir)) return;
+
+            var allFiles = Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories);
+
+            foreach (var filePath in allFiles)
+            {
+                var relativePath = Path.GetRelativePath(sourceDir, filePath);
+                var newPath = Path.Combine(targetDir, relativePath);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+
+                // שינוי תוכן הקובץ
+                var content = await File.ReadAllTextAsync(filePath);
+                content = content
+                    .Replace("com.example", package)
+                    .Replace("net.fabricmc.example", package)
+                    .Replace("ExampleMod", $"{modId}Mod");
+
+                await File.WriteAllTextAsync(newPath, content);
+
+                // מחיקת הקובץ המקורי
+                File.Delete(filePath);
+            }
+        }
+
+        private async Task UpdateAllJavaFiles(ModProjectData data)
+        {
+            // עדכון קבצי main
+            await ProcessJavaFiles(
+                Path.Combine(data.Location, "src", "main", "java"),
+                data.Package,
+                data.ModId,
+                new[] { "ExampleMod", "ExampleMixin" }
+            );
+
+            // עדכון קבצי client
+            await ProcessJavaFiles(
+                Path.Combine(data.Location, "src", "client", "java"),
+                data.Package,
+                data.ModId,
+                new[] { "ExampleModClient" }
+            );
+        }
+
+        private async Task ProcessJavaFiles(string basePath, string package, string modId, string[] patterns)
+        {
+            if (!Directory.Exists(basePath)) return;
+
+            var allFiles = Directory.GetFiles(basePath, "*.java", SearchOption.AllDirectories);
+
+            foreach (var file in allFiles)
+            {
+                var content = await File.ReadAllTextAsync(file);
+                var newContent = content
+                    .Replace("com.example", package)
+                    .Replace("net.fabricmc.example", package);
+
+                foreach (var pattern in patterns)
+                {
+                    newContent = newContent.Replace(pattern, $"{modId}{pattern.Replace("Example", "")}");
+                }
+
+                var newFileName = Path.GetFileName(file);
+                foreach (var pattern in patterns)
+                {
+                    newFileName = newFileName.Replace(pattern, $"{modId}{pattern.Replace("Example", "")}");
+                }
+
+                var newPath = Path.Combine(Path.GetDirectoryName(file), newFileName);
+
+                await File.WriteAllTextAsync(newPath, newContent);
+                if (file != newPath) File.Delete(file);
+            }
+        }
+
+        private void CleanEmptyAncestorDirectories(string startPath)
+        {
+            var currentDir = new DirectoryInfo(startPath);
+
+            while (currentDir != null &&
+                  (currentDir.Name == "com" || currentDir.Name == "net") &&
+                   currentDir.GetFiles().Length == 0 &&
+                   currentDir.GetDirectories().Length == 0)
+            {
+                var parent = currentDir.Parent;
+                currentDir.Delete();
+                currentDir = parent;
+            }
         }
 
         private async Task UpdateBuildFilesAsync(ModProjectData data, IProgress<(string, int)> progress)
@@ -184,11 +364,30 @@ namespace Modrix.Services
             });
         }
 
-        private string SanitizeClassName(string name)
+        private async Task CopyIconAsync(ModProjectData data)
         {
-            return new string(name
-                .Where(c => char.IsLetterOrDigit(c) || c == '_')
-                .ToArray());
+            if (string.IsNullOrEmpty(data.IconPath)) return;
+
+            var destPath = Path.Combine(
+                data.Location,
+                "src",
+                "main",
+                "resources",
+                "icon.png"
+            );
+
+            try
+            {
+                using (var sourceStream = File.OpenRead(data.IconPath))
+                using (var destStream = File.Create(destPath))
+                {
+                    await sourceStream.CopyToAsync(destStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to copy icon: {ex.Message}");
+            }
         }
     }
 }
