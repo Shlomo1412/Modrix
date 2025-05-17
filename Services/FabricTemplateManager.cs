@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using LibGit2Sharp;
+using System.Windows;
 using Modrix.Models;
 
 namespace Modrix.Services
@@ -10,122 +11,184 @@ namespace Modrix.Services
     {
         public async Task FullSetupWithGradle(ModProjectData data, IProgress<(string Message, int Progress)> progress)
         {
-            await Task.Run(() =>
+            try
+            {
+                await CopyTemplateFilesAsync(data.Location, progress);
+                await UpdateModMetadataAsync(data, progress);
+                await UpdateBuildFilesAsync(data, progress);
+                progress.Report(("Project ready!", 100));
+            }
+            catch (Exception ex)
+            {
+                await ShowMessageAsync($"Fabric setup failed: {ex.Message}", "Error");
+                throw;
+            }
+        }
+
+        private async Task CopyTemplateFilesAsync(string targetPath, IProgress<(string, int)> progress)
+        {
+            var templatePath = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "Templates",
+                "FabricMod"
+            );
+
+            if (!Directory.Exists(templatePath))
+            {
+                await ShowMessageAsync($"Template not found at: {templatePath}", "Missing Template");
+                throw new DirectoryNotFoundException($"Template directory missing: {templatePath}");
+            }
+
+            if (Directory.Exists(targetPath))
+            {
+                await RetryDeleteDirectoryAsync(targetPath);
+            }
+
+            Directory.CreateDirectory(targetPath);
+
+            var allFiles = Directory.GetFiles(templatePath, "*.*", SearchOption.AllDirectories);
+            var totalFiles = allFiles.Length;
+            var copiedFiles = 0;
+
+            foreach (var filePath in allFiles)
+            {
+                if (ShouldSkipFile(filePath)) continue;
+
+                var relativePath = Path.GetRelativePath(templatePath, filePath);
+                var destPath = Path.Combine(targetPath, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+
+                await CopyFileAsync(filePath, destPath);
+
+                copiedFiles++;
+                var currentProgress = 10 + (int)((double)copiedFiles / totalFiles * 25);
+                progress.Report(($"Copying files ({copiedFiles}/{totalFiles})", currentProgress));
+            }
+        }
+
+        private async Task RetryDeleteDirectoryAsync(string path)
+        {
+            const int maxRetries = 3;
+            const int delayMs = 300;
+
+            for (int i = 0; i < maxRetries; i++)
             {
                 try
                 {
-                    progress.Report(("Cloning Fabric example mod...", 10));
-                    CloneTemplateRepository(data.Location);
-
-                    progress.Report(("Updating mod metadata...", 30));
-                    UpdateModMetadata(data);
-
-                    progress.Report(("Configuring build files...", 50));
-                    UpdateBuildFiles(data);
-
-                    progress.Report(("Finalizing setup...", 80));
-                    CleanupTemplateFiles(data.Location);
-
-                    progress.Report(("Project ready!", 100));
+                    if (Directory.Exists(path))
+                    {
+                        Directory.Delete(path, true);
+                    }
+                    return;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    throw new Exception($"Fabric setup failed: {ex.Message}");
+                    if (i == maxRetries - 1) throw;
+                    await Task.Delay(delayMs);
+                }
+            }
+        }
+
+        private async Task CopyFileAsync(string sourcePath, string destPath)
+        {
+            const int bufferSize = 4096;
+
+            using (var sourceStream = new FileStream(
+                sourcePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize,
+                FileOptions.Asynchronous))
+
+            using (var destStream = new FileStream(
+                destPath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize,
+                FileOptions.Asynchronous))
+            {
+                await sourceStream.CopyToAsync(destStream);
+            }
+        }
+
+        private async Task UpdateModMetadataAsync(ModProjectData data, IProgress<(string, int)> progress)
+        {
+            await Task.Run(async () =>
+            {
+                progress.Report(("Updating gradle properties...", 35));
+                var gradlePropsPath = Path.Combine(data.Location, "gradle.properties");
+                var gradleProps = (await File.ReadAllTextAsync(gradlePropsPath))
+                    .Replace("mod_version=0.0.1", $"mod_version={data.Version}")
+                    .Replace("maven_group=com.example", $"maven_group={data.Package}")
+                    .Replace("archives_base_name=modid", $"archives_base_name={data.ModId}");
+
+                await File.WriteAllTextAsync(gradlePropsPath, gradleProps);
+
+                progress.Report(("Updating main class...", 50));
+                var packagePath = data.Package.Replace('.', Path.DirectorySeparatorChar);
+                var srcPath = Path.Combine(data.Location, "src", "main", "java", packagePath);
+                var examplePath = Path.Combine(data.Location, "src", "main", "java", "net", "fabricmc", "example");
+
+                if (Directory.Exists(examplePath))
+                {
+                    Directory.Move(examplePath, srcPath);
+                }
+
+                var modFile = Path.Combine(srcPath, "ExampleMod.java");
+                if (File.Exists(modFile))
+                {
+                    var newFileName = Path.Combine(srcPath, $"{data.ModId}Mod.java");
+                    File.Move(modFile, newFileName);
+
+                    var content = (await File.ReadAllTextAsync(newFileName))
+                        .Replace("net.fabricmc.example", data.Package)
+                        .Replace("ExampleMod", $"{SanitizeClassName(data.Name)}Mod");
+
+                    await File.WriteAllTextAsync(newFileName, content);
                 }
             });
         }
 
-        private void CloneTemplateRepository(string targetPath)
+        private async Task UpdateBuildFilesAsync(ModProjectData data, IProgress<(string, int)> progress)
         {
-            if (Directory.Exists(targetPath))
+            await Task.Run(async () =>
             {
-                Directory.Delete(targetPath, true);
-            }
+                progress.Report(("Updating fabric.mod.json...", 70));
+                var modJsonPath = Path.Combine(data.Location, "src", "main", "resources", "fabric.mod.json");
+                var modJson = (await File.ReadAllTextAsync(modJsonPath))
+                    .Replace("\"id\": \"example-mod\"", $"\"id\": \"{data.ModId}\"")
+                    .Replace("\"name\": \"Example Mod\"", $"\"name\": \"{data.Name}\"")
+                    .Replace("\"version\": \"${version}\"", $"\"version\": \"{data.Version}\"")
+                    .Replace("net.fabricmc.example", data.Package);
 
-            Repository.Clone("https://github.com/FabricMC/fabric-example-mod.git", targetPath, new CloneOptions
-            {
-                Checkout = true,
-                RecurseSubmodules = true
+                await File.WriteAllTextAsync(modJsonPath, modJson);
             });
         }
 
-        private void UpdateModMetadata(ModProjectData data)
+        private bool ShouldSkipFile(string filePath)
         {
-            // Update gradle.properties
-            var gradlePropsPath = Path.Combine(data.Location, "gradle.properties");
-            var gradleProps = File.ReadAllText(gradlePropsPath)
-                .Replace("mod_version=0.0.1", $"mod_version={data.Version}")
-                .Replace("maven_group=com.example", $"maven_group={data.Package}")
-                .Replace("archives_base_name=modid", $"archives_base_name={data.ModId}");
-
-            File.WriteAllText(gradlePropsPath, gradleProps);
-
-            // Update main mod class
-            var packagePath = data.Package.Replace('.', Path.DirectorySeparatorChar);
-            var srcPath = Path.Combine(data.Location, "src", "main", "java", packagePath);
-            Directory.CreateDirectory(srcPath);
-
-            var exampleModPath = Path.Combine(data.Location, "src", "main", "java", "net", "fabricmc", "example");
-            if (Directory.Exists(exampleModPath))
-            {
-                Directory.Move(exampleModPath, srcPath);
-            }
-
-            var modFile = Path.Combine(srcPath, $"{data.ModId}Mod.java");
-            if (File.Exists(modFile))
-            {
-                var content = File.ReadAllText(modFile)
-                    .Replace("net.fabricmc.example", data.Package)
-                    .Replace("ExampleMod", $"{SanitizeClassName(data.Name)}Mod");
-                File.WriteAllText(modFile, content);
-            }
+            var fileName = Path.GetFileName(filePath);
+            return fileName.EndsWith(".idx") ||
+                   fileName == ".git" ||
+                   fileName == ".gitignore" ||
+                   fileName == ".gitattributes";
         }
 
-        private void UpdateBuildFiles(ModProjectData data)
+        private async Task ShowMessageAsync(string message, string title)
         {
-            // Update fabric.mod.json
-            var modJsonPath = Path.Combine(data.Location, "src", "main", "resources", "fabric.mod.json");
-            var modJson = File.ReadAllText(modJsonPath)
-                .Replace("\"id\": \"example-mod\"", $"\"id\": \"{data.ModId}\"")
-                .Replace("\"name\": \"Example Mod\"", $"\"name\": \"{data.Name}\"")
-                .Replace("\"version\": \"${version}\"", $"\"version\": \"{data.Version}\"")
-                .Replace("net.fabricmc.example", data.Package);
-
-            if (!string.IsNullOrEmpty(data.Description))
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                modJson = modJson.Replace("\"description\": \"Example description!\"",
-                    $"\"description\": \"{data.Description}\"");
-            }
-
-            if (!string.IsNullOrEmpty(data.Authors))
-            {
-                var authors = string.Join(", ", data.Authors.Split(',').Select(a => $"\"{a.Trim()}\""));
-                modJson = modJson.Replace(
-                    "\"authors\": [\n    \"FabricMC\"\n  ]",
-                    $"\"authors\": [\n    {authors}\n  ]");
-            }
-
-            File.WriteAllText(modJsonPath, modJson);
-        }
-
-        private void CleanupTemplateFiles(string projectPath)
-        {
-            try
-            {
-                var gitPath = Path.Combine(projectPath, ".git");
-                if (Directory.Exists(gitPath))
-                {
-                    Directory.Delete(gitPath, true);
-                }
-            }
-            catch { /* Ignore cleanup errors */ }
+                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            });
         }
 
         private string SanitizeClassName(string name)
         {
-            // Remove invalid characters for class names
-            var invalidChars = new[] { ' ', '-', '.', ':', '&', '/', '\\' };
-            return string.Concat(name.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
+            return new string(name
+                .Where(c => char.IsLetterOrDigit(c) || c == '_')
+                .ToArray());
         }
     }
 }

@@ -129,27 +129,52 @@ namespace Modrix.Views.Windows
 
         private async void CreateButton_Click(object sender, RoutedEventArgs e)
         {
-            var loadingWindow = new LoadingProjectWindow
-            {
-                Owner = this
-            };
+            var loadingWindow = new LoadingProjectWindow { Owner = this };
 
             try
             {
                 loadingWindow.Show();
                 await CreateModProjectAsync(loadingWindow);
-                DialogResult = true; 
-                Close();
+
+                
+                if (Directory.Exists(ProjectData.Location))
+                {
+                    var checkFile = Path.Combine(ProjectData.Location, "build.gradle");
+                    if (File.Exists(checkFile))
+                    {
+                        //MessageBox.Show(
+                        //    $"Project created successfully at:\n{ProjectData.Location}",
+                        //    "Success",
+                        //    MessageBoxButton.OK,
+                        //    MessageBoxImage.Information
+                        //);
+                        Close();
+                    }
+                    else
+                    {
+                        throw new Exception("Critical files missing - project creation failed");
+                    }
+                }
             }
             catch (Exception ex)
             {
-                var msgBox = new MessageBox
+                loadingWindow.Close();
+
+                new MessageBox
                 {
-                    Title = "Error Creating Project",
-                    Content = $"Failed to create the project: {ex.Message}"
-                };
-                await msgBox.ShowDialogAsync();
-                DialogResult = false; 
+                    Title = "Error",
+                    Content = $"Failed to create project:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}"
+                }.ShowDialog();
+
+                
+                try
+                {
+                    if (ProjectData?.Location != null && Directory.Exists(ProjectData.Location))
+                    {
+                        Directory.Delete(ProjectData.Location, true);
+                    }
+                }
+                catch { }
             }
             finally
             {
@@ -159,13 +184,17 @@ namespace Modrix.Views.Windows
 
         private async Task CreateModProjectAsync(LoadingProjectWindow loadingWindow)
         {
-            // Create the project data
-            ProjectData = new ModProjectData // Assign to the window's ProjectData property
+            ProjectData = new ModProjectData
             {
                 Name = ProjectNameBox.Text,
                 ModId = ModIdBox.Text,
                 Package = PackageBox.Text,
-                Location = Path.Combine("Yo", ModIdBox.Text),
+                Location = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Modrix",
+                    "Projects",
+                    ModIdBox.Text
+                ),
                 IconPath = _selectedIconPath,
                 ModType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString(),
                 MinecraftVersion = ((ComboBoxItem)MinecraftVersionComboBox.SelectedItem).Content.ToString(),
@@ -180,9 +209,7 @@ namespace Modrix.Views.Windows
                 loadingWindow.UpdateStatus(update.Message, update.Progress);
             });
 
-            var modType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString();
-
-            if (modType == "Fabric Mod")
+            if (ProjectData.ModType == "Fabric Mod")
             {
                 var manager = new FabricTemplateManager();
                 await manager.FullSetupWithGradle(ProjectData, progress);

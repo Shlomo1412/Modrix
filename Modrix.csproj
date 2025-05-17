@@ -44,4 +44,10 @@
 		<Resource Include="Resources\ModrixIcon.ico" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Content Include="Templates\FabricMod\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 </Project>
