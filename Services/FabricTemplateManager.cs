@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using Modrix.Models;
@@ -13,11 +14,14 @@ namespace Modrix.Services
         {
             try
             {
-                await CopyTemplateFilesAsync(data.Location, progress);
+                await CopyTemplateFilesAsync(data.Location, progress, data.ModId);
+                await FixAssetsFolder(data.Location, data.ModId); // הוסף
+                await FixMixinFiles(data.Location, data.ModId); // הוסף
                 await UpdateModMetadataAsync(data, progress);
                 await UpdateBuildFilesAsync(data, progress);
-                await CopyIconAsync(data);
                 await UpdateMixinConfigs(data);
+                await UpdateModJson(data);
+                await CopyIconAsync(data);
                 progress.Report(("Project ready!", 100));
             }
             catch (Exception ex)
@@ -27,7 +31,11 @@ namespace Modrix.Services
             }
         }
 
-        private async Task CopyTemplateFilesAsync(string targetPath, IProgress<(string, int)> progress)
+        private async Task CopyTemplateFilesAsync(
+    string targetPath,
+    IProgress<(string, int)> progress,
+    string modId // הוספנו את ה-modId כפרמטר
+)
         {
             var templatePath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
@@ -60,6 +68,35 @@ namespace Modrix.Services
                 copiedFiles++;
                 var currentProgress = 10 + (int)((double)copiedFiles / totalFiles * 25);
                 progress.Report(($"Copying files ({copiedFiles}/{totalFiles})", currentProgress));
+            }
+
+            // הוספנו את ה-modId כפרמטר
+            await FixAssetsFolder(targetPath, modId);
+            await FixMixinFiles(targetPath, modId);
+        }
+
+        private async Task FixAssetsFolder(string projectPath, string modId)
+        {
+            var oldAssetsPath = Path.Combine(projectPath, "src", "main", "resources", "assets", "modid");
+            var newAssetsPath = Path.Combine(projectPath, "src", "main", "resources", "assets", modId);
+
+            if (Directory.Exists(oldAssetsPath))
+            {
+                Directory.Move(oldAssetsPath, newAssetsPath);
+            }
+        }
+
+        private async Task FixMixinFiles(string projectPath, string modId)
+        {
+            var resourcesPath = Path.Combine(projectPath, "src", "main", "resources");
+
+            // מצא את כל קבצי המיקסין עם השם modid
+            var mixinFiles = Directory.GetFiles(resourcesPath, "modid*.mixins.json");
+
+            foreach (var file in mixinFiles)
+            {
+                var newName = file.Replace("modid", modId);
+                File.Move(file, newName);
             }
         }
 
@@ -194,11 +231,11 @@ namespace Modrix.Services
         {
             var oldPaths = new[]
             {
-        Path.Combine(srcPath, "main", "java", "com", "example"),
-        Path.Combine(srcPath, "main", "java", "net", "fabricmc", "example"),
-        Path.Combine(srcPath, "client", "java", "com", "example"),
-        Path.Combine(srcPath, "client", "java", "net", "fabricmc", "example")
-    };
+                Path.Combine(srcPath, "main", "java", "com", "example"),
+                Path.Combine(srcPath, "main", "java", "net", "fabricmc", "example"),
+                Path.Combine(srcPath, "client", "java", "com", "example"),
+                Path.Combine(srcPath, "client", "java", "net", "fabricmc", "example")
+            };
 
             foreach (var path in oldPaths)
             {
@@ -222,43 +259,78 @@ namespace Modrix.Services
 
         private async Task UpdateMixinConfigs(ModProjectData data)
         {
-            var mixinConfigPath = Path.Combine(
+            var resourcesPath = Path.Combine(data.Location, "src", "main", "resources");
+
+            // מצא את קבצי המיקסין המקוריים
+            var oldMixinPath = Path.Combine(resourcesPath, "modid.mixins.json");
+            var oldClientMixinPath = Path.Combine(resourcesPath, "modid.client.mixins.json");
+
+            // צור את השמות החדשים
+            var newMixinPath = Path.Combine(resourcesPath, $"{data.ModId}.mixins.json");
+            var newClientMixinPath = Path.Combine(resourcesPath, $"{data.ModId}.client.mixins.json");
+
+            // שנה שם קבצים אם קיימים
+            if (File.Exists(oldMixinPath))
+            {
+                File.Move(oldMixinPath, newMixinPath);
+                await UpdateMixinFileContent(newMixinPath, data.Package);
+            }
+
+            if (File.Exists(oldClientMixinPath))
+            {
+                File.Move(oldClientMixinPath, newClientMixinPath);
+                await UpdateMixinFileContent(newClientMixinPath, data.Package + ".client");
+            }
+        }
+
+        private async Task UpdateMixinFileContent(string filePath, string package)
+        {
+            var content = await File.ReadAllTextAsync(filePath);
+            content = Regex.Replace(
+                content,
+                @"""package"":\s*""([^""]*)""",
+                $"\"package\": \"{package}\""
+            );
+            await File.WriteAllTextAsync(filePath, content);
+        }
+
+        private async Task UpdateModJson(ModProjectData data)
+        {
+            var modJsonPath = Path.Combine(
                 data.Location,
                 "src",
                 "main",
                 "resources",
-                $"{data.ModId}.mixins.json"
+                "fabric.mod.json"
             );
 
-            var clientMixinConfigPath = Path.Combine(
-                data.Location,
-                "src",
-                "main",
-                "resources",
-                $"{data.ModId}.client.mixins.json"
+            if (!File.Exists(modJsonPath)) return;
+
+            var content = await File.ReadAllTextAsync(modJsonPath);
+
+            
+            content = content
+                .Replace("\"id\": \"modid\"", $"\"id\": \"{data.ModId}\"")
+                .Replace("\"version\": \"1.0.0\"", $"\"version\": \"{data.Version}\"")
+                .Replace("\"name\": \"Example mod\"", $"\"name\": \"{data.Name}\"")
+                .Replace("\"description\": \"This is an example description!", $"\"description\": \"{data.Description}\"")
+                .Replace("\"Me!\"", $"\"{data.Authors}\"")
+                .Replace("\"icon\": \"assets/modid/icon.png\"", $"\"icon\": \"assets/{data.ModId}/icon.png\"")
+                .Replace("\"com.example.ExampleMod\"", $"\"{data.Package}.{data.ModId}Mod\"")
+                .Replace("\"com.example.ExampleModClient\"", $"\"{data.Package}.{data.ModId}ModClient\"")
+                .Replace("\"modid.mixins.json\"", $"\"{data.ModId}.mixins.json\"")
+                .Replace("\"modid.client.mixins.json\"", $"\"{data.ModId}.client.mixins.json\"")
+                .Replace("\"minecraft\": \"~1.21.5\"", $"\"minecraft\": \"~{data.MinecraftVersion}\"");
+
+            
+            var authorsArray = $"[{string.Join(", ", data.Authors.Split(',').Select(a => $"\"{a.Trim()}\""))}]";
+            content = Regex.Replace(
+                content,
+                @"""authors"":\s*\[[^\]]*\]",
+                $"\"authors\": {authorsArray}"
             );
 
-            // עדכון קובץ המיקסין הראשי
-            if (File.Exists(mixinConfigPath))
-            {
-                var content = await File.ReadAllTextAsync(mixinConfigPath);
-                content = content
-                    .Replace("\"package\": \"com.example.mixin\"",
-                            $"\"package\": \"{data.Package}.mixin\"");
-
-                await File.WriteAllTextAsync(mixinConfigPath, content);
-            }
-
-            // עדכון קובץ המיקסין של הקליינט
-            if (File.Exists(clientMixinConfigPath))
-            {
-                var content = await File.ReadAllTextAsync(clientMixinConfigPath);
-                content = content
-                    .Replace("\"package\": \"com.example.mixin.client\"",
-                            $"\"package\": \"{data.Package}.mixin.client\"");
-
-                await File.WriteAllTextAsync(clientMixinConfigPath, content);
-            }
+            await File.WriteAllTextAsync(modJsonPath, content);
         }
 
         private string FindExampleRoot(string srcPath)
@@ -415,11 +487,15 @@ namespace Modrix.Services
                 "src",
                 "main",
                 "resources",
+                "assets",
+                data.ModId,
                 "icon.png"
             );
 
             try
             {
+                Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+
                 using (var sourceStream = File.OpenRead(data.IconPath))
                 using (var destStream = File.Create(destPath))
                 {
