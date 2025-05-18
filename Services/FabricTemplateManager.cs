@@ -376,7 +376,10 @@ namespace Modrix.Services
                 .Replace("\"id\": \"modid\"", $"\"id\": \"{data.ModId}\"")
                 .Replace("\"version\": \"1.0.0\"", $"\"version\": \"{data.Version}\"")
                 .Replace("\"name\": \"Example mod\"", $"\"name\": \"{data.Name}\"")
-                .Replace("\"description\": \"This is an example description!", $"\"description\": \"{data.Description}\"")
+                .Replace(
+                    "\"description\": \"This is an example description!\"",     
+                    $"\"description\": \"{data.Description}\""
+                )
                 .Replace("\"Me!\"", $"\"{data.Authors}\"")
                 .Replace("\"icon\": \"assets/modid/icon.png\"", $"\"icon\": \"assets/{data.ModId}/icon.png\"")
                 .Replace("\"com.example.ExampleMod\"", $"\"{data.Package}.{data.ModId}Mod\"")
