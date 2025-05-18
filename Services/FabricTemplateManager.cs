@@ -70,6 +70,12 @@ namespace Modrix.Services
                 progress.Report(($"Copying files ({copiedFiles}/{totalFiles})", currentProgress));
             }
 
+            var clientResourcesPath = Path.Combine(templatePath, "src", "client", "resources");
+            if (Directory.Exists(clientResourcesPath))
+            {
+                await CopyDirectoryAsync(clientResourcesPath, Path.Combine(targetPath, "src", "client", "resources"));
+            }
+
             // הוספנו את ה-modId כפרמטר
             await FixAssetsFolder(targetPath, modId);
             await FixMixinFiles(targetPath, modId);
@@ -86,14 +92,31 @@ namespace Modrix.Services
             }
         }
 
+
+        private async Task CopyDirectoryAsync(string sourceDir, string destDir)
+        {
+            foreach (string dirPath in Directory.GetDirectories(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(dirPath.Replace(sourceDir, destDir));
+            }
+
+            foreach (string filePath in Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories))
+            {
+                await CopyFileAsync(filePath, filePath.Replace(sourceDir, destDir));
+            }
+        }
+
         private async Task FixMixinFiles(string projectPath, string modId)
         {
-            var resourcesPath = Path.Combine(projectPath, "src", "main", "resources");
+            // עדכון קבצי מיקסין ב-main resources
+            var mainResourcesPath = Path.Combine(projectPath, "src", "main", "resources");
+            var mainMixinFiles = Directory.GetFiles(mainResourcesPath, "modid*.mixins.json");
 
-            // מצא את כל קבצי המיקסין עם השם modid
-            var mixinFiles = Directory.GetFiles(resourcesPath, "modid*.mixins.json");
+            // עדכון קבצי מיקסין ב-client resources
+            var clientResourcesPath = Path.Combine(projectPath, "src", "client", "resources");
+            var clientMixinFiles = Directory.GetFiles(clientResourcesPath, "modid*.mixins.json");
 
-            foreach (var file in mixinFiles)
+            foreach (var file in mainMixinFiles.Concat(clientMixinFiles))
             {
                 var newName = file.Replace("modid", modId);
                 File.Move(file, newName);
@@ -218,6 +241,26 @@ namespace Modrix.Services
                     await File.WriteAllTextAsync(newPath, content);
                 }
 
+                var mainMixinPath = Path.Combine(srcPath, "main", "java", packagePath, "mixin");
+                var clientMixinPath = Path.Combine(srcPath, "client", "java", packagePath, "mixin");
+                Directory.CreateDirectory(mainMixinPath);
+                Directory.CreateDirectory(clientMixinPath);
+
+                // העברת קבצי מיקסין
+                await MoveMixinsToPackage(
+                    Path.Combine(srcPath, "main", "java", "com", "example", "mixin"),
+                    mainMixinPath,
+                    data.Package + ".mixin",
+                    data.ModId
+                );
+
+                await MoveMixinsToPackage(
+                    Path.Combine(srcPath, "client", "java", "com", "example", "mixin"),
+                    clientMixinPath,
+                    data.Package + ".mixin.client",
+                    data.ModId
+                );
+
                 // שלב 4: מחיקת תיקיות מקור
                 await DeleteOldPackages(srcPath);
             }
@@ -225,6 +268,29 @@ namespace Modrix.Services
             {
                 throw new Exception($"שגיאה בעדכון מבנה החבילה: {ex.Message}");
             }
+        }
+
+        private async Task MoveMixinsToPackage(string sourceDir, string destDir, string package, string modId)
+        {
+            if (!Directory.Exists(sourceDir)) return;
+
+            var allFiles = Directory.GetFiles(sourceDir, "*.java", SearchOption.AllDirectories);
+
+            foreach (var file in allFiles)
+            {
+                var content = await File.ReadAllTextAsync(file);
+                content = content
+                    .Replace("com.example.mixin", package)
+                    .Replace("ExampleMixin", $"{modId}Mixin");
+
+                var relativePath = Path.GetRelativePath(sourceDir, file);
+                var newPath = Path.Combine(destDir, relativePath);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+                await File.WriteAllTextAsync(newPath, content);
+            }
+
+            Directory.Delete(sourceDir, true);
         }
 
         private async Task DeleteOldPackages(string srcPath)
@@ -259,27 +325,24 @@ namespace Modrix.Services
 
         private async Task UpdateMixinConfigs(ModProjectData data)
         {
-            var resourcesPath = Path.Combine(data.Location, "src", "main", "resources");
+            // עדכון קבצי מיקסין ב-main resources
+            var mainResourcesPath = Path.Combine(data.Location, "src", "main", "resources");
+            await ProcessMixinFile(mainResourcesPath, data.ModId, data.Package + ".mixin");
 
-            // מצא את קבצי המיקסין המקוריים
+            // עדכון קבצי מיקסין ב-client resources
+            var clientResourcesPath = Path.Combine(data.Location, "src", "client", "resources");
+            await ProcessMixinFile(clientResourcesPath, data.ModId, data.Package + ".mixin.client");
+        }
+
+        private async Task ProcessMixinFile(string resourcesPath, string modId, string package)
+        {
             var oldMixinPath = Path.Combine(resourcesPath, "modid.mixins.json");
-            var oldClientMixinPath = Path.Combine(resourcesPath, "modid.client.mixins.json");
+            var newMixinPath = Path.Combine(resourcesPath, $"{modId}.mixins.json");
 
-            // צור את השמות החדשים
-            var newMixinPath = Path.Combine(resourcesPath, $"{data.ModId}.mixins.json");
-            var newClientMixinPath = Path.Combine(resourcesPath, $"{data.ModId}.client.mixins.json");
-
-            // שנה שם קבצים אם קיימים
             if (File.Exists(oldMixinPath))
             {
                 File.Move(oldMixinPath, newMixinPath);
-                await UpdateMixinFileContent(newMixinPath, data.Package);
-            }
-
-            if (File.Exists(oldClientMixinPath))
-            {
-                File.Move(oldClientMixinPath, newClientMixinPath);
-                await UpdateMixinFileContent(newClientMixinPath, data.Package + ".client");
+                await UpdateMixinFileContent(newMixinPath, package);
             }
         }
 
