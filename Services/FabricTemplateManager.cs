@@ -183,7 +183,7 @@ namespace Modrix.Services
                     .Replace("mod_version=0.0.1", $"mod_version={data.Version}")
                     .Replace("maven_group=com.example", $"maven_group={data.Package}")
                     .Replace("archives_base_name=modid", $"archives_base_name={data.ModId}")
-                    .Replace("minecraft_version=1.21.4", $"minecraft_version={data.MinecraftVersion}");
+                    .Replace("minecraft_version=1.21.5", $"minecraft_version={data.MinecraftVersion}");
 
                 await File.WriteAllTextAsync(gradlePropsPath, gradleContent);
 
