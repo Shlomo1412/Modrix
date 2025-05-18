@@ -32,10 +32,10 @@ namespace Modrix.Services
         }
 
         private async Task CopyTemplateFilesAsync(
-    string targetPath,
-    IProgress<(string, int)> progress,
-    string modId // הוספנו את ה-modId כפרמטר
-)
+            string targetPath,
+            IProgress<(string, int)> progress,
+            string modId // הוספנו את ה-modId כפרמטר
+        )
         {
             var templatePath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,

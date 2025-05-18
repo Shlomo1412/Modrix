@@ -3,7 +3,7 @@
 	"id": "modid",
 	"version": "${version}",
 	"name": "Example mod",
-	"description": ,
+	"description": "This is an example description!",
 	"authors": [
 		"Me!"
 	],
