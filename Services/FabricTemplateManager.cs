@@ -179,11 +179,27 @@ namespace Modrix.Services
                 var gradlePropsPath = Path.Combine(data.Location, "gradle.properties");
                 var gradleContent = await File.ReadAllTextAsync(gradlePropsPath);
 
+                // שמור את גרסת Minecraft המקורית מהטמפלייט
+                var originalMcVersion = "1.21.5"; // גרסת ברירת המחדל בטמפלייט
+                var fabricVersions = new Dictionary<string, string>
+                {
+                    { "1.21.4", "0.119.2+1.21.4" },
+                    { "1.21.5", "0.119.5+1.21.5" }
+                    // הוסף גרסאות נוספות לפי הצורך
+                };
+
+                if (!fabricVersions.TryGetValue(data.MinecraftVersion, out var fabricVersion))
+                {
+                    throw new Exception($"Unsupported Minecraft version: {data.MinecraftVersion}");
+                }
+
                 gradleContent = gradleContent
-                    .Replace("mod_version=0.0.1", $"mod_version={data.Version}")
-                    .Replace("maven_group=com.example", $"maven_group={data.Package}")
-                    .Replace("archives_base_name=modid", $"archives_base_name={data.ModId}")
-                    .Replace("minecraft_version=1.21.5", $"minecraft_version={data.MinecraftVersion}");
+                .Replace($"minecraft_version={originalMcVersion}", $"minecraft_version={data.MinecraftVersion}")
+                .Replace($"yarn_mappings={originalMcVersion}+build.1", $"yarn_mappings={data.MinecraftVersion}+build.1")
+                .Replace($"fabric_version=0.119.5+{originalMcVersion}", $"fabric_version={fabricVersion}")
+                .Replace("mod_version=0.0.1", $"mod_version={data.Version}")
+                .Replace("maven_group=com.example", $"maven_group={data.Package}")
+                .Replace("archives_base_name=modid", $"archives_base_name={data.ModId}");
 
                 await File.WriteAllTextAsync(gradlePropsPath, gradleContent);
 
