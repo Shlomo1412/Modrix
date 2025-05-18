@@ -52,10 +52,11 @@ namespace Modrix.Views.Controls
             };
             VersionText.Text = data.MinecraftVersion;
 
-            if (!string.IsNullOrEmpty(data.IconPath) && File.Exists(data.IconPath))
+            string fullIconPath = Path.Combine(data.Location, data.IconPath ?? "");
+
+            if (!string.IsNullOrEmpty(data.IconPath) && File.Exists(fullIconPath))
             {
-                // יש אייקון - נציג אותו
-                ProjectIconImage.Source = new BitmapImage(new Uri(data.IconPath));
+                ProjectIconImage.Source = new BitmapImage(new Uri(fullIconPath));
                 ProjectIconImage.Visibility = Visibility.Visible;
                 DefaultIconText.Visibility = Visibility.Collapsed;
             }

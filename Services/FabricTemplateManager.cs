@@ -23,13 +23,14 @@ namespace Modrix.Services
                 await UpdateModJson(data);
                 await CopyIconAsync(data);
                 var configPath = Path.Combine(data.Location, "modrix.config");
-                await File.WriteAllTextAsync(configPath,
-                    $"ModId={data.ModId}\n" +
-                    $"Name={data.Name}\n" +
-                    $"Package={data.Package}\n" +
-                    $"ModType=Fabric Mod\n" +
-                    $"MinecraftVersion={data.MinecraftVersion}\n" +
-                    $"IconPath={data.IconPath ?? ""}");
+                await File.WriteAllTextAsync(
+                Path.Combine(data.Location, "modrix.config"),
+                $"ModId={data.ModId}\n" +
+                $"Name={data.Name}\n" +
+                $"Package={data.Package}\n" +
+                $"ModType=Fabric Mod\n" +
+                $"MinecraftVersion={data.MinecraftVersion}\n" +
+                $"IconPath=src/main/resources/assets/{data.ModId}/icon.png"); // נתיב יחסי בתוך הפרויקט
                 progress.Report(("Project ready!", 100));
             }
             catch (Exception ex)
