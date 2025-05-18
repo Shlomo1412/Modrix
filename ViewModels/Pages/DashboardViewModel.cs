@@ -46,8 +46,13 @@ public partial class DashboardViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void RefreshProjects()
+    public void RefreshProjects()
     {
+        Projects.Clear();
+        foreach (var project in TemplateManager.LoadAllProjects())
+        {
+            Projects.Add(project);
+        }
         LoadProjects();
     }
 

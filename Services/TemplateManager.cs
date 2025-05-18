@@ -124,6 +124,13 @@ namespace Modrix.Services
             // 3. Run gradlew.bat from within projectDir
             progress.Report(("Running Gradle wrapper...", 95));
             await RunGradleAsync(data.ProjectDir, gradleArgs, progress);
+            await File.WriteAllTextAsync(
+                Path.Combine(data.Location, "modrix.config"),
+                $"ModId={data.ModId}\n" +
+                $"Name={data.Name}\n" +
+                $"ModType=Fabric Mod\n" + // ????? ??? ????
+                $"MinecraftVersion={data.MinecraftVersion}"
+            );
 
             progress.Report(("Done!", 100));
         }
@@ -258,28 +265,40 @@ namespace Modrix.Services
             }
         }
 
-        
+
         public static List<ModProjectData> LoadAllProjects()
         {
             var projects = new List<ModProjectData>();
-            
-            if (!Directory.Exists(ProjectsBasePath))
-                return projects;
+            var projectsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Modrix",
+                "Projects"
+            );
 
-            foreach (var projectDir in Directory.GetDirectories(ProjectsBasePath))
+            foreach (var projectDir in Directory.GetDirectories(projectsDir))
             {
-                var modToml = Path.Combine(projectDir, "src", "main", "resources", "META-INF", "mods.toml");
-                var gradleProperties = Path.Combine(projectDir, "gradle.properties");
-                
-                if (File.Exists(modToml) && File.Exists(gradleProperties))
+                var configPath = Path.Combine(projectDir, "modrix.config");
+                if (File.Exists(configPath))
                 {
-                    var project = ParseProjectData(projectDir, modToml, gradleProperties);
-                    if (project != null)
-                        projects.Add(project);
+                    var lines = File.ReadAllLines(configPath);
+                    var project = new ModProjectData
+                    {
+                        Location = projectDir,
+                        Package = GetConfigValue(lines, "Package"),
+                        ModId = GetConfigValue(lines, "ModId"),
+                        Name = GetConfigValue(lines, "Name"),
+                        ModType = GetConfigValue(lines, "ModType"), // ?????? ?? ??? ????
+                        MinecraftVersion = GetConfigValue(lines, "MinecraftVersion")
+                    };
+                    projects.Add(project);
                 }
             }
-
             return projects;
+        }
+
+        private static string GetConfigValue(string[] lines, string key)
+        {
+            return lines.FirstOrDefault(l => l.StartsWith(key + "="))?.Split('=')[1] ?? string.Empty;
         }
 
         private static ModProjectData ParseProjectData(string projectDir, string modToml, string gradleProperties)

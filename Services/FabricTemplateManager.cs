@@ -22,6 +22,14 @@ namespace Modrix.Services
                 await UpdateMixinConfigs(data);
                 await UpdateModJson(data);
                 await CopyIconAsync(data);
+                var configPath = Path.Combine(data.Location, "modrix.config");
+                await File.WriteAllTextAsync(configPath,
+                    $"ModId={data.ModId}\n" +
+                    $"Name={data.Name}\n" +
+                    $"Package={data.Package}\n" +
+                    $"ModType=Fabric Mod\n" +
+                    $"MinecraftVersion={data.MinecraftVersion}\n" +
+                    $"IconPath={data.IconPath ?? ""}");
                 progress.Report(("Project ready!", 100));
             }
             catch (Exception ex)
@@ -185,7 +193,7 @@ namespace Modrix.Services
                 {
                     { "1.21.4", "0.119.2+1.21.4" },
                     { "1.21.5", "0.119.5+1.21.5" }
-                    // הוסף גרסאות נוספות לפי הצורך
+                    
                 };
 
                 if (!fabricVersions.TryGetValue(data.MinecraftVersion, out var fabricVersion))

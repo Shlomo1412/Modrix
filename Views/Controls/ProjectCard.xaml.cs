@@ -44,7 +44,12 @@ namespace Modrix.Views.Controls
         private void UpdateCard(ModProjectData data)
         {
             ProjectNameText.Text = data.Name;
-            ModTypeText.Text = data.ModType;
+            ModTypeText.Text = data.ModType switch
+            {
+                "Fabric Mod" => "Fabric Mod",
+                "Forge Mod" => "Forge Mod",
+                _ => "Unknown Mod Type"
+            };
             VersionText.Text = data.MinecraftVersion;
 
             if (!string.IsNullOrEmpty(data.IconPath) && File.Exists(data.IconPath))
