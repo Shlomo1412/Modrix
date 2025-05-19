@@ -15,6 +15,9 @@ namespace Modrix.ViewModels.Windows
         [ObservableProperty]
         private ObservableCollection<object> _footerMenuItems;
 
+        [ObservableProperty]
+        private string _modType;
+
         public ProjectWorkspaceViewModel()
         {
             InitializeMenuItems();
