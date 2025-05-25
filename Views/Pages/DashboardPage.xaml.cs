@@ -40,7 +40,7 @@ namespace Modrix.Views.Pages
                 {
                     await ViewModel.DeleteProject(project);
                     
-                    //ViewModel.RefreshProjects();
+                    ViewModel.RefreshProjects();
                 }
             }
         }
