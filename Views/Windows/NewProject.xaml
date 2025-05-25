@@ -228,8 +228,19 @@
                         </StackPanel>
                     </Grid>
 
-                    
+                    <!-- Other -->
+                    <TextBlock 
+                        Margin="0,0,0,4"
+                        FontWeight="Medium" 
+                        Text="Other" />
+                    <CheckBox
+                        x:Name="IncludeReadmeCheckbox"
+                        Margin="0,0,0,16"
+                        Content="Add README.md File"
+                        ToolTip="Include README.md file on the project template?"/>
                 </StackPanel>
+                
+                
             </ScrollViewer>
             <ui:DynamicScrollBar 
                 HorizontalAlignment="Right" 
