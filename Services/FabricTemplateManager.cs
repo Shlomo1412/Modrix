@@ -22,6 +22,18 @@ namespace Modrix.Services
                 await UpdateMixinConfigs(data);
                 await UpdateModJson(data);
                 await CopyIconAsync(data);
+                if (!data.IncludeReadme)
+                {
+                    var templateReadmePath = Path.Combine(data.Location, "README.md");
+                    if (File.Exists(templateReadmePath))
+                    {
+                        File.Delete(templateReadmePath);
+                    }
+                }
+                if (data.IncludeReadme)
+                {
+                    await CreateReadmeFile(data);
+                }
                 var configPath = Path.Combine(data.Location, "modrix.config");
                 await File.WriteAllTextAsync(
                 Path.Combine(data.Location, "modrix.config"),
@@ -99,6 +111,35 @@ namespace Modrix.Services
             {
                 Directory.Move(oldAssetsPath, newAssetsPath);
             }
+        }
+
+
+        private async Task CreateReadmeFile(ModProjectData data)
+        {
+            var readmePath = Path.Combine(data.Location, "README.md");
+            var content = $@"# {data.Name}
+
+            ## Description
+                {data.Description ?? "No description provided"}
+
+            ### Mod Details
+
+            - **Mod ID**: `{data.ModId}`
+
+            - **Minecraft Version**: {data.MinecraftVersion}
+
+            - **Mod Type**: {data.ModType}
+
+            - **Authors**: {data.Authors ?? "Not specified"}
+
+            - **License**: {data.License ?? "Not specified"}
+
+            ## Installation
+            1. Build the mod using Gradle
+            2. Copy the generated JAR file to your mods folder
+            ";
+
+            await File.WriteAllTextAsync(readmePath, content);
         }
 
 

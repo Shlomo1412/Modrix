@@ -201,6 +201,7 @@ namespace Modrix.Views.Windows
                     "Projects",
                     ModIdBox.Text
                 ),
+                IncludeReadme = IncludeReadmeCheckbox.IsChecked ?? false,
                 IconPath = _selectedIconPath,
                 ModType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString(),
                 MinecraftVersion = ((ComboBoxItem)MinecraftVersionComboBox.SelectedItem).Content.ToString(),
