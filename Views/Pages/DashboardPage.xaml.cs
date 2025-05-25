@@ -1,4 +1,4 @@
-﻿// Views/Pages/DashboardPage.xaml.cs
+﻿
 using Modrix.ViewModels.Pages;
 using Wpf.Ui.Abstractions.Controls;
 using System.Windows;
@@ -17,7 +17,7 @@ namespace Modrix.Views.Pages
         public DashboardPage(DashboardViewModel viewModel)
         {
             ViewModel = viewModel;
-            DataContext = this; // זה היה הבאג - אנחנו רוצים שה-DataContext יהיה this
+            DataContext = this;
 
             InitializeComponent();
         }
@@ -39,7 +39,7 @@ namespace Modrix.Views.Pages
                 if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
                 {
                     await ViewModel.DeleteProject(project);
-                    // רענון הרשימה אחרי המחיקה
+                    
                     //ViewModel.RefreshProjects();
                 }
             }
@@ -49,11 +49,11 @@ namespace Modrix.Views.Pages
         {
             if (sender is ProjectCard card && card.ProjectData is ModProjectData project)
             {
-                // יצירת חלון חדש של ProjectWorkspace עם הפרויקט הנבחר
+                
                 var workspaceWindow = App.Services.GetService<ProjectWorkspace>();
                 if (workspaceWindow != null)
                 {
-                    // העברת המידע של הפרויקט ל-ViewModel
+                    
                     //workspaceWindow.ViewModel.LoadProject(project);
                     workspaceWindow.Show();
                 }

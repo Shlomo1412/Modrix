@@ -66,26 +66,26 @@ public partial class DashboardViewModel : ObservableObject
                 string projectDir = project.Location;
                 if (Directory.Exists(projectDir))
                 {
-                    // קודם נשחרר את כל הקבצים והתיקיות מ-read-only באופן רקורסיבי
+                    
                     foreach (var file in Directory.EnumerateFiles(projectDir, "*.*", SearchOption.AllDirectories))
                     {
                         File.SetAttributes(file, FileAttributes.Normal);
                     }
                     foreach (var dir in Directory.EnumerateDirectories(projectDir, "*", SearchOption.AllDirectories))
                     {
-                        File.SetAttributes(dir, FileAttributes.Normal);  // שימוש ב-File.SetAttributes במקום Directory.SetAttributes
+                        File.SetAttributes(dir, FileAttributes.Normal);
                     }
-                    // הסרת read-only מהתיקייה הראשית
+                    
                     File.SetAttributes(projectDir, FileAttributes.Normal);
 
-                    // ננסה למחוק את התיקייה באופן רקורסיבי
+                    
                     try
                     {
                         Directory.Delete(projectDir, true);
                     }
                     catch
                     {
-                        // אם נכשל, ננסה למחוק קודם את הקבצים ואז את התיקיות
+                        
                         foreach (var file in Directory.EnumerateFiles(projectDir, "*.*", SearchOption.AllDirectories))
                         {
                             File.Delete(file);

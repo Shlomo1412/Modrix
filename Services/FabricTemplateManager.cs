@@ -15,8 +15,8 @@ namespace Modrix.Services
             try
             {
                 await CopyTemplateFilesAsync(data.Location, progress, data.ModId);
-                await FixAssetsFolder(data.Location, data.ModId); // הוסף
-                await FixMixinFiles(data.Location, data.ModId); // הוסף
+                await FixAssetsFolder(data.Location, data.ModId);
+                await FixMixinFiles(data.Location, data.ModId);
                 await UpdateModMetadataAsync(data, progress);
                 await UpdateBuildFilesAsync(data, progress);
                 await UpdateMixinConfigs(data);
@@ -30,7 +30,7 @@ namespace Modrix.Services
                 $"Package={data.Package}\n" +
                 $"ModType=Fabric Mod\n" +
                 $"MinecraftVersion={data.MinecraftVersion}\n" +
-                $"IconPath=src/main/resources/assets/{data.ModId}/icon.png"); // נתיב יחסי בתוך הפרויקט
+                $"IconPath=src/main/resources/assets/{data.ModId}/icon.png");
                 progress.Report(("Project ready!", 100));
             }
             catch (Exception ex)
@@ -43,7 +43,7 @@ namespace Modrix.Services
         private async Task CopyTemplateFilesAsync(
             string targetPath,
             IProgress<(string, int)> progress,
-            string modId // הוספנו את ה-modId כפרמטר
+            string modId
         )
         {
             var templatePath = Path.Combine(
@@ -85,7 +85,7 @@ namespace Modrix.Services
                 await CopyDirectoryAsync(clientResourcesPath, Path.Combine(targetPath, "src", "client", "resources"));
             }
 
-            // הוספנו את ה-modId כפרמטר
+            
             await FixAssetsFolder(targetPath, modId);
             await FixMixinFiles(targetPath, modId);
         }
@@ -117,11 +117,10 @@ namespace Modrix.Services
 
         private async Task FixMixinFiles(string projectPath, string modId)
         {
-            // עדכון קבצי מיקסין ב-main resources
             var mainResourcesPath = Path.Combine(projectPath, "src", "main", "resources");
             var mainMixinFiles = Directory.GetFiles(mainResourcesPath, "modid*.mixins.json");
 
-            // עדכון קבצי מיקסין ב-client resources
+            
             var clientResourcesPath = Path.Combine(projectPath, "src", "client", "resources");
             var clientMixinFiles = Directory.GetFiles(clientResourcesPath, "modid*.mixins.json");
 
@@ -183,13 +182,13 @@ namespace Modrix.Services
         {
             await Task.Run(async () =>
             {
-                // עדכון gradle.properties
+
                 progress.Report(("Updating gradle.properties...", 35));
                 var gradlePropsPath = Path.Combine(data.Location, "gradle.properties");
                 var gradleContent = await File.ReadAllTextAsync(gradlePropsPath);
 
-                // שמור את גרסת Minecraft המקורית מהטמפלייט
-                var originalMcVersion = "1.21.5"; // גרסת ברירת המחדל בטמפלייט
+                
+                var originalMcVersion = "1.21.5";
                 var fabricVersions = new Dictionary<string, string>
                 {
                     { "1.21.4", "0.119.2+1.21.4" },
@@ -212,7 +211,7 @@ namespace Modrix.Services
 
                 await File.WriteAllTextAsync(gradlePropsPath, gradleContent);
 
-                // שינוי שם הקבצים והחבילה
+                
                 progress.Report(("Renaming main classes...", 50));
                 await UpdatePackageStructure(data);
             });
@@ -231,22 +230,22 @@ namespace Modrix.Services
                               f.Contains("net" + Path.DirectorySeparatorChar + "fabricmc"))
                     .ToList();
 
-                // שלב 2: יצירת מבנה התיקיות החדש
+                
                 var newMainPath = Path.Combine(srcPath, "main", "java", packagePath);
                 var newClientPath = Path.Combine(srcPath, "client", "java", packagePath);
                 Directory.CreateDirectory(newMainPath);
                 Directory.CreateDirectory(newClientPath);
 
-                // שלב 3: העברה ועדכון קבצים
+                
                 foreach (var filePath in allJavaFiles)
                 {
                     var content = await File.ReadAllTextAsync(filePath);
 
-                    // החלפת package
+                    
                     content = content.Replace("com.example", data.Package)
                                      .Replace("net.fabricmc.example", data.Package);
 
-                    // החלפת שמות מחלקות
+                    
                     if (filePath.Contains("ExampleMod"))
                     {
                         content = content.Replace("ExampleMod", $"{data.ModId}Mod");
@@ -256,7 +255,7 @@ namespace Modrix.Services
                         content = content.Replace("ExampleModClient", $"{data.ModId}ModClient");
                     }
 
-                    // קביעת מיקום חדש
+                    
                     var newPath = filePath
                         .Replace("com" + Path.DirectorySeparatorChar + "example", packagePath)
                         .Replace("net" + Path.DirectorySeparatorChar + "fabricmc" + Path.DirectorySeparatorChar + "example", packagePath)
@@ -271,7 +270,7 @@ namespace Modrix.Services
                 Directory.CreateDirectory(mainMixinPath);
                 Directory.CreateDirectory(clientMixinPath);
 
-                // העברת קבצי מיקסין
+                
                 await MoveMixinsToPackage(
                     Path.Combine(srcPath, "main", "java", "com", "example", "mixin"),
                     mainMixinPath,
@@ -286,7 +285,7 @@ namespace Modrix.Services
                     data.ModId
                 );
 
-                // שלב 4: מחיקת תיקיות מקור
+                
                 await DeleteOldPackages(srcPath);
             }
             catch (Exception ex)
@@ -350,11 +349,11 @@ namespace Modrix.Services
 
         private async Task UpdateMixinConfigs(ModProjectData data)
         {
-            // עדכון קבצי מיקסין ב-main resources
+            
             var mainResourcesPath = Path.Combine(data.Location, "src", "main", "resources");
             await ProcessMixinFile(mainResourcesPath, data.ModId, data.Package + ".mixin");
 
-            // עדכון קבצי מיקסין ב-client resources
+            
             var clientResourcesPath = Path.Combine(data.Location, "src", "client", "resources");
             await ProcessMixinFile(clientResourcesPath, data.ModId, data.Package + ".mixin.client");
         }
@@ -426,7 +425,7 @@ namespace Modrix.Services
 
         private string FindExampleRoot(string srcPath)
         {
-            // חיפוש רקורסיבי אחר התיקייה המכילה את דוגמת הקוד
+            
             var directories = Directory.GetDirectories(
                 Path.Combine(srcPath, "main", "java"),
                 "*",
@@ -457,7 +456,7 @@ namespace Modrix.Services
 
                 Directory.CreateDirectory(Path.GetDirectoryName(newPath));
 
-                // שינוי תוכן הקובץ
+                
                 var content = await File.ReadAllTextAsync(filePath);
                 content = content
                     .Replace("com.example", package)
@@ -466,14 +465,14 @@ namespace Modrix.Services
 
                 await File.WriteAllTextAsync(newPath, content);
 
-                // מחיקת הקובץ המקורי
+                
                 File.Delete(filePath);
             }
         }
 
         private async Task UpdateAllJavaFiles(ModProjectData data)
         {
-            // עדכון קבצי main
+            
             await ProcessJavaFiles(
                 Path.Combine(data.Location, "src", "main", "java"),
                 data.Package,
@@ -481,7 +480,7 @@ namespace Modrix.Services
                 new[] { "ExampleMod", "ExampleMixin" }
             );
 
-            // עדכון קבצי client
+            
             await ProcessJavaFiles(
                 Path.Combine(data.Location, "src", "client", "java"),
                 data.Package,

@@ -35,7 +35,7 @@ namespace Modrix.Views.Windows
 
         public void SetServiceProvider(IServiceProvider serviceProvider)
         {
-            // Implement if needed
+            
         }
 
         public void ShowWindow() => Show();

@@ -67,7 +67,7 @@ namespace Modrix.ViewModels.Pages
                     break;
 
                 default:
-                    // נשאר בברירת המחדל - Dark Theme
+                    
                     if (CurrentTheme == ApplicationTheme.Dark)
                         break;
 

@@ -28,7 +28,7 @@ namespace Modrix.Views.Controls
         {
             InitializeComponent();
 
-            // הוספת טיפול באירועי הלחיצה
+            
             EditButton.Click += (s, e) => EditClicked?.Invoke(this, e);
             DeleteButton.Click += (s, e) => DeleteClicked?.Invoke(this, e);
         }
@@ -62,12 +62,12 @@ namespace Modrix.Views.Controls
             }
             else
             {
-                // אין אייקון - נציג את האות הראשונה של שם הפרויקט
+                
                 ProjectIconImage.Source = null;
                 ProjectIconImage.Visibility = Visibility.Collapsed;
                 DefaultIconText.Visibility = Visibility.Visible;
 
-                // מקבל את האות הראשונה של השם ומעביר אותה לאותיות גדולות
+                
                 DefaultIconText.Text = !string.IsNullOrEmpty(data.Name)
                     ? data.Name.Substring(0, 1).ToUpper()
                     : "?";

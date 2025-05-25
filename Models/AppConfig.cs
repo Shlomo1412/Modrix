@@ -15,7 +15,6 @@ namespace Modrix.Models
 
         public string ProjectsFileName { get; set; } = "projects.json";
 
-        // לפני השינויים – הפרויקטים נשמרים כחלק מהאובייקט הזה
         public ObservableCollection<ModProjectData> Projects { get; set; } = new();
     }
     public class ProjectManagerService
@@ -27,19 +26,19 @@ namespace Modrix.Models
             _config = config;
         }
 
-        // נוסיף פרויקט על ידי הוספתו לאוסף שב-AppConfig
+
         public void AddProject(ModProjectData project)
         {
             _config.Projects.Add(project);
         }
 
-        // מחיקת פרויקט מהאוסף שב-AppConfig
+
         public void RemoveProject(ModProjectData project)
         {
             _config.Projects.Remove(project);
         }
 
-        // עדכון פרויקט קיים
+
         public void UpdateProject(ModProjectData project)
         {
             var existing = _config.Projects.FirstOrDefault(p => p.ModId == project.ModId);
@@ -50,7 +49,7 @@ namespace Modrix.Models
             }
         }
 
-        // החזרה של האוסף הקיים
+
         public ObservableCollection<ModProjectData> GetProjects()
         {
             return _config.Projects;

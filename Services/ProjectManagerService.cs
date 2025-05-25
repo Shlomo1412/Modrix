@@ -1,4 +1,4 @@
-﻿// Services/ProjectManagerService.cs
+﻿
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;

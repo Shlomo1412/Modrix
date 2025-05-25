@@ -1,4 +1,4 @@
-﻿// Models/ModProjectData.cs
+﻿
 namespace Modrix.Models
 {
     public class ModProjectData
@@ -15,7 +15,6 @@ namespace Modrix.Models
         public string License { get; set; }
         public string ModVersion { get; set; } = "1.0.0";
 
-        // שינוי השדות למאפיינים עם set
         public string ProjectDir { get; set; }
         public string SrcDir { get; set; }
         public string JavaDir { get; set; }
@@ -26,7 +25,7 @@ namespace Modrix.Models
 
         public ModProjectData()
         {
-            // אתחול ערכים ריקים למניעת null
+
             ProjectDir = string.Empty;
             SrcDir = string.Empty;
             JavaDir = string.Empty;
