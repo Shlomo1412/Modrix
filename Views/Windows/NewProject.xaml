@@ -29,7 +29,7 @@
         <ui:TitleBar
             Title="New Project"
             Grid.Row="0"
-            Icon="Add24">
+            Icon="{ui:SymbolIcon Add24}">
         </ui:TitleBar>
 
         <Grid Grid.Row="1" Margin="0,0,0,10">
@@ -46,7 +46,7 @@
                         x:Name="ProjectNameBox"
                         Margin="0,0,0,16"
                         PlaceholderText="Project Name"
-                        Icon="Edit24"
+                        Icon="{ui:SymbolIcon Edit24}"
                         ToolTip="The display name of your mod"/>
 
                     <!-- Mod ID -->
@@ -58,7 +58,7 @@
                         x:Name="ModIdBox"
                         Margin="0,0,0,16"
                         PlaceholderText="mod_id"
-                        Icon="Document24"
+                        Icon="{ui:SymbolIcon Document24}"
                         ToolTip="Unique identifier for your mod (lowercase, no spaces)"/>
 
                     <!-- Package -->
@@ -70,7 +70,7 @@
                         x:Name="PackageBox"
                         Margin="0,0,0,16"
                         PlaceholderText="net.modrix.mymod"
-                        Icon="Box24"
+                        Icon="{ui:SymbolIcon Box24}"
                         ToolTip="Java package name for your mod"/>
 
                     <!-- Mod Type -->
@@ -145,7 +145,7 @@
                         x:Name="DescriptionBox"
                         Margin="0,0,0,16"
                         PlaceholderText="A brief description of your mod"
-                        Icon="Comment24"
+                        Icon="{ui:SymbolIcon Comment24}"
                         ToolTip="Describe what your mod does"
                         TextWrapping="Wrap"
                         AcceptsReturn="True"
@@ -164,7 +164,7 @@
                         x:Name="AuthorsBox"
                         Margin="0,0,0,16"
                         PlaceholderText="Comma-separated list of authors"
-                        Icon="People24"
+                        Icon="{ui:SymbolIcon People24}"
                         ToolTip="List the authors of the mod (comma-separated)"/>
 
 
@@ -188,7 +188,7 @@
                             Grid.Column="0"
                             Width="48"
                             Height="48"
-                            Icon="Image24"
+                            Icon="{ui:SymbolIcon Image24}"
                             Appearance="Secondary"
                             Click="SelectIconButton_Click"
                             ToolTip="Select a PNG file for your mod's icon"/>
@@ -213,14 +213,14 @@
                             <ui:Button
                             x:Name="SwitchIconButton"
                             Margin="0,0,8,0"
-                            Icon="ArrowRepeatAll24"
+                            Icon="{ui:SymbolIcon ArrowRepeatAll24}"
                             Content="Switch Icon"
                             Click="SwitchIconButton_Click"
                             ToolTip="Change the selected icon"/>
 
                             <ui:Button
                             x:Name="RemoveIconButton"
-                            Icon="Delete24"
+                            Icon="{ui:SymbolIcon Delete24}"
                             Content="Remove Icon"
                             Appearance="Danger"
                             Click="RemoveIconButton_Click"
@@ -263,14 +263,14 @@
                 Margin="0,0,8,0"
                 Appearance="Secondary"
                 Content="Cancel"
-                Icon="Dismiss24"
+                Icon="{ui:SymbolIcon Dismiss24}"
                 Click="CancelButton_Click"/>
 
             <ui:Button
                 Grid.Column="2"
                 Appearance="Primary"
                 Content="Create"
-                Icon="Add24"
+                Icon="{ui:SymbolIcon Add24}"
                 Click="CreateButton_Click"
                 IsEnabled="{Binding AreFieldsValid}"
                 ToolTip="Create a new mod project with these settings"/>
