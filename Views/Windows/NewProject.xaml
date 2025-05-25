@@ -231,7 +231,7 @@
                     
                     
 
-                    <Expander Header="Other" HeaderStringFormat="Medium" IsExpanded="False">
+                    <Expander Header="Other" IsExpanded="False">
                         <StackPanel>
                             <CheckBox
                                 x:Name="IncludeReadmeCheckbox"

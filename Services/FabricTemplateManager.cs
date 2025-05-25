@@ -22,14 +22,7 @@ namespace Modrix.Services
                 await UpdateMixinConfigs(data);
                 await UpdateModJson(data);
                 await CopyIconAsync(data);
-                if (!data.IncludeReadme)
-                {
-                    var templateReadmePath = Path.Combine(data.Location, "README.md");
-                    if (File.Exists(templateReadmePath))
-                    {
-                        File.Delete(templateReadmePath);
-                    }
-                }
+                
                 if (data.IncludeReadme)
                 {
                     await CreateReadmeFile(data);
@@ -598,7 +591,8 @@ namespace Modrix.Services
             return fileName.EndsWith(".idx") ||
                    fileName == ".git" ||
                    fileName == ".gitignore" ||
-                   fileName == ".gitattributes";
+                   fileName == ".gitattributes" ||
+                   fileName == "README.md";
         }
 
         private async Task ShowMessageAsync(string message, string title)
