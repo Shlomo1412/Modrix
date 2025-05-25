@@ -236,6 +236,7 @@
                             <CheckBox
                                 x:Name="IncludeReadmeCheckbox"
                                 Margin="0,0,0,16"
+                                IsChecked="True"
                                 Content="Add README.md File"
                                 ToolTip="Include README.md file on the project template?"/>
                         </StackPanel>
