@@ -49,8 +49,22 @@ namespace Modrix.Views.Windows
         {
             base.OnClosed(e);
 
-            // Make sure that closing this window will begin the process of closing the application.
-            Application.Current.Shutdown();
+            // Make sure that closing this window will begin the process of closing the application, Unless ProjectWorkspace.xaml is open.
+            bool hasOpenWorkspace = false;
+            foreach (Window window in Application.Current.Windows)
+            {
+                if (window is ProjectWorkspace workspaceWindow && workspaceWindow.IsLoaded)
+                {
+                    hasOpenWorkspace = true;
+                    break;
+                }
+            }
+
+            
+            if (!hasOpenWorkspace)
+            {
+                Application.Current.Shutdown();
+            }
         }
 
         public void ShowOfflineSnackbar()
