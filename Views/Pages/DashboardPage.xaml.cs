@@ -60,6 +60,14 @@ namespace Modrix.Views.Pages
             }
         }
 
+        private void ProjectCard_OpenFolderClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is ProjectCard card && card.ProjectData is ModProjectData project)
+            {
+                ViewModel.OpenProjectFolderCommand.Execute(project);
+            }
+        }
+
 
 
     }

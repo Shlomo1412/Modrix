@@ -23,6 +23,7 @@ namespace Modrix.Views.Controls
 
         public event RoutedEventHandler EditClicked;
         public event RoutedEventHandler DeleteClicked;
+        public event RoutedEventHandler OpenFolderClicked;
 
         public ProjectCard()
         {
@@ -31,6 +32,7 @@ namespace Modrix.Views.Controls
             
             EditButton.Click += (s, e) => EditClicked?.Invoke(this, e);
             DeleteButton.Click += (s, e) => DeleteClicked?.Invoke(this, e);
+            OpenFolderButton.Click += (s, e) => OpenFolderClicked?.Invoke(this, e);
         }
 
         private static void OnProjectDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

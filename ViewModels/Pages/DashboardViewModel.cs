@@ -108,7 +108,14 @@ public partial class DashboardViewModel : ObservableObject
         }
     }
 
-
+    [RelayCommand]
+    private void OpenProjectFolder(ModProjectData project)
+    {
+        if (project != null && Directory.Exists(project.Location))
+        {
+            Process.Start("explorer.exe", project.Location);
+        }
+    }
 
 
     [RelayCommand]

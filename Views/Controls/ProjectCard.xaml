@@ -8,19 +8,19 @@
     <ui:CardControl Padding="12">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="76"/>
+                <ColumnDefinition Width="64"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Project Icon -->
+            
             <!-- Project Icon -->
             <Border 
-    Grid.Column="0" 
-    Width="64" 
-    Height="64" 
-    Background="{DynamicResource ControlFillColorDefaultBrush}"
-    CornerRadius="8">
+                Grid.Column="0" 
+                Width="64" 
+                Height="64" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}"
+                CornerRadius="8">
                 <Grid>
                     <!-- Default Text Icon (shows when no image) -->
                     <TextBlock 
@@ -73,7 +73,7 @@
                     ToolTip="Edit Project"
                     Width="32"
                     Height="32"
-                    Margin="0,0,8,0"
+                    Margin="0,0,6,0"
                     Padding="4"/>
                 <ui:Button
                     x:Name="DeleteButton"
@@ -82,6 +82,16 @@
                     ToolTip="Delete Project"
                     Width="32"
                     Height="32"
+                    Margin="0,0,6,0"
+                    Padding="4"/>
+                <ui:Button
+                    x:Name="OpenFolderButton"
+                    Appearance="Primary"
+                    Icon="{ui:SymbolIcon FolderOpen24}"
+                    ToolTip="Open Project Folder"
+                    Width="32"
+                    Height="32"
+                    Margin="0,0,8,0"
                     Padding="4"/>
             </StackPanel>
         </Grid>

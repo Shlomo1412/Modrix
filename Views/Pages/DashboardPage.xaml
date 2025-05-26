@@ -63,7 +63,7 @@
                             <WrapPanel 
                                 Orientation="Horizontal" 
                                 HorizontalAlignment="Left"/>
-                            <!-- שינוי מ-Center ל-Left -->
+                            
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -72,7 +72,8 @@
                                 ProjectData="{Binding}" 
                                 Margin="6,0,6,12"
                                 EditClicked="ProjectCard_EditClicked"
-                                DeleteClicked="ProjectCard_DeleteClicked"/>
+                                DeleteClicked="ProjectCard_DeleteClicked"
+                                OpenFolderClicked="ProjectCard_OpenFolderClicked"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

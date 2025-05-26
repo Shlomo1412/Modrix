@@ -592,6 +592,7 @@ namespace Modrix.Services
                    fileName == ".git" ||
                    fileName == ".gitignore" ||
                    fileName == ".gitattributes" ||
+                   fileName.Equals("LICENSE", StringComparison.OrdinalIgnoreCase) ||
                    fileName == "README.md";
         }
 
