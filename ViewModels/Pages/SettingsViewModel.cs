@@ -16,7 +16,7 @@ namespace Modrix.ViewModels.Pages
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
 
-        // 👉 הוספת הקונסטרקטור
+        
         public SettingsViewModel(IThemeService themeService)
         {
             _themeService = themeService;
@@ -34,7 +34,7 @@ namespace Modrix.ViewModels.Pages
 
         private void InitializeViewModel()
         {
-            // במקום ApplicationThemeManager.GetAppTheme()
+            
             CurrentTheme = _themeService.LoadTheme();
             AppVersion = $"Modrix – v{GetAssemblyVersion()}";
             _isInitialized = true;
@@ -61,7 +61,7 @@ namespace Modrix.ViewModels.Pages
             ApplicationThemeManager.Apply(newTheme);
             CurrentTheme = newTheme;
 
-            // 2) Save לקונפיג
+            // 2) Save
             _themeService.SaveTheme(newTheme);
         }
     }
