@@ -17,16 +17,5 @@ namespace Modrix.Models
 
         public ObservableCollection<ModProjectData> Projects { get; set; } = new();
     }
-    public class ProjectManagerService
-    {
-        private readonly AppConfig _config;
-
-        
-
-
-        public ObservableCollection<ModProjectData> GetProjects()
-        {
-            return _config.Projects;
-        }
-    }
+    
 }
