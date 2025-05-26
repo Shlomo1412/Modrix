@@ -15,6 +15,9 @@ namespace Modrix.Models
 
         public string ProjectsFileName { get; set; } = "projects.json";
 
+        //Theme
+        public string Theme { get; set; } = "Dark";
+
         public ObservableCollection<ModProjectData> Projects { get; set; } = new();
     }
     

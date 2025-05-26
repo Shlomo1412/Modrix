@@ -1,17 +1,19 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Windows.Threading;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Modrix.Models;
 using Modrix.Services;
 using Modrix.ViewModels.Pages;
 using Modrix.ViewModels.Windows;
 using Modrix.Views.Pages;
 using Modrix.Views.Windows;
 using Wpf.Ui;
+using Wpf.Ui.Appearance;
 using Wpf.Ui.DependencyInjection;
-using Modrix.Models;
+using IThemeService = Modrix.Services.IThemeService;
 
 namespace Modrix
 {
@@ -50,8 +52,7 @@ namespace Modrix
                 services.AddHostedService<ApplicationHostService>();
 
                 // Theme manipulation
-                services.AddSingleton<IThemeService, ThemeService>();
-
+                services.AddSingleton<Services.IThemeService, Services.ThemeService>();
                 // TaskBar manipulation
                 services.AddSingleton<ITaskBarService, TaskBarService>();
 
@@ -67,7 +68,8 @@ namespace Modrix
                 services.AddSingleton<DataPage>();
                 services.AddSingleton<DataViewModel>();
                 services.AddSingleton<SettingsPage>();
-                services.AddSingleton<SettingsViewModel>();
+                services.AddSingleton<SettingsViewModel>(sp =>
+                new SettingsViewModel(sp.GetRequiredService<IThemeService>()));
                 services.AddSingleton<ProjectWorkspace>();
                 services.AddSingleton<ProjectWorkspaceViewModel>();
 
@@ -93,9 +95,12 @@ namespace Modrix
             _connectivityService = Services.GetService<IConnectivityService>();
 
 
-            
 
-            
+            // Load saved theme:
+            var themeService = Services.GetRequiredService<IThemeService>();
+            var saved = themeService.LoadTheme();
+            ApplicationThemeManager.Apply(saved);
+
 
 
 

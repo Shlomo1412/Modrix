@@ -1,10 +1,13 @@
-﻿using Wpf.Ui.Appearance;
+﻿using System.Reflection;
+using Modrix.Services;
 using Wpf.Ui.Abstractions.Controls;
+using Wpf.Ui.Appearance;
 
 namespace Modrix.ViewModels.Pages
 {
     public partial class SettingsViewModel : ObservableObject, INavigationAware
     {
+        private readonly IThemeService _themeService;
         private bool _isInitialized = false;
 
         [ObservableProperty]
@@ -13,11 +16,17 @@ namespace Modrix.ViewModels.Pages
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
 
+        // 👉 הוספת הקונסטרקטור
+        public SettingsViewModel(IThemeService themeService)
+        {
+            _themeService = themeService;
+        }
+
         public Task OnNavigatedToAsync()
         {
             if (!_isInitialized)
                 InitializeViewModel();
-            
+
             return Task.CompletedTask;
         }
 
@@ -25,56 +34,35 @@ namespace Modrix.ViewModels.Pages
 
         private void InitializeViewModel()
         {
-            CurrentTheme = ApplicationThemeManager.GetAppTheme();
-            AppVersion = $"UiDesktopApp1 - {GetAssemblyVersion()}";
-
+            // במקום ApplicationThemeManager.GetAppTheme()
+            CurrentTheme = _themeService.LoadTheme();
+            AppVersion = $"Modrix – v{GetAssemblyVersion()}";
             _isInitialized = true;
         }
 
         private string GetAssemblyVersion()
-        {
-            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString()
-                ?? String.Empty;
-        }
+            => Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? String.Empty;
 
         [RelayCommand]
         private void OnChangeTheme(string parameter)
         {
-            switch (parameter)
+            var newTheme = parameter switch
             {
-                case "theme_light":
-                    if (CurrentTheme == ApplicationTheme.Light)
-                        break;
+                "theme_light" => ApplicationTheme.Light,
+                "theme_dark" => ApplicationTheme.Dark,
+                "theme_highcontrast" => ApplicationTheme.HighContrast,
+                _ => ApplicationTheme.Dark
+            };
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Light);
-                    CurrentTheme = ApplicationTheme.Light;
-                    break;
+            if (CurrentTheme == newTheme)
+                return;
 
-                case "theme_dark":
-                    if (CurrentTheme == ApplicationTheme.Dark)
-                        break;
+            // 1) Apply
+            ApplicationThemeManager.Apply(newTheme);
+            CurrentTheme = newTheme;
 
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark);
-                    CurrentTheme = ApplicationTheme.Dark;
-                    break;
-
-                case "theme_highcontrast":
-                    if (CurrentTheme == ApplicationTheme.HighContrast)
-                        break;
-
-                    ApplicationThemeManager.Apply(ApplicationTheme.HighContrast);
-                    CurrentTheme = ApplicationTheme.HighContrast;
-                    break;
-
-                default:
-                    
-                    if (CurrentTheme == ApplicationTheme.Dark)
-                        break;
-
-                    ApplicationThemeManager.Apply(ApplicationTheme.Dark);
-                    CurrentTheme = ApplicationTheme.Dark;
-                    break;
-            }
+            // 2) Save לקונפיג
+            _themeService.SaveTheme(newTheme);
         }
     }
 }
