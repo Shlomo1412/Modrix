@@ -48,7 +48,7 @@
                 x:Name="CancelButton"
                 Grid.Column="2"
                 Appearance="Danger"
-                Icon="Dismiss24"
+                Icon="{ui:SymbolIcon Dismiss24}"
                 ToolTip="Cancel and close"
                 Click="CancelButton_Click"/>
         </Grid>
@@ -64,7 +64,7 @@
                 Grid.Column="0"
                 x:Name="CurrentTaskText"
                 Text="Initializing..."
-                Margin="0,0,0,8"/>
+                Margin="0,0,30,8"/>
 
             <!-- More Button with Logs Menu -->
             
