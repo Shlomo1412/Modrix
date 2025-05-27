@@ -80,5 +80,19 @@
                     Content="Keep Projects" />
             </StackPanel>
         </Expander>
+        <Expander Margin="0,24,0,0" IsExpanded="False">
+            <Expander.Header>
+                <TextBlock 
+                    FontSize="20"
+                    FontWeight="Medium"
+                    Text="About" />
+            </Expander.Header>
+            <StackPanel>
+                <TextBlock Margin="0,12,0,0" Text="Version: 1.0.0" />
+                <TextBlock Margin="0,8,0,0" Text="Build Date: 2023-10-01" />
+                <TextBlock Margin="0,8,0,0" Text="License: MIT" />
+                <TextBlock Margin="0,8,0,0" Text="© 2025 Modrix Team" />
+            </StackPanel>
+        </Expander>
     </StackPanel>
 </Page>
