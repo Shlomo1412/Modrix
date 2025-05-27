@@ -15,19 +15,19 @@
             <StackPanel Margin="8">
                 <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding Name}" />
                 <TextBlock Margin="2,4,0,0">
-                    <Run Foreground="Yellow" Text="Type: "/>
+                    <Run Text="Type: "/>
                     <Run Text="{Binding ModType}"/>
                 </TextBlock>
                 <TextBlock>
-                    <Run Foreground="Yellow" Text="Minecraft Version: "/>
+                    <Run Text="Minecraft Version: "/>
                     <Run Text="{Binding MinecraftVersion}"/>
                 </TextBlock>
                 <TextBlock>
-                    <Run Foreground="Yellow" Text="Mod ID: "/>
+                    <Run Text="Mod ID: "/>
                     <Run Text="{Binding ModId}"/>
                 </TextBlock>
                 <TextBlock>
-                    <Run Foreground="Yellow" Text="Package: "/>
+                    <Run Text="Package: "/>
                     <Run Text="{Binding Package}"/>
                 </TextBlock>
             </StackPanel>
