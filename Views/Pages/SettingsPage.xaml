@@ -21,59 +21,64 @@
     </Page.Resources>
 
     <StackPanel>
-        <TextBlock
-        FontSize="20"
-        FontWeight="Medium"
-        Text="Personalization" />
+        <!-- Personalization Section -->
+        <Expander Margin="0,0,0,0" IsExpanded="True">
+            <Expander.Header>
+                <TextBlock 
+                    FontSize="20"
+                    FontWeight="Medium"
+                    Text="Personalization" />
+            </Expander.Header>
+            <StackPanel>
+                <!-- Theme selection controls -->
+                <TextBlock Margin="0,12,0,0" Text="Theme" />
+                <RadioButton
+                    Margin="0,12,0,0"
+                    Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                    CommandParameter="theme_light"
+                    Content="Light"
+                    GroupName="themeSelect"
+                    IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
+                <RadioButton
+                    Margin="0,8,0,0"
+                    Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                    CommandParameter="theme_dark"
+                    Content="Dark"
+                    GroupName="themeSelect"
+                    IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+                <RadioButton
+                    Margin="0,8,0,0"
+                    Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                    CommandParameter="theme_highcontrast"
+                    Content="High Contrast"
+                    GroupName="themeSelect"
+                    IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
+            </StackPanel>
+        </Expander>
 
-        <!-- Theme selection controls -->
-        <TextBlock Margin="0,12,0,0" Text="Theme" />
-        <RadioButton
-        Margin="0,12,0,0"
-        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-        CommandParameter="theme_light"
-        Content="Light"
-        GroupName="themeSelect"
-        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
-        <RadioButton
-        Margin="0,8,0,0"
-        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-        CommandParameter="theme_dark"
-        Content="Dark"
-        GroupName="themeSelect"
-        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
-        <RadioButton
-        Margin="0,8,0,0"
-        
-        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-        CommandParameter="theme_highcontrast"
-        Content="High Contrast"
-        GroupName="themeSelect"
-        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
-
-        <!-- New Installation section -->
-        <TextBlock 
-            Margin="0,24,0,0"
-            FontSize="20"
-            FontWeight="Medium"
-            Text="Installation" />
-
-        <ui:Button
-            Margin="0,12,0,0"
-            Appearance="Primary"
-            Icon="{ui:SymbolIcon ArrowReset24}"
-            Content="Reinstall" />
-
-        <ui:Button
-            Margin="0,8,0,0"
-            Appearance="Danger"
-            Icon="{ui:SymbolIcon Delete24}"
-            Content="Uninstall" />
-
-        <ui:ToggleSwitch
-            Margin="0,12,0,0"
-            Content="Keep Projects" />
+        <!-- Installation Section -->
+        <Expander Margin="0,24,0,0">
+            <Expander.Header>
+                <TextBlock 
+                    FontSize="20"
+                    FontWeight="Medium"
+                    Text="Installation" />
+            </Expander.Header>
+            <StackPanel>
+                <ui:Button
+                    Margin="0,12,0,0"
+                    Appearance="Primary"
+                    Icon="{ui:SymbolIcon ArrowReset24}"
+                    Content="Reinstall" />
+                <ui:Button
+                    Margin="0,8,0,0"
+                    Appearance="Danger"
+                    Icon="{ui:SymbolIcon Delete24}"
+                    Content="Uninstall" />
+                <ui:ToggleSwitch
+                    Margin="0,12,0,0"
+                    Content="Keep Projects" />
+            </StackPanel>
+        </Expander>
     </StackPanel>
-
-
 </Page>
