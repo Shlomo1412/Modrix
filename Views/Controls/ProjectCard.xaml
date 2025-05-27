@@ -3,7 +3,36 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Width="300">
+    Width="300"
+    ToolTipService.InitialShowDelay="200"
+    ToolTipService.ShowDuration="5000"
+    ToolTipService.BetweenShowDelay="100">
+
+    <!-- TOOLTIP DEFINITION -->
+    <UserControl.ToolTip>
+        <ToolTip
+            DataContext="{Binding PlacementTarget.ProjectData, RelativeSource={RelativeSource Self}}">
+            <StackPanel Margin="8">
+                <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding Name}" />
+                <TextBlock Margin="2,4,0,0">
+                    <Run Foreground="Yellow" Text="Type: "/>
+                    <Run Text="{Binding ModType}"/>
+                </TextBlock>
+                <TextBlock>
+                    <Run Foreground="Yellow" Text="Minecraft Version: "/>
+                    <Run Text="{Binding MinecraftVersion}"/>
+                </TextBlock>
+                <TextBlock>
+                    <Run Foreground="Yellow" Text="Mod ID: "/>
+                    <Run Text="{Binding ModId}"/>
+                </TextBlock>
+                <TextBlock>
+                    <Run Foreground="Yellow" Text="Package: "/>
+                    <Run Text="{Binding Package}"/>
+                </TextBlock>
+            </StackPanel>
+        </ToolTip>
+    </UserControl.ToolTip>
 
     <ui:CardControl Padding="12">
         <Grid>
