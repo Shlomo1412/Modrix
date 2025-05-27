@@ -58,7 +58,16 @@ namespace Modrix.Views.Controls
 
             if (File.Exists(fullIconPath))
             {
-                ProjectIconImage.Source = new BitmapImage(new Uri(fullIconPath));
+                var bmp = new BitmapImage();
+                using (var stream = File.OpenRead(fullIconPath))
+                {
+                    bmp.BeginInit();
+                    bmp.CacheOption = BitmapCacheOption.OnLoad; // ← load into memory immediately
+                    bmp.StreamSource = stream;
+                    bmp.EndInit();
+                    bmp.Freeze();  // ← make it cross-thread and immutable
+                }
+                ProjectIconImage.Source = bmp;
                 ProjectIconImage.Visibility = Visibility.Visible;
                 DefaultIconText.Visibility = Visibility.Collapsed;
             }
