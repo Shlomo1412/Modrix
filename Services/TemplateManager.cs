@@ -287,7 +287,8 @@ namespace Modrix.Services
                         Package = GetConfigValue(lines, "Package"),
                         ModId = GetConfigValue(lines, "ModId"),
                         Name = GetConfigValue(lines, "Name"),
-                        ModType = GetConfigValue(lines, "ModType"), // ?????? ?? ??? ????
+                        ModType = GetConfigValue(lines, "ModType"),
+                        IconPath = GetConfigValue(lines, "IconPath"),
                         MinecraftVersion = GetConfigValue(lines, "MinecraftVersion")
                     };
                     projects.Add(project);

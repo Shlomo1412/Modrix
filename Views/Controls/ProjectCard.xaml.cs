@@ -54,9 +54,9 @@ namespace Modrix.Views.Controls
             };
             VersionText.Text = data.MinecraftVersion;
 
-            string fullIconPath = Path.Combine(data.Location, data.IconPath ?? "");
+            string fullIconPath = Path.Combine(data.Location, data.IconPath);
 
-            if (!string.IsNullOrEmpty(data.IconPath) && File.Exists(fullIconPath))
+            if (File.Exists(fullIconPath))
             {
                 ProjectIconImage.Source = new BitmapImage(new Uri(fullIconPath));
                 ProjectIconImage.Visibility = Visibility.Visible;

@@ -54,6 +54,7 @@
 	  <Folder Include="ModElements\Fabric\" />
 	  <Folder Include="Templates\FabricMod\src\client\java\com\example\mixin\client\" />
 	  <Folder Include="Templates\FabricMod\src\main\java\com\example\mixin\" />
+	  <Folder Include="Templates\FabricMod\src\main\resources\assets\modid\" />
 	  <Folder Include="Views\ModElements\Controls\" />
 	  <Folder Include="Views\ModElements\Windows\" />
 	  <Folder Include="Views\ModElements\Pages\" />
