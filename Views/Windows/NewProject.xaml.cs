@@ -166,11 +166,7 @@ namespace Modrix.Views.Windows
             {
                 loadingWindow.Close();
 
-                new MessageBox
-                {
-                    Title = "Error",
-                    Content = $"Failed to create project:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}"
-                }.ShowDialog();
+                
 
 
                 try

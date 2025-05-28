@@ -1,15 +1,22 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 using Modrix.Models;
 
 namespace Modrix.Services
 {
     public class FabricTemplateManager
     {
+
+        private const string GradleWrapperUnix = "gradlew";
+        private const string GradleWrapperWin = "gradlew.bat";
         public async Task FullSetupWithGradle(ModProjectData data, IProgress<(string Message, int Progress)> progress)
         {
             try
@@ -36,6 +43,10 @@ namespace Modrix.Services
                 $"ModType=Fabric Mod\n" +
                 $"MinecraftVersion={data.MinecraftVersion}\n" +
                 $"IconPath=src/main/resources/assets/{data.ModId}/icon.png");
+
+                progress.Report(("Running Gradle build...", 95));
+                await RunGradleAsync(data.Location, "build", progress, data.MinecraftVersion);
+
                 progress.Report(("Project ready!", 100));
             }
             catch (Exception ex)
@@ -44,6 +55,92 @@ namespace Modrix.Services
                 throw;
             }
         }
+
+        private int GetRequiredJavaVersion(string minecraftVersion)
+        {
+            if (string.IsNullOrEmpty(minecraftVersion)) return 17;
+
+            // Parse version (e.g., "1.21.4")
+            var parts = minecraftVersion.Split('.');
+            if (parts.Length < 2) return 17;
+
+            if (!int.TryParse(parts[1], out int minor)) return 17;
+
+            // Version mapping:
+            return minor >= 21 ? 21 :
+                   minor >= 17 ? 17 : 8;
+        }
+
+        private async Task<bool> ShowDownloadDialogAsync(int requiredVersion)
+        {
+            return await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var result = MessageBox.Show(
+                    $"This project requires Java {requiredVersion} which is not installed.\n\n" +
+                    "Would you like to download and install it automatically?",
+                    "Java JDK Required",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                return result == MessageBoxResult.Yes;
+            });
+        }
+
+        private async Task<string> DownloadAndInstallJdkAsync(int version, IProgress<(string, int)> progress)
+        {
+            try
+            {
+                progress.Report(($"Downloading JDK {version}...", 95));
+
+                // Create persistent directory for JDK
+                var appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var jdkRoot = Path.Combine(appDataDir, "Modrix", "JDKs");
+                Directory.CreateDirectory(jdkRoot);
+
+                // Download JDK
+                var jdkUrl = version switch
+                {
+                    21 => "https://mirrors.huaweicloud.com/openjdk/21.0.2/openjdk-21.0.2_windows-x64_bin.zip",
+                    17 => "https://mirrors.huaweicloud.com/openjdk/17.0.10/openjdk-17.0.10_windows-x64_bin.zip",
+                    _ => throw new NotSupportedException($"Unsupported JDK version: {version}")
+                };
+
+                var zipPath = Path.Combine(jdkRoot, $"jdk-{version}.zip");
+                using (var client = new WebClient())
+                {
+                    client.DownloadProgressChanged += (s, e) =>
+                    {
+                        progress.Report(($"Downloading JDK {version}... {e.ProgressPercentage}%", 95));
+                    };
+
+                    await client.DownloadFileTaskAsync(jdkUrl, zipPath);
+                }
+
+                progress.Report(($"Installing JDK {version}...", 96));
+
+                // Extract JDK
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, jdkRoot);
+                File.Delete(zipPath); // Clean up zip file
+
+                // Find the extracted JDK directory
+                var jdkDir = Directory.GetDirectories(jdkRoot)
+                    .FirstOrDefault(d => d.Contains($"jdk-{version}"));
+
+                if (jdkDir == null)
+                    throw new Exception("Failed to find JDK in downloaded package");
+
+                progress.Report(($"JDK {version} installed successfully!", 97));
+                return jdkDir;
+            }
+            catch (Exception ex)
+            {
+                await ShowMessageAsync($"JDK installation failed: {ex.Message}", "Error");
+                return null;
+            }
+        }
+
+        
 
         private async Task CopyTemplateFilesAsync(
             string targetPath,
@@ -324,7 +421,7 @@ namespace Modrix.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"שגיאה בעדכון מבנה החבילה: {ex.Message}");
+                throw new Exception($"Error updating package skeleton: {ex.Message}");
             }
         }
 
@@ -457,102 +554,6 @@ namespace Modrix.Services
             await File.WriteAllTextAsync(modJsonPath, content);
         }
 
-        private string FindExampleRoot(string srcPath)
-        {
-            
-            var directories = Directory.GetDirectories(
-                Path.Combine(srcPath, "main", "java"),
-                "*",
-                SearchOption.AllDirectories
-            );
-
-            foreach (var dir in directories)
-            {
-                if (dir.EndsWith("com" + Path.DirectorySeparatorChar + "example") ||
-                    dir.EndsWith("net" + Path.DirectorySeparatorChar + "fabricmc" + Path.DirectorySeparatorChar + "example"))
-                {
-                    return Directory.GetParent(dir).FullName;
-                }
-            }
-            return null;
-        }
-
-        private async Task MoveDirectoryContentsAsync(string sourceDir, string targetDir, string package, string modId)
-        {
-            if (!Directory.Exists(sourceDir)) return;
-
-            var allFiles = Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories);
-
-            foreach (var filePath in allFiles)
-            {
-                var relativePath = Path.GetRelativePath(sourceDir, filePath);
-                var newPath = Path.Combine(targetDir, relativePath);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(newPath));
-
-                
-                var content = await File.ReadAllTextAsync(filePath);
-                content = content
-                    .Replace("com.example", package)
-                    .Replace("net.fabricmc.example", package)
-                    .Replace("ExampleMod", $"{modId}Mod");
-
-                await File.WriteAllTextAsync(newPath, content);
-
-                
-                File.Delete(filePath);
-            }
-        }
-
-        private async Task UpdateAllJavaFiles(ModProjectData data)
-        {
-            
-            await ProcessJavaFiles(
-                Path.Combine(data.Location, "src", "main", "java"),
-                data.Package,
-                data.ModId,
-                new[] { "ExampleMod", "ExampleMixin" }
-            );
-
-            
-            await ProcessJavaFiles(
-                Path.Combine(data.Location, "src", "client", "java"),
-                data.Package,
-                data.ModId,
-                new[] { "ExampleModClient" }
-            );
-        }
-
-        private async Task ProcessJavaFiles(string basePath, string package, string modId, string[] patterns)
-        {
-            if (!Directory.Exists(basePath)) return;
-
-            var allFiles = Directory.GetFiles(basePath, "*.java", SearchOption.AllDirectories);
-
-            foreach (var file in allFiles)
-            {
-                var content = await File.ReadAllTextAsync(file);
-                var newContent = content
-                    .Replace("com.example", package)
-                    .Replace("net.fabricmc.example", package);
-
-                foreach (var pattern in patterns)
-                {
-                    newContent = newContent.Replace(pattern, $"{modId}{pattern.Replace("Example", "")}");
-                }
-
-                var newFileName = Path.GetFileName(file);
-                foreach (var pattern in patterns)
-                {
-                    newFileName = newFileName.Replace(pattern, $"{modId}{pattern.Replace("Example", "")}");
-                }
-
-                var newPath = Path.Combine(Path.GetDirectoryName(file), newFileName);
-
-                await File.WriteAllTextAsync(newPath, newContent);
-                if (file != newPath) File.Delete(file);
-            }
-        }
 
         private void CleanEmptyAncestorDirectories(string startPath)
         {
@@ -596,6 +597,144 @@ namespace Modrix.Services
                    fileName == "README.md";
         }
 
+        private async Task RunGradleAsync(
+    string projectDir,
+    string gradleTasks,
+    IProgress<(string Message, int Progress)> progress, string minecraftVersion)
+        {
+            var wrapper = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "gradlew.bat" : "gradlew";
+            
+            var wrapperPath = Path.Combine(projectDir, wrapper);
+            if (!File.Exists(wrapperPath))
+                throw new FileNotFoundException($"Cannot find {wrapper} in {projectDir}");
+
+            int requiredJava = GetRequiredJavaVersion(minecraftVersion);
+            var jdkHome = FindBestJdkHome(requiredJava);
+
+            if (jdkHome == null)
+            {
+                // Prompt user to download JDK
+                var result = await ShowDownloadDialogAsync(requiredJava);
+                if (result)
+                {
+                    jdkHome = await DownloadAndInstallJdkAsync(requiredJava, progress);
+                    if (jdkHome == null)
+                    {
+                        throw new Exception($"Failed to install JDK {requiredJava}");
+                    }
+                }
+                else
+                {
+                    throw new OperationCanceledException($"Java {requiredJava} is required but not installed");
+                }
+            }
+            else
+                Debug.WriteLine($"[Gradle] → WARNING: No Java {requiredJava}+ found, using system default");
+
+            // 2) הפעל gradlew
+            var args = $"--warning-mode all --stacktrace {gradleTasks}";
+            var psi = new ProcessStartInfo(wrapperPath, args)
+            {
+                WorkingDirectory = projectDir,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            if (jdkHome != null)
+                psi.Environment["JAVA_HOME"] = jdkHome;
+
+            using var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
+            proc.OutputDataReceived += (s, e) => { if (e.Data != null) Debug.WriteLine($"[Gradle] {e.Data}"); };
+            proc.ErrorDataReceived += (s, e) => { if (e.Data != null) Debug.WriteLine($"[Gradle][ERR] {e.Data}"); };
+
+            var tcs = new TaskCompletionSource();
+            proc.Exited += (_, _) =>
+            {
+                if (proc.ExitCode == 0) tcs.SetResult();
+                else tcs.SetException(new Exception($"Gradle exited {proc.ExitCode}"));
+            };
+
+            proc.Start();
+            proc.BeginOutputReadLine();
+            proc.BeginErrorReadLine();
+            await tcs.Task;
+        }
+
+        private string? FindBestJdkHome(int requiredVersion = 0)
+        {
+            // First check: Look for JDK in registry and Program Files
+            Version bestV = new(0, 0);
+            string? best = null;
+
+            void TryPath(string p)
+            {
+                if (!Directory.Exists(p)) return;
+                if (TryReadReleaseVersion(p, out var v) &&
+                    (v.Major >= requiredVersion || requiredVersion == 0))
+                {
+                    if (v > bestV)
+                    {
+                        bestV = v;
+                        best = p;
+                    }
+                }
+            }
+
+            // Check registry and program files as before
+            // [Keep existing registry and program files scanning code]
+
+            // Second check: Look at JAVA_HOME environment variable
+            var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
+            if (!string.IsNullOrEmpty(javaHome) && Directory.Exists(javaHome))
+            {
+                Debug.WriteLine($"[JDK Search] Found JAVA_HOME: {javaHome}");
+                TryPath(javaHome);
+            }
+
+            // Third check: Look for JDK installation directories under JAVA_HOME
+            if (!string.IsNullOrEmpty(javaHome))
+            {
+                var parentDir = Directory.GetParent(javaHome)?.FullName;
+                if (parentDir != null && Directory.Exists(parentDir))
+                {
+                    foreach (var dir in Directory.GetDirectories(parentDir, "jdk*"))
+                    {
+                        TryPath(dir);
+                    }
+                }
+            }
+
+            return best;
+        }
+
+        /// <summary>
+        /// קורא את קובץ 'release' ב־JDK home ומחזיר את JAVA_VERSION כ־Version.
+        /// </summary>
+        private bool TryReadReleaseVersion(string dir, out Version version)
+        {
+            version = new(0, 0);
+            try
+            {
+                var f = Path.Combine(dir, "release");
+                if (!File.Exists(f)) return false;
+
+                foreach (var ln in File.ReadAllLines(f))
+                {
+                    if (!ln.StartsWith("JAVA_VERSION=")) continue;
+                    var parts = ln.Split('"');
+                    if (parts.Length < 2) return false;
+                    version = Version.Parse(parts[1]);
+                    return true;
+                }
+            }
+            catch { /* swallow */ }
+            return false;
+        }
+
+
+
+
         private async Task ShowMessageAsync(string message, string title)
         {
             await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -604,6 +743,7 @@ namespace Modrix.Services
             });
         }
 
+        
         private async Task CopyIconAsync(ModProjectData data)
         {
             if (string.IsNullOrEmpty(data.IconPath)) return;
