@@ -64,6 +64,18 @@
                         <TextBlock Text="Textures" Margin="4,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
+                <DockPanel LastChildFill="True" Margin="8">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <ui:Button Content="Import" Icon="{ui:SymbolIcon Add24}" Width="150" Click="ImportTextures_Click"/>
+                        <ui:Button Content="Open Folder"
+                                   Icon="{ui:SymbolIcon FolderOpen24}"
+                                   Width="170"
+                                   Margin="8,0,0,0"
+                                   Click="OpenTexturesFolder_Click"/>
+                        <ui:TextBox PlaceholderText="Search textures..."
+                                    Width="200"
+                                    Margin="8,0,0,0"/>
+                    </StackPanel>
                 <ScrollViewer>
                     <ItemsControl x:Name="TexturesList">
                         <ItemsControl.ItemsPanel>
@@ -85,6 +97,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+                </DockPanel>    
             </TabItem>
 
             <!-- Models -->
@@ -95,6 +108,18 @@
                         <TextBlock Text="Models" Margin="4,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
+                <DockPanel LastChildFill="True" Margin="8">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <ui:Button Content="Import" Icon="{ui:SymbolIcon Add24}" Width="100" Click="ImportModels_Click"/>
+                        <ui:Button Content="Open Folder"
+                                   Icon="{ui:SymbolIcon FolderOpen24}"
+                                   Width="100"
+                                   Margin="8,0,0,0"
+                                   Click="OpenModelsFolder_Click"/>
+                        <ui:TextBox PlaceholderText="Search models..."
+                                    Width="200"
+                                    Margin="8,0,0,0"/>
+                    </StackPanel>
                 <ScrollViewer>
                     <ListBox x:Name="ModelsList"
                              
@@ -107,6 +132,7 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </ScrollViewer>
+                </DockPanel>
             </TabItem>
 
             <!-- Sounds -->
@@ -117,6 +143,18 @@
                         <TextBlock Text="Sounds" Margin="4,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
+                <DockPanel LastChildFill="True" Margin="8">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <ui:Button Content="Import" Icon="{ui:SymbolIcon Add24}" Width="80" Click="ImportSounds_Click"/>
+                        <ui:Button Content="Open Folder"
+                                   Icon="{ui:SymbolIcon FolderOpen24}"
+                                   Width="100"
+                                   Margin="8,0,0,0"
+                                   Click="OpenSoundsFolder_Click"/>
+                        <ui:TextBox PlaceholderText="Search sounds..."
+                                    Width="200"
+                                    Margin="8,0,0,0"/>
+                    </StackPanel>
                 <StackPanel Margin="10">
                     <ListBox x:Name="SoundsList" Margin="5">
                         <ListBox.ItemTemplate>
@@ -136,6 +174,7 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </StackPanel>
+                </DockPanel>
             </TabItem>
 
             <!-- Icon -->

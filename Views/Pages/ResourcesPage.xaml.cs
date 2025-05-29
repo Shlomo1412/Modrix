@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Media;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Modrix.Views.Windows;
@@ -18,6 +20,7 @@ namespace Modrix.Views.Pages
         private string _projectPath;
         private string _modId;
         private string _readmePath;  // ← הוסף שדה זה
+        private MediaPlayer _mediaPlayer = new();
 
         public ResourcesPage()
         {
@@ -116,6 +119,15 @@ namespace Modrix.Views.Pages
             TexturesList.ItemsSource = list;
         }
 
+        private void OpenTexturesFolder_Click(object sender, RoutedEventArgs e)
+    => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "textures"));
+
+        private void OpenModelsFolder_Click(object sender, RoutedEventArgs e)
+            => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "models"));
+
+        private void OpenSoundsFolder_Click(object sender, RoutedEventArgs e)
+            => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "sounds"));
+
         private void LoadModels(string dir)
         {
             if (!Directory.Exists(dir)) return;
@@ -169,19 +181,58 @@ namespace Modrix.Views.Pages
             }
         }
 
+        #region Import Handlers
+        private void ImportTextures_Click(object s, RoutedEventArgs e)
+            => ImportFiles("Image Files|*.png;*.jpg;*.jpeg",
+                           "textures", LoadTextures);
+
+        private void ImportModels_Click(object s, RoutedEventArgs e)
+            => ImportFiles("JSON Models|*.json",
+                           "models", LoadModels);
+
+        private void ImportSounds_Click(object s, RoutedEventArgs e)
+            => ImportFiles("Sound Files|*.ogg",
+                           "sounds", LoadSounds);
+
+        private void ImportFiles(string filter, string subfolder, Action<string> reloadAction)
+        {
+            var dlg = new OpenFileDialog
+            {
+                Title = "Import files",
+                Filter = filter,
+                Multiselect = true
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                var targetDir = Path.Combine(_projectPath,
+                                             "src", "main", "resources", "assets", _modId, subfolder);
+                Directory.CreateDirectory(targetDir);
+
+                foreach (var src in dlg.FileNames)
+                {
+                    var dest = Path.Combine(targetDir, Path.GetFileName(src));
+                    File.Copy(src, dest, overwrite: true);
+                }
+
+                // refresh
+                reloadAction(targetDir);
+            }
+        }
+        #endregion
+
         private void PlaySound_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Wpf.Ui.Controls.Button btn
-             && btn.Tag is string path)
+            if (sender is Wpf.Ui.Controls.Button btn && btn.Tag is string path && File.Exists(path))
             {
                 try
                 {
-                    var player = new SoundPlayer(path);
-                    player.Play();
+                    _mediaPlayer.Open(new Uri(path));
+                    _mediaPlayer.Play();
                 }
                 catch (Exception ex)
                 {
-                    _ = new MessageBox
+                    new Wpf.Ui.Controls.MessageBox
                     {
                         Title = "Error",
                         Content = $"Could not play sound:\n{ex.Message}",
