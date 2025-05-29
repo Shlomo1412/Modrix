@@ -47,7 +47,7 @@ It simplifies the process of setting up and managing mod projects for Fabric, Fo
 
 ## License
 
-This project is licensed under the [MIT License](https://github.com/Shlomo1412/Modrix?tab=MIT-1-ov-file).
+You can find the LICENSE [here](https://github.com/Shlomo1412/Modrix?tab=MIT-1-ov-file). Contact me for any questions.
 
 
 
