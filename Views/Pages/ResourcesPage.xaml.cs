@@ -6,6 +6,7 @@ using System.Linq;
 using System.Media;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
@@ -227,12 +228,14 @@ namespace Modrix.Views.Pages
             {
                 try
                 {
+                    _mediaPlayer.Stop(); // ← עצור קודם
+                    _mediaPlayer.Close(); // ← נקה את המדיה הקודמת
                     _mediaPlayer.Open(new Uri(path));
                     _mediaPlayer.Play();
                 }
                 catch (Exception ex)
                 {
-                    new Wpf.Ui.Controls.MessageBox
+                    _ = new MessageBox
                     {
                         Title = "Error",
                         Content = $"Could not play sound:\n{ex.Message}",
@@ -240,6 +243,46 @@ namespace Modrix.Views.Pages
                     }
                     .ShowDialogAsync();
                 }
+            }
+        }
+
+        private void TexturesList_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is FrameworkElement element && element.DataContext is ImageContainer img)
+            {
+                var contextMenu = new ContextMenu();
+
+                var editItem = new Wpf.Ui.Controls.MenuItem { Header = "Edit..." };
+                var deleteItem = new Wpf.Ui.Controls.MenuItem { Header = "Delete" };
+
+                deleteItem.Click += (s, args) =>
+                {
+                    var filePath = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "textures", img.FileName);
+                    if (File.Exists(filePath))
+                    {
+                        try
+                        {
+                            File.Delete(filePath);
+                            LoadTextures(Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "textures"));
+                        }
+                        catch (Exception ex)
+                        {
+                            _ = new MessageBox
+                            {
+                                Title = "Error",
+                                Content = $"Could not delete texture:\n{ex.Message}",
+                                PrimaryButtonText = "OK"
+                            }
+                            .ShowDialogAsync();
+                        }
+                    }
+                };
+
+                contextMenu.Items.Add(editItem);
+                contextMenu.Items.Add(deleteItem);
+
+                contextMenu.IsOpen = true;
+                e.Handled = true;
             }
         }
 
