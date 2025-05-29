@@ -44,8 +44,8 @@ namespace Modrix.Services
                 $"MinecraftVersion={data.MinecraftVersion}\n" +
                 $"IconPath=src/main/resources/assets/{data.ModId}/icon.png");
 
-                progress.Report(("Running Gradle build...", 95));
-                await RunGradleAsync(data.Location, "build", progress, data.MinecraftVersion);
+                progress.Report(("Verifying Java environment...", 95));
+                await EnsureRequiredJdk(data.MinecraftVersion, progress);
 
                 progress.Report(("Project ready!", 100));
             }
@@ -85,6 +85,34 @@ namespace Modrix.Services
 
                 return result == MessageBoxResult.Yes;
             });
+        }
+
+        private async Task EnsureRequiredJdk(string minecraftVersion, IProgress<(string, int)> progress)
+        {
+            int requiredJava = GetRequiredJavaVersion(minecraftVersion);
+            var jdkHome = FindBestJdkHome(requiredJava);
+
+            if (jdkHome == null)
+            {
+                // Prompt user to download JDK
+                var result = await ShowDownloadDialogAsync(requiredJava);
+                if (result)
+                {
+                    jdkHome = await DownloadAndInstallJdkAsync(requiredJava, progress);
+                    if (jdkHome == null)
+                    {
+                        throw new Exception($"Failed to install JDK {requiredJava}");
+                    }
+                }
+                else
+                {
+                    throw new OperationCanceledException($"Java {requiredJava} is required but not installed");
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"[JDK] Found suitable JDK at {jdkHome}");
+            }
         }
 
         private async Task<string> DownloadAndInstallJdkAsync(int version, IProgress<(string, int)> progress)
@@ -597,69 +625,7 @@ namespace Modrix.Services
                    fileName == "README.md";
         }
 
-        private async Task RunGradleAsync(
-    string projectDir,
-    string gradleTasks,
-    IProgress<(string Message, int Progress)> progress, string minecraftVersion)
-        {
-            var wrapper = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "gradlew.bat" : "gradlew";
-            
-            var wrapperPath = Path.Combine(projectDir, wrapper);
-            if (!File.Exists(wrapperPath))
-                throw new FileNotFoundException($"Cannot find {wrapper} in {projectDir}");
-
-            int requiredJava = GetRequiredJavaVersion(minecraftVersion);
-            var jdkHome = FindBestJdkHome(requiredJava);
-
-            if (jdkHome == null)
-            {
-                // Prompt user to download JDK
-                var result = await ShowDownloadDialogAsync(requiredJava);
-                if (result)
-                {
-                    jdkHome = await DownloadAndInstallJdkAsync(requiredJava, progress);
-                    if (jdkHome == null)
-                    {
-                        throw new Exception($"Failed to install JDK {requiredJava}");
-                    }
-                }
-                else
-                {
-                    throw new OperationCanceledException($"Java {requiredJava} is required but not installed");
-                }
-            }
-            else
-                Debug.WriteLine($"[Gradle] → WARNING: No Java {requiredJava}+ found, using system default");
-
-            // 2) הפעל gradlew
-            var args = $"--warning-mode all --stacktrace {gradleTasks}";
-            var psi = new ProcessStartInfo(wrapperPath, args)
-            {
-                WorkingDirectory = projectDir,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            if (jdkHome != null)
-                psi.Environment["JAVA_HOME"] = jdkHome;
-
-            using var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
-            proc.OutputDataReceived += (s, e) => { if (e.Data != null) Debug.WriteLine($"[Gradle] {e.Data}"); };
-            proc.ErrorDataReceived += (s, e) => { if (e.Data != null) Debug.WriteLine($"[Gradle][ERR] {e.Data}"); };
-
-            var tcs = new TaskCompletionSource();
-            proc.Exited += (_, _) =>
-            {
-                if (proc.ExitCode == 0) tcs.SetResult();
-                else tcs.SetException(new Exception($"Gradle exited {proc.ExitCode}"));
-            };
-
-            proc.Start();
-            proc.BeginOutputReadLine();
-            proc.BeginErrorReadLine();
-            await tcs.Task;
-        }
+        
 
         private string? FindBestJdkHome(int requiredVersion = 0)
         {
@@ -708,9 +674,7 @@ namespace Modrix.Services
             return best;
         }
 
-        /// <summary>
-        /// קורא את קובץ 'release' ב־JDK home ומחזיר את JAVA_VERSION כ־Version.
-        /// </summary>
+        
         private bool TryReadReleaseVersion(string dir, out Version version)
         {
             version = new(0, 0);
