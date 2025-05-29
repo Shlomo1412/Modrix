@@ -1,15 +1,269 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Media;
+using System.Windows;
 using System.Windows.Controls;
-using Modrix.ViewModels.Pages;
+using System.Windows.Media.Imaging;
+using Microsoft.Win32;
+using Modrix.Views.Windows;
+using Wpf.Ui.Controls;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace Modrix.Views.Pages
 {
     public partial class ResourcesPage : Page
     {
-        public ResourcesPage(ResourcesPageViewModel vm)
+        private string _projectPath;
+        private string _modId;
+        private string _readmePath;  // ← הוסף שדה זה
+
+        public ResourcesPage()
         {
             InitializeComponent();
-            DataContext = vm;
+            Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            var workspace = Application.Current.Windows
+                .OfType<ProjectWorkspace>()
+                .FirstOrDefault();
+
+            if (workspace?.ViewModel?.CurrentProject != null)
+            {
+                _projectPath = workspace.ViewModel.CurrentProject.Location;
+                _modId = workspace.ViewModel.CurrentProject.ModId;
+                _readmePath = Path.Combine(_projectPath, "README.md");  // ← קבע כאן
+
+                LoadResources();
+            }
+        }
+
+        private void LoadResources()
+        {
+            if (string.IsNullOrEmpty(_projectPath) || string.IsNullOrEmpty(_modId))
+                return;
+
+            LoadTextures(Path.Combine(_projectPath,
+                                     "src", "main", "resources", "assets", _modId, "textures"));
+            LoadModels(Path.Combine(_projectPath,
+                                     "src", "main", "resources", "assets", _modId, "models"));
+            LoadSounds(Path.Combine(_projectPath,
+                                     "src", "main", "resources", "assets", _modId, "sounds"));
+            LoadIcon(Path.Combine(_projectPath,
+                                     "src", "main", "resources", "assets", _modId, "icon.png"));
+
+            LoadReadme();  // ← טען גם את ה־README
+        }
+
+        private void LoadReadme()
+        {
+            if (File.Exists(_readmePath))
+                ReadmeEditor.Text = File.ReadAllText(_readmePath);
+            else
+                ReadmeEditor.Text = string.Empty;
+        }
+
+        private void SaveReadme_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                File.WriteAllText(_readmePath, ReadmeEditor.Text);
+
+                // אפשר כאן להראות Snackbar אם תגדירי ShowSnackbar במיינווינדו שלך
+                // var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+                // mainWindow?.ShowSnackbar("README.md saved successfully!");
+            }
+            catch (IOException ex)
+            {
+                _ = new MessageBox
+                {
+                    Title = "Error",
+                    Content = $"Could not save README.md:\n{ex.Message}",
+                    PrimaryButtonText = "OK"
+                }
+                .ShowDialogAsync();
+            }
+        }
+
+        private void LoadTextures(string dir)
+        {
+            if (!Directory.Exists(dir)) return;
+
+            var list = new List<ImageContainer>();
+            foreach (var file in Directory.GetFiles(dir, "*.png", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.UriSource = new Uri(file);
+                    bmp.EndInit();
+                    bmp.Freeze();
+
+                    list.Add(new ImageContainer
+                    {
+                        Image = bmp,
+                        FileName = Path.GetFileName(file)
+                    });
+                }
+                catch { /* skip invalid images */ }
+            }
+
+            TexturesList.ItemsSource = list;
+        }
+
+        private void LoadModels(string dir)
+        {
+            if (!Directory.Exists(dir)) return;
+
+            var list = Directory.GetFiles(dir, "*.json", SearchOption.AllDirectories)
+                                .Select(f => new ModelFile
+                                {
+                                    FullPath = f,
+                                    FileName = Path.GetFileName(f)
+                                })
+                                .ToList();
+
+            ModelsList.ItemsSource = list;
+        }
+
+        private void LoadSounds(string dir)
+        {
+            if (!Directory.Exists(dir)) return;
+
+            var list = Directory.GetFiles(dir, "*.ogg", SearchOption.AllDirectories)
+                                .Select(f => new SoundFile
+                                {
+                                    FullPath = f,
+                                    FileName = Path.GetFileName(f)
+                                })
+                                .ToList();
+
+            SoundsList.ItemsSource = list;
+        }
+
+        private void LoadIcon(string path)
+        {
+            if (File.Exists(path))
+            {
+                var bmp = new BitmapImage();
+                bmp.BeginInit();
+                bmp.CacheOption = BitmapCacheOption.OnLoad;
+                bmp.UriSource = new Uri(path);
+                bmp.EndInit();
+                bmp.Freeze();
+
+                IconImage.Visibility = Visibility.Visible;
+                IconImage.Source = bmp;
+                EmptyIconText.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                IconImage.Source = null;
+                IconImage.Visibility = Visibility.Collapsed;
+                EmptyIconText.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void PlaySound_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Wpf.Ui.Controls.Button btn
+             && btn.Tag is string path)
+            {
+                try
+                {
+                    var player = new SoundPlayer(path);
+                    player.Play();
+                }
+                catch (Exception ex)
+                {
+                    _ = new MessageBox
+                    {
+                        Title = "Error",
+                        Content = $"Could not play sound:\n{ex.Message}",
+                        PrimaryButtonText = "OK"
+                    }
+                    .ShowDialogAsync();
+                }
+            }
+        }
+
+        private void ChangeIcon_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog
+            {
+                Title = "Select Mod Icon",
+                Filter = "Image Files|*.png;*.jpg;*.jpeg",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                var dest = Path.Combine(_projectPath,
+                                        "src", "main", "resources", "assets", _modId, "icon.png");
+                try
+                {
+                    File.Copy(dlg.FileName, dest, true);
+                    LoadIcon(dest);
+                }
+                catch (Exception ex)
+                {
+                    _ = new MessageBox
+                    {
+                        Title = "Error",
+                        Content = $"Could not update icon:\n{ex.Message}",
+                        PrimaryButtonText = "OK"
+                    }
+                    .ShowDialogAsync();
+                }
+            }
+        }
+
+        private void RemoveIcon_Click(object sender, RoutedEventArgs e)
+        {
+            var path = Path.Combine(_projectPath,
+                                    "src", "main", "resources", "assets", _modId, "icon.png");
+            if (File.Exists(path))
+            {
+                try
+                {
+                    File.Delete(path);
+                    LoadIcon(path);
+                }
+                catch (Exception ex)
+                {
+                    _ = new MessageBox
+                    {
+                        Title = "Error",
+                        Content = $"Could not remove icon:\n{ex.Message}",
+                        PrimaryButtonText = "OK"
+                    }
+                    .ShowDialogAsync();
+                }
+            }
+        }
+
+        // Helper classes
+        private class ImageContainer
+        {
+            public BitmapImage Image { get; set; }
+            public string FileName { get; set; }
+        }
+
+        private class ModelFile
+        {
+            public string FullPath { get; set; }
+            public string FileName { get; set; }
+        }
+
+        private class SoundFile
+        {
+            public string FullPath { get; set; }
+            public string FileName { get; set; }
         }
     }
 }

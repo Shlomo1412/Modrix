@@ -1,202 +1,163 @@
-﻿<Page
-    x:Class="Modrix.Views.Pages.ResourcesPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:vm="clr-namespace:Modrix.ViewModels.Pages"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="ResourcesPage">
+﻿<Page x:Class="Modrix.Views.Pages.ResourcesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
+      mc:Ignorable="d"
+      Title="ResourcesPage">
 
-    <Grid Background="{DynamicResource ApplicationBackgroundBrush}" Margin="16">
+    <Grid Margin="16">
         <TabControl>
-
-            <!-- Style TabItem so selected one shows accent-colored underline -->
-            <TabControl.Resources>
-                <Style TargetType="TabItem">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TabItem">
-                                <Grid>
-                                    <!-- Header content -->
-                                    <Border x:Name="HeaderBorder"
-                          BorderThickness="0,0,0,2"
-                          BorderBrush="Transparent"
-                          Background="Transparent">
-                                        <StackPanel Orientation="Horizontal" Margin="12,4">
-                                            <!-- Icon -->
-                                            <ContentPresenter
-                          ContentSource="Header"
-                          RecognizesAccessKey="True"
-                          />
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter TargetName="HeaderBorder"
-                                        Property="BorderBrush"
-                                        Value="{DynamicResource AccentBrush}" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </TabControl.Resources>
-
-
-            <!-- Textures Tab -->
+            <!-- Textures -->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="ImageMultiple20" Margin="0,0,4,0"/>
-                        <TextBlock Text="Textures"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Image20" />
+                        <TextBlock Text="Textures" Margin="4,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
-                <Grid>
-                    <!-- Top toolbar -->
-                    <DockPanel Margin="0,0,0,8">
-                        <ui:AutoSuggestBox
-              x:Name="TextureSearch"
-              PlaceholderText="Search textures..."
-              Width="250"
-              DockPanel.Dock="Left"/>
-                        <StackPanel
-              Orientation="Horizontal"
-              HorizontalAlignment="Right"
-              DockPanel.Dock="Right">
-                            <ui:Button
-                                Icon="{ui:SymbolIcon Add24}"
-                                Content="Create"
-                                Margin="4,0"/>
-                            <ui:Button
-                                Icon="{ui:SymbolIcon ArrowImport24}"
-                                Content="Import"
-                                Margin="4,0"/>
-                        </StackPanel>
-                    </DockPanel>
-
-                    <!-- Gallery -->
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding Textures}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <UniformGrid Columns="4"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border
-                                        BorderBrush="{DynamicResource TextFillColorSecondaryBrush}"
-                                        BorderThickness="1"
-                                        Margin="4">
-                                        <Image
-                                            Source="{Binding}"
-                                            Width="128"
-                                            Height="128"
-                                            Stretch="UniformToFill"/>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </TabItem>
-
-
-            <!-- Models Tab -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Cube20" Margin="0,0,4,0"/>
-                        <TextBlock Text="Models"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <Grid>
-                    <TextBlock
-            Text="Model browser coming soon…"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-            FontStyle="Italic"/>
-                </Grid>
-            </TabItem>
-
-
-            <!-- Sounds Tab -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Speaker220" Margin="0,0,4,0"/>
-                        <TextBlock Text="Sounds"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Sounds}">
+                <ScrollViewer>
+                    <ItemsControl x:Name="TexturesList">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <DockPanel Margin="4">
-                                    <TextBlock
-                    Text="{Binding}"
-                    DockPanel.Dock="Left"
-                    VerticalAlignment="Center"
-                    Width="300"/>
-                                    <ui:Button
-                    Content="Play"
-                    DockPanel.Dock="Right"
-                    Command="{Binding DataContext.PlaySoundCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                    CommandParameter="{Binding}"/>
-                                </DockPanel>
+                                <StackPanel Margin="5">
+                                    <Image Source="{Binding Image}"
+                                           Width="64" Height="64"
+                                           ToolTip="{Binding FileName}"/>
+                                    <TextBlock Text="{Binding FileName}"
+                                               HorizontalAlignment="Center"
+                                               FontSize="10"/>
+                                </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
             </TabItem>
 
-
-            <!-- Icon Tab -->
+            <!-- Models -->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Image20" Margin="0,0,4,0"/>
-                        <TextBlock Text="Icon"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Cube20" />
+                        <TextBlock Text="Models" Margin="4,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
-                <StackPanel Margin="16" HorizontalAlignment="Center">
-                    <Border
-            Width="128"
-            Height="128"
-            BorderBrush="{DynamicResource TextFillColorSecondaryBrush}"
-            BorderThickness="1"
-            CornerRadius="4"
-            Padding="4">
-                        <Grid>
-                            <Image
-                Source="{Binding IconPath}"
-                Stretch="Uniform"/>
-                            <TextBlock
-                Text="No Icon"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                FontStyle="Italic"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"/>
-                        </Grid>
-                    </Border>
-                    <StackPanel
-            Orientation="Horizontal"
-            Margin="0,12,0,0"
-            HorizontalAlignment="Center">
-                        <ui:Button
-              Content="Change"
-              Command="{Binding ChangeIconCommand}"
-              Margin="4"/>
-                        <ui:Button
-                        Content="Remove"
-                        Command="{Binding RemoveIconCommand}"
-                        Margin="4"/>
+                <ScrollViewer>
+                    <ListBox x:Name="ModelsList"
+                             
+                             Margin="5">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FileName}"
+                                           Margin="4"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Sounds -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Speaker220" />
+                        <TextBlock Text="Sounds" Margin="4,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
+                </TabItem.Header>
+                <StackPanel Margin="10">
+                    <ListBox x:Name="SoundsList" Margin="5">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding FileName}"
+                                               VerticalAlignment="Center"
+                                               Width="200"/>
+                                    <ui:Button Content="▶"
+                                               Tag="{Binding FullPath}"
+                                               Click="PlaySound_Click"
+                                               Width="32"
+                                               Height="24"
+                                               Margin="5,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </StackPanel>
             </TabItem>
 
+            <!-- Icon -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Image20" />
+                        <TextBlock Text="Icon" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="20">
+                    <Border BorderBrush="Transparent"
+                            BorderThickness="1"
+                            Width="128" Height="128">
+                        <Image x:Name="IconImage"
+                               Stretch="Uniform" />
+                    </Border>
+                    <TextBlock x:Name="EmptyIconText"
+                               Text="No icon set."
+                               Foreground="Gray"
+                               Margin="8"
+                               Visibility="Collapsed"
+                               HorizontalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="8">
+                        <ui:Button Content="Change Icon"
+                                   Click="ChangeIcon_Click"
+                                   Icon="{ui:SymbolIcon ArrowRepeatAll24}"
+                                   Margin="4"/>
+                        <ui:Button Content="Remove Icon"
+                                   Icon="{ui:SymbolIcon Delete24}"
+                                   Appearance="Danger"
+                                   Click="RemoveIcon_Click"
+                                   Margin="4"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Document20" />
+                        <TextBlock Text="README" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+
+                <!-- בתוכן: עורך טקסט מלא-מסך + כפתור שמירה -->
+                <DockPanel>
+                    <Button
+                        Content="Save README"
+                        DockPanel.Dock="Bottom"
+                        Margin="0,8,0,0"
+                        Width="120"
+                        HorizontalAlignment="Right"
+                        Click="SaveReadme_Click" />
+
+                    <TextBox
+                        x:Name="ReadmeEditor"
+                        AcceptsReturn="True"
+                        AcceptsTab="True"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Auto"
+                        FontFamily="Consolas"
+                        FontSize="14"/>
+                </DockPanel>
+            </TabItem>
         </TabControl>
     </Grid>
 </Page>
