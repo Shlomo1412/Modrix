@@ -15,6 +15,35 @@
             Margin="0"
             TabStripPlacement="Top"
             IsTabStop="False">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Setter Property="Padding" Value="12,4"/>
+                    <Setter Property="Margin" Value="0,0,2,0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="6,6,0,0"
+                            Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter
+                            ContentSource="Header"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Resources>
             <TabControl.Template>
                 <ControlTemplate TargetType="TabControl">
                     <Grid>
@@ -29,15 +58,15 @@
                     3. ב-Trigger על IsMouseOver של כל ה-TabControl נשנה ל-Auto.
                 -->
                         <ScrollViewer 
-                    x:Name="HeaderScroll" 
-                    Grid.Row="0"
-                    HorizontalScrollBarVisibility="Hidden"
-                    VerticalScrollBarVisibility="Disabled"
-                    Focusable="False">
+                                x:Name="HeaderScroll" 
+                                Grid.Row="0"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Disabled"
+                                Focusable="False">
                             <TabPanel 
-                        IsItemsHost="True" 
-                        Background="Transparent"
-                        Margin="0 0 0 16"/>
+                                IsItemsHost="True" 
+                                Background="Transparent"
+                                Margin="0 0 0 16"/>
                         </ScrollViewer>
 
                         <ContentPresenter 
