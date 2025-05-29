@@ -45,7 +45,7 @@ This product is not ready yet.
 
 ## License
 
-You can find the LICENSE [here](https://github.com/Shlomo1412/Modrix?tab=MIT-1-ov-file). Contact me for any questions.
+You can find the LICENSE [here](https://github.com/Shlomo1412/Modrix?tab=License-1-ov-file). Contact me for any questions.
 
 
 
