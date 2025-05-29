@@ -9,7 +9,53 @@
       Title="ResourcesPage">
 
     <Grid Margin="16">
-        <TabControl>
+        <TabControl x:Name="ResourcesTabs"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            Margin="0"
+            TabStripPlacement="Top"
+            IsTabStop="False">
+            <TabControl.Template>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- 
+                    1. ה-ScrollViewer תמיד קיים, כדי שה-TabPanel (הכרטיסיות) לעולם לא ייעלמו.
+                    2. ההגדרה ההתחלתית היא Hidden, כלומר פס הגלילה לא נראה.
+                    3. ב-Trigger על IsMouseOver של כל ה-TabControl נשנה ל-Auto.
+                -->
+                        <ScrollViewer 
+                    x:Name="HeaderScroll" 
+                    Grid.Row="0"
+                    HorizontalScrollBarVisibility="Hidden"
+                    VerticalScrollBarVisibility="Disabled"
+                    Focusable="False">
+                            <TabPanel 
+                        IsItemsHost="True" 
+                        Background="Transparent"
+                        Margin="0"/>
+                        </ScrollViewer>
+
+                        <ContentPresenter 
+                    Grid.Row="1" 
+                    ContentSource="SelectedContent"/>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <!-- כשמרחפים מעל ה-TabControl, אפשר פס גלילה -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter 
+                        TargetName="HeaderScroll" 
+                        Property="HorizontalScrollBarVisibility" 
+                        Value="Auto"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </TabControl.Template>
             <!-- Textures -->
             <TabItem>
                 <TabItem.Header>
@@ -158,6 +204,7 @@
                         FontSize="14"/>
                 </DockPanel>
             </TabItem>
+            
         </TabControl>
     </Grid>
 </Page>

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
+    <PackageReference Include="Markdown" Version="2.2.1" />
     <PackageReference Include="WPF-UI" Version="4.0.2" />
     <PackageReference Include="WPF-UI.DependencyInjection" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
@@ -30,6 +31,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Scriban" Version="5.0.0" />
+		<PackageReference Include="WPF-UI.Markdown" Version="4.0.2" />
 		<EmbeddedResource Include="Resources\Templates\Forge\**\*.scriban" />
 	</ItemGroup>
 
