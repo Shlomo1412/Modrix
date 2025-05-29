@@ -5,6 +5,8 @@ It simplifies the process of setting up and managing mod projects for Fabric, Fo
 
 ---
 
+# This product is not ready yet. you can explore the code mean while.
+
 ## Features
 <details> 
 <summary>Features</summary>
@@ -30,11 +32,7 @@ It simplifies the process of setting up and managing mod projects for Fabric, Fo
 
 ## Getting Started
 
-1. **Download and install Modrix** from the [Releases](https://github.com/your-repo/modrix/releases) page.
-2. Launch the app and click **New Project**.
-3. Fill out your mod’s basic information (name, mod ID, type, etc.).
-4. Use the workspace to add blocks, items, textures, and more.
-5. When you're ready, click **Export** to generate the mod project.
+This product is not ready yet.
 
 ---
 
