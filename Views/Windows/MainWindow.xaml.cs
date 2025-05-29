@@ -115,13 +115,13 @@ namespace Modrix.Views.Windows
                 var snackbar = new Snackbar(presenter)
                 {
                     Title = "Offline Mode",
-                    Content = "You won't be able to create New Projects", // Changed from Message to Content
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.Warning24 }, // Proper icon creation
-                    Appearance = ControlAppearance.Caution, // Changed to ControlAppearance
+                    Content = "Modrix will not be able to automatically download files from the Web.",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Warning24 },
+                    Appearance = ControlAppearance.Caution,
                     Timeout = TimeSpan.FromSeconds(5) // Proper TimeSpan
                 };
 
-                snackbar.Show(); // Call Show on the snackbar itself
+                snackbar.Show();
             }
         }
 
