@@ -73,14 +73,14 @@ namespace Modrix.Views.Windows
         public void ShowProjectCreatedSnackbar(string projectName)
         {
             if (RootNavigation.ContentOverlay is Grid overlay &&
-                overlay.Children[0] is Wpf.Ui.Controls.SnackbarPresenter presenter)
+                overlay.Children[0] is SnackbarPresenter presenter)
             {
-                var sb = new Wpf.Ui.Controls.Snackbar(presenter)
+                var sb = new Snackbar(presenter)
                 {
                     Title = "Project Created",
                     Content = $"Project \"{projectName}\" created successfully!",
-                    Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.CheckmarkCircle24 },
-                    Appearance = Wpf.Ui.Controls.ControlAppearance.Success,
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.CheckmarkCircle24 },
+                    Appearance = ControlAppearance.Success,
                     Timeout = TimeSpan.FromSeconds(3)
                 };
                 sb.Show();
@@ -93,14 +93,14 @@ namespace Modrix.Views.Windows
         public void ShowProjectFailedSnackbar(string errorMessage)
         {
             if (RootNavigation.ContentOverlay is Grid overlay &&
-                overlay.Children[0] is Wpf.Ui.Controls.SnackbarPresenter presenter)
+                overlay.Children[0] is SnackbarPresenter presenter)
             {
-                var sb = new Wpf.Ui.Controls.Snackbar(presenter)
+                var sb = new Snackbar(presenter)
                 {
                     Title = "Project Creation Failed",
                     Content = errorMessage,
-                    Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24 },
-                    Appearance = Wpf.Ui.Controls.ControlAppearance.Caution,
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Warning24 },
+                    Appearance = ControlAppearance.Caution,
                     Timeout = TimeSpan.FromSeconds(5)
                 };
                 sb.Show();
@@ -110,14 +110,14 @@ namespace Modrix.Views.Windows
         public void ShowOfflineSnackbar()
         {
             if (RootNavigation.ContentOverlay is Grid overlay &&
-                overlay.Children[0] is Wpf.Ui.Controls.SnackbarPresenter presenter)
+                overlay.Children[0] is SnackbarPresenter presenter)
             {
-                var snackbar = new Wpf.Ui.Controls.Snackbar(presenter)
+                var snackbar = new Snackbar(presenter)
                 {
                     Title = "Offline Mode",
                     Content = "You won't be able to create New Projects", // Changed from Message to Content
-                    Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24 }, // Proper icon creation
-                    Appearance = Wpf.Ui.Controls.ControlAppearance.Caution, // Changed to ControlAppearance
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Warning24 }, // Proper icon creation
+                    Appearance = ControlAppearance.Caution, // Changed to ControlAppearance
                     Timeout = TimeSpan.FromSeconds(5) // Proper TimeSpan
                 };
 
