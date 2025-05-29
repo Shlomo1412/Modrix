@@ -100,7 +100,7 @@ namespace Modrix.Views.Windows
                     Title = "Project Creation Failed",
                     Content = errorMessage,
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Warning24 },
-                    Appearance = ControlAppearance.Caution,
+                    Appearance = ControlAppearance.Danger,
                     Timeout = TimeSpan.FromSeconds(5)
                 };
                 sb.Show();
