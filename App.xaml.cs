@@ -73,6 +73,10 @@ namespace Modrix
                 services.AddSingleton<ProjectWorkspace>();
                 services.AddSingleton<ProjectWorkspaceViewModel>();
 
+                //Resources Page
+                services.AddTransient<ResourcesPageViewModel>();
+                services.AddTransient<ResourcesPage>();
+
 
             }).Build();
 

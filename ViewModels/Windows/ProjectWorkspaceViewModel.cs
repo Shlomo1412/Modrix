@@ -34,6 +34,7 @@ namespace Modrix.ViewModels.Windows
             // If you want to push individual values into their own properties:
             ModType = project.ModType;
             ApplicationTitle = $"Workspace — {project.Name}";
+            Console.WriteLine($"Workspace — {project.Name}");
             // …and any other view-model fields you want to pre-fill…
 
             // Finally, navigate to your default sub-page:

@@ -71,7 +71,9 @@
             IsPaneToggleVisible="True"
             OpenPaneLength="250"
             PaneDisplayMode="Left"
-            TitleBar="{Binding ElementName=TitleBar}">
+            TitleBar="{Binding ElementName=TitleBar}"
+            MenuItemsSource="{Binding ViewModel.MenuItems, Mode=OneWay}"
+            FooterMenuItemsSource="{Binding ViewModel.FooterMenuItems}">
 
             <!-- Navigation Header with Breadcrumb -->
             <ui:NavigationView.Header>
@@ -91,28 +93,10 @@
                 </ui:AutoSuggestBox>
             </ui:NavigationView.AutoSuggestBox>
 
-            <!-- Main Menu Items -->
-            <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem
-                    Content="Workspace"
-                    Icon="{ui:SymbolIcon Apps16}"/>
-                <ui:NavigationViewItem
-                    Content="Resources"
-                    Icon="{ui:SymbolIcon Box16}"/>
-                <ui:NavigationViewItem
-                    Content="Language Control"
-                    Icon="{ui:SymbolIcon LocalLanguage16}"/>
-            </ui:NavigationView.MenuItems>
+            
 
             <!-- Footer Menu Items -->
-            <ui:NavigationView.FooterMenuItems>
-                <ui:NavigationViewItem
-                    Content="Console"
-                    Icon="{ui:SymbolIcon WindowConsole20}"/>
-                <ui:NavigationViewItem
-                    Content="Donate"
-                    Icon="{ui:SymbolIcon PersonHeart20}"/>
-            </ui:NavigationView.FooterMenuItems>
+            
 
             <!-- Snackbar Support -->
             <ui:NavigationView.ContentOverlay>
