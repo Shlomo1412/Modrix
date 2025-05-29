@@ -52,11 +52,7 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- 
-                    1. ה-ScrollViewer תמיד קיים, כדי שה-TabPanel (הכרטיסיות) לעולם לא ייעלמו.
-                    2. ההגדרה ההתחלתית היא Hidden, כלומר פס הגלילה לא נראה.
-                    3. ב-Trigger על IsMouseOver של כל ה-TabControl נשנה ל-Auto.
-                -->
+                        
                         <ScrollViewer 
                                 x:Name="HeaderScroll" 
                                 Grid.Row="0"
@@ -95,7 +91,7 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon Add24}" Click="ImportTextures_Click" Height="40"/>
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportTextures_Click" Height="40"/>
                         <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Height="40"
@@ -139,7 +135,7 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon Add24}" Click="ImportModels_Click" Height="40"/>
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportModels_Click" Height="40"/>
                         <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Height="40"
@@ -174,7 +170,7 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon Add24}" Click="ImportSounds_Click" Height="40"/>
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportSounds_Click" Height="40"/>
                         <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Height="40"
