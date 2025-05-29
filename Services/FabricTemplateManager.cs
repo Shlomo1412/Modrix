@@ -14,7 +14,7 @@ namespace Modrix.Services
 {
     public class FabricTemplateManager
     {
-
+        private readonly JdkHelper _jdkHelper = new JdkHelper();
         private const string GradleWrapperUnix = "gradlew";
         private const string GradleWrapperWin = "gradlew.bat";
         public async Task FullSetupWithGradle(ModProjectData data, IProgress<(string Message, int Progress)> progress)
@@ -45,7 +45,7 @@ namespace Modrix.Services
                 $"IconPath=src/main/resources/assets/{data.ModId}/icon.png");
 
                 progress.Report(("Verifying Java environment...", 95));
-                await EnsureRequiredJdk(data.MinecraftVersion, progress);
+                await _jdkHelper.EnsureRequiredJdk(data.MinecraftVersion, progress);
 
                 progress.Report(("Project ready!", 100));
             }
@@ -56,117 +56,11 @@ namespace Modrix.Services
             }
         }
 
-        private int GetRequiredJavaVersion(string minecraftVersion)
-        {
-            if (string.IsNullOrEmpty(minecraftVersion)) return 17;
+        
 
-            // Parse version (e.g., "1.21.4")
-            var parts = minecraftVersion.Split('.');
-            if (parts.Length < 2) return 17;
+       
 
-            if (!int.TryParse(parts[1], out int minor)) return 17;
-
-            // Version mapping:
-            return minor >= 21 ? 21 :
-                   minor >= 17 ? 17 : 8;
-        }
-
-        private async Task<bool> ShowDownloadDialogAsync(int requiredVersion)
-        {
-            return await Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                var result = MessageBox.Show(
-                    $"This project requires Java {requiredVersion} which is not installed.\n\n" +
-                    "Would you like to download and install it automatically?",
-                    "Java JDK Required",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning
-                );
-
-                return result == MessageBoxResult.Yes;
-            });
-        }
-
-        private async Task EnsureRequiredJdk(string minecraftVersion, IProgress<(string, int)> progress)
-        {
-            int requiredJava = GetRequiredJavaVersion(minecraftVersion);
-            var jdkHome = FindBestJdkHome(requiredJava);
-
-            if (jdkHome == null)
-            {
-                // Prompt user to download JDK
-                var result = await ShowDownloadDialogAsync(requiredJava);
-                if (result)
-                {
-                    jdkHome = await DownloadAndInstallJdkAsync(requiredJava, progress);
-                    if (jdkHome == null)
-                    {
-                        throw new Exception($"Failed to install JDK {requiredJava}");
-                    }
-                }
-                else
-                {
-                    throw new OperationCanceledException($"Java {requiredJava} is required but not installed");
-                }
-            }
-            else
-            {
-                Debug.WriteLine($"[JDK] Found suitable JDK at {jdkHome}");
-            }
-        }
-
-        private async Task<string> DownloadAndInstallJdkAsync(int version, IProgress<(string, int)> progress)
-        {
-            try
-            {
-                progress.Report(($"Downloading JDK {version}...", 95));
-
-                // Create persistent directory for JDK
-                var appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                var jdkRoot = Path.Combine(appDataDir, "Modrix", "JDKs");
-                Directory.CreateDirectory(jdkRoot);
-
-                // Download JDK
-                var jdkUrl = version switch
-                {
-                    21 => "https://mirrors.huaweicloud.com/openjdk/21.0.2/openjdk-21.0.2_windows-x64_bin.zip",
-                    17 => "https://mirrors.huaweicloud.com/openjdk/17.0.10/openjdk-17.0.10_windows-x64_bin.zip",
-                    _ => throw new NotSupportedException($"Unsupported JDK version: {version}")
-                };
-
-                var zipPath = Path.Combine(jdkRoot, $"jdk-{version}.zip");
-                using (var client = new WebClient())
-                {
-                    client.DownloadProgressChanged += (s, e) =>
-                    {
-                        progress.Report(($"Downloading JDK {version}... {e.ProgressPercentage}%", 95));
-                    };
-
-                    await client.DownloadFileTaskAsync(jdkUrl, zipPath);
-                }
-
-                progress.Report(($"Installing JDK {version}...", 96));
-
-                // Extract JDK
-                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, jdkRoot);
-                File.Delete(zipPath); // Clean up zip file
-
-                // Find the extracted JDK directory
-                var jdkDir = Directory.GetDirectories(jdkRoot)
-                    .FirstOrDefault(d => d.Contains($"jdk-{version}"));
-
-                if (jdkDir == null)
-                    throw new Exception("Failed to find JDK in downloaded package");
-
-                progress.Report(($"JDK {version} installed successfully!", 97));
-                return jdkDir;
-            }
-            catch (Exception ex)
-            {
-                await ShowMessageAsync($"JDK installation failed: {ex.Message}", "Error");
-                return null;
-            }
-        }
+        
 
         
 

@@ -79,10 +79,8 @@
                 </ItemsControl>
 
 
-                <!-- Empty state message -->
-                <TextBlock 
-                    Text="No projects yet. Click the + button to create a new project."
-                    HorizontalAlignment="Center"
+                <!-- Empty state message with embedded + button -->
+                <TextBlock HorizontalAlignment="Center"
                     Margin="0,32,0,0"
                     Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                     <TextBlock.Style>
@@ -95,6 +93,25 @@
                             </Style.Triggers>
                         </Style>
                     </TextBlock.Style>
+
+                    <Run Text="No projects yet. Click the " />
+
+                    <InlineUIContainer>
+                        <ui:Button
+                            Width="24"
+                            Height="24"
+                            Padding="0"
+                            Appearance="Primary"
+                            Icon="{ui:SymbolIcon Add16}"
+                            Command="{Binding ViewModel.CreateNewProjectCommand}"
+                            ToolTip="Create New Project">
+                            <ui:Button.RenderTransform>
+                                <TranslateTransform Y="6"/>
+                            </ui:Button.RenderTransform>
+                        </ui:Button>
+                    </InlineUIContainer>
+
+                    <Run Text=" button to create one." />
                 </TextBlock>
 
             </StackPanel>
