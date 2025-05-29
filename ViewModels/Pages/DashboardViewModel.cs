@@ -43,6 +43,7 @@ public partial class DashboardViewModel : ObservableObject
             LoadProjects();
             RefreshProjects();
         }
+        RefreshProjects();
     }
 
     [RelayCommand]

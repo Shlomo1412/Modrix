@@ -7,16 +7,17 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using Modrix.Models;
+using Modrix.Views.Windows;
+using Wpf.Ui;
 
 namespace Modrix.Services
 {
     public class FabricTemplateManager
     {
         private readonly JdkHelper _jdkHelper = new JdkHelper();
-        private const string GradleWrapperUnix = "gradlew";
-        private const string GradleWrapperWin = "gradlew.bat";
         public async Task FullSetupWithGradle(ModProjectData data, IProgress<(string Message, int Progress)> progress)
         {
             try
@@ -47,11 +48,22 @@ namespace Modrix.Services
                 progress.Report(("Verifying Java environment...", 95));
                 await _jdkHelper.EnsureRequiredJdk(data.MinecraftVersion, progress);
 
+
                 progress.Report(("Project ready!", 100));
+
+                // Show success snackbar
+                var navWin = App.Services.GetService<INavigationWindow>();
+                if (navWin is MainWindow main)
+                    main.ShowProjectCreatedSnackbar(data.Name);
+
             }
             catch (Exception ex)
             {
                 await ShowMessageAsync($"Fabric setup failed: {ex.Message}", "Error");
+
+                var navWin = App.Services.GetService<INavigationWindow>();
+                if (navWin is MainWindow main)
+                    main.ShowProjectFailedSnackbar(ex.Message);
                 throw;
             }
         }

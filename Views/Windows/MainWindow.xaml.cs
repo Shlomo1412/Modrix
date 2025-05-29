@@ -67,6 +67,46 @@ namespace Modrix.Views.Windows
             }
         }
 
+        /// <summary>
+        /// Shows a green “success” snackbar at the bottom of the window.
+        /// </summary>
+        public void ShowProjectCreatedSnackbar(string projectName)
+        {
+            if (RootNavigation.ContentOverlay is Grid overlay &&
+                overlay.Children[0] is Wpf.Ui.Controls.SnackbarPresenter presenter)
+            {
+                var sb = new Wpf.Ui.Controls.Snackbar(presenter)
+                {
+                    Title = "Project Created",
+                    Content = $"Project \"{projectName}\" created successfully!",
+                    Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.CheckmarkCircle24 },
+                    Appearance = Wpf.Ui.Controls.ControlAppearance.Success,
+                    Timeout = TimeSpan.FromSeconds(3)
+                };
+                sb.Show();
+            }
+        }
+
+        /// <summary>
+        /// Shows a red “failure” snackbar at the bottom of the window.
+        /// </summary>
+        public void ShowProjectFailedSnackbar(string errorMessage)
+        {
+            if (RootNavigation.ContentOverlay is Grid overlay &&
+                overlay.Children[0] is Wpf.Ui.Controls.SnackbarPresenter presenter)
+            {
+                var sb = new Wpf.Ui.Controls.Snackbar(presenter)
+                {
+                    Title = "Project Creation Failed",
+                    Content = errorMessage,
+                    Icon = new Wpf.Ui.Controls.SymbolIcon { Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24 },
+                    Appearance = Wpf.Ui.Controls.ControlAppearance.Caution,
+                    Timeout = TimeSpan.FromSeconds(5)
+                };
+                sb.Show();
+            }
+        }
+
         public void ShowOfflineSnackbar()
         {
             if (RootNavigation.ContentOverlay is Grid overlay &&
