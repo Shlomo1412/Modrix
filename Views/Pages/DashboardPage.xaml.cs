@@ -49,13 +49,15 @@ namespace Modrix.Views.Pages
         {
             if (sender is ProjectCard card && card.ProjectData is ModProjectData project)
             {
-                
                 var workspaceWindow = App.Services.GetService<ProjectWorkspace>();
                 if (workspaceWindow != null)
                 {
-                    
-                    //workspaceWindow.ViewModel.LoadProject(project);
+                    // 1) Load the project into the workspace VM
+                    workspaceWindow.LoadProject(project);
+
+                    // 2) Show (or Activate) the workspace window
                     workspaceWindow.Show();
+                    workspaceWindow.Activate();
                 }
             }
         }

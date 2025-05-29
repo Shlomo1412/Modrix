@@ -1,7 +1,8 @@
-﻿using Wpf.Ui;
+﻿using Modrix.Models;
+using Modrix.ViewModels.Windows;
+using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Controls;
-using Modrix.ViewModels.Windows;
 
 namespace Modrix.Views.Windows
 {
@@ -23,6 +24,9 @@ namespace Modrix.Views.Windows
 
             navigationService.SetNavigationControl(RootNavigation);
         }
+
+        public void LoadProject(ModProjectData project)
+        => ViewModel.LoadProject(project);
 
         public INavigationView GetNavigation() => RootNavigation;
 

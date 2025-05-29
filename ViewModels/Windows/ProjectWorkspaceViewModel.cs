@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Modrix.Models;
 using Wpf.Ui.Controls;
 
 namespace Modrix.ViewModels.Windows
@@ -21,6 +22,22 @@ namespace Modrix.ViewModels.Windows
         public ProjectWorkspaceViewModel()
         {
             InitializeMenuItems();
+        }
+
+        [ObservableProperty]
+        private ModProjectData? _currentProject;
+
+        public void LoadProject(ModProjectData project)
+        {
+            CurrentProject = project;
+
+            // If you want to push individual values into their own properties:
+            ModType = project.ModType;
+            ApplicationTitle = $"Workspace — {project.Name}";
+            // …and any other view-model fields you want to pre-fill…
+
+            // Finally, navigate to your default sub-page:
+            //Navigate(typeof(Views.Pages.WorkspacePage));
         }
 
         private void InitializeMenuItems()
