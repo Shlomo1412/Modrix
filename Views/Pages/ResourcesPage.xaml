@@ -66,10 +66,10 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button Content="Import" Icon="{ui:SymbolIcon Add24}" Width="150" Click="ImportTextures_Click"/>
-                        <ui:Button Content="Open Folder"
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon Add24}" Click="ImportTextures_Click" Height="40"/>
+                        <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
-                                   Width="170"
+                                   Height="40"
                                    Margin="8,0,0,0"
                                    Click="OpenTexturesFolder_Click"/>
                         <ui:TextBox PlaceholderText="Search textures..."
@@ -110,10 +110,10 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button Content="Import" Icon="{ui:SymbolIcon Add24}" Width="100" Click="ImportModels_Click"/>
-                        <ui:Button Content="Open Folder"
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon Add24}" Click="ImportModels_Click" Height="40"/>
+                        <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
-                                   Width="100"
+                                   Height="40"
                                    Margin="8,0,0,0"
                                    Click="OpenModelsFolder_Click"/>
                         <ui:TextBox PlaceholderText="Search models..."
@@ -145,10 +145,10 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button Content="Import" Icon="{ui:SymbolIcon Add24}" Width="80" Click="ImportSounds_Click"/>
-                        <ui:Button Content="Open Folder"
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon Add24}" Click="ImportSounds_Click" Height="40"/>
+                        <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
-                                   Width="100"
+                                   Height="40"
                                    Margin="8,0,0,0"
                                    Click="OpenSoundsFolder_Click"/>
                         <ui:TextBox PlaceholderText="Search sounds..."
