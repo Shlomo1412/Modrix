@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Modrix.Models;
 using Modrix.ViewModels.Windows;
+using Modrix.Views.Pages;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Controls;
@@ -76,44 +77,14 @@ namespace Modrix.Views.Windows
                 return;
             }
 
-            try
-            {
+            
+            var jdkHome = await new JdkHelper()
+                .EnsureRequiredJdkAsync(project.MinecraftVersion,
+                    new Progress<(string, int)>());
 
-                
-                // Show progress snackbar
-                var progressSnackbar = new Snackbar(_snackbarPresenter)
-                {
-                    Title = "Building Project",
-                    Content = "Preparing build environment...",
-                    Timeout = TimeSpan.Zero, // No timeout
-                    Appearance = ControlAppearance.Info
-                };
-                progressSnackbar.Show();
-
-                // Ensure correct JDK is available
-                var jdkHelper = new JdkHelper();
-                var progress = new Progress<(string Message, int Progress)>(report =>
-                {
-                    progressSnackbar.Content = report.Message;
-                });
-
-                string jdkHome = await jdkHelper.EnsureRequiredJdkAsync(
-                    project.MinecraftVersion,
-                    progress
-                );
-
-                // Run Gradle build
-                await RunGradleBuildAsync(projectDir, "build", jdkHome, progress);
-
-                // Update snackbar to show success
-                progressSnackbar.Content = "Build succeeded!";
-                progressSnackbar.Appearance = ControlAppearance.Success;
-                progressSnackbar.Timeout = TimeSpan.FromSeconds(3);
-            }
-            catch (Exception ex)
-            {
-                ShowSnackbar(ex.Message, "Build Failed", ControlAppearance.Danger);
-            }
+            
+            ConsolePage.PendingBuild = (projectDir, "build", jdkHome);
+            RootNavigation.Navigate(typeof(Views.Pages.ConsolePage));
         }
 
         private async Task RunGradleBuildAsync(
