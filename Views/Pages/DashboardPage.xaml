@@ -37,7 +37,7 @@
 
                     <ui:Button
                         Grid.Column="2"
-                        Appearance="Light"
+                        Appearance="Secondary"
                         Icon="{ui:SymbolIcon Folder24}"
                         Command="{Binding ViewModel.OpenProjectsFolderCommand}"
                         Width="40"
@@ -47,7 +47,7 @@
 
                     <ui:Button
                         Grid.Column="3"
-                        Appearance="Light"
+                        Appearance="Primary"
                         Icon="{ui:SymbolIcon ArrowClockwise24}"
                         Command="{Binding ViewModel.RefreshProjectsCommand}"
                         Width="40"
