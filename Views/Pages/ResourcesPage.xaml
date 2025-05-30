@@ -211,41 +211,42 @@
                     </StackPanel>
                 </TabItem.Header>
                 <StackPanel HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Margin="20">
+                        VerticalAlignment="Center"
+                        Margin="20">
                     <Border BorderBrush="Transparent"
-                BorderThickness="1"
-                Width="128" Height="128">
+                            BorderThickness="1"
+                            Width="128" Height="128">
                         <Image x:Name="IconImage"
-                   Stretch="Uniform" />
+                            Stretch="Uniform" />
                     </Border>
                     <TextBlock x:Name="EmptyIconText"
-                   Text="No icon set."
-                   Foreground="Gray"
-                   Margin="8"
-                   Visibility="Collapsed"
-                   HorizontalAlignment="Center"/>
+                        Text="No icon set."
+                        Foreground="Gray"
+                        Margin="8"
+                        Visibility="Collapsed"
+                        HorizontalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    Margin="8">
-                        <ui:Button Content="Change Icon"
-                       Click="ChangeIcon_Click"
-                       Icon="{ui:SymbolIcon ArrowRepeatAll24}"
-                       Margin="4"/>
-                        <ui:Button Content="Remove Icon"
-                       Icon="{ui:SymbolIcon Delete24}"
-                       Appearance="Danger"
-                       Click="RemoveIcon_Click"
-                       Margin="4"/>
+                        HorizontalAlignment="Center"
+                        Margin="8">
+                        <ui:Button ToolTip="Change Icon"
+                            Click="ChangeIcon_Click"
+                            Appearance="Primary"
+                            Icon="{ui:SymbolIcon ArrowRepeatAll24}"
+                            Margin="4"/>
+                        <ui:Button ToolTip="Remove Icon"
+                            Icon="{ui:SymbolIcon Delete24}"
+                            Appearance="Danger"
+                            Click="RemoveIcon_Click"
+                            Margin="4"/>
                         <!-- New buttons for Icon tab -->
-                        <ui:Button Content="Refresh"
-                       Icon="{ui:SymbolIcon ArrowClockwise24}"
-                       Click="RefreshIcon_Click"
-                       Margin="4"/>
-                        <ui:Button Content="Open Folder"
-                       Icon="{ui:SymbolIcon FolderOpen24}"
-                       Click="OpenIconFolder_Click"
-                       Margin="4"/>
+                        <ui:Button ToolTip="Refresh"
+                            Icon="{ui:SymbolIcon ArrowClockwise24}"
+                            Click="RefreshIcon_Click"
+                            Margin="4"/>
+                        <ui:Button ToolTip="Open Folder"
+                            Icon="{ui:SymbolIcon FolderOpen24}"
+                            Click="OpenIconFolder_Click"
+                            Margin="4"/>
                     </StackPanel>
                 </StackPanel>
             </TabItem>
@@ -269,6 +270,7 @@
                             Content="Save README"
                             Icon="{ui:SymbolIcon Save24}"
                             Click="SaveReadme_Click"
+                            Appearance="Primary"
                             Margin="0,0,8,0"/>
 
                         <!-- New buttons for README tab -->
