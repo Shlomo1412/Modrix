@@ -20,6 +20,8 @@ namespace Modrix.Views.Pages
             DataContext = this;
 
             InitializeComponent();
+            ViewModel.RefreshProjectsCommand.Execute(null);
+
         }
 
 
@@ -41,6 +43,7 @@ namespace Modrix.Views.Pages
                     await ViewModel.DeleteProject(project);
                     
                     ViewModel.RefreshProjects();
+                    ViewModel.RefreshProjectsCommand.Execute(null);
                 }
             }
         }
@@ -59,6 +62,8 @@ namespace Modrix.Views.Pages
                     workspaceWindow.Show();
                     workspaceWindow.Activate();
                 }
+
+                ViewModel.RefreshProjectsCommand.Execute(null);
             }
         }
 
