@@ -202,7 +202,7 @@
                 </DockPanel>
             </TabItem>
 
-            <!-- Icon -->
+            <!-- Icon Tab -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -211,35 +211,46 @@
                     </StackPanel>
                 </TabItem.Header>
                 <StackPanel HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Margin="20">
+                VerticalAlignment="Center"
+                Margin="20">
                     <Border BorderBrush="Transparent"
-                            BorderThickness="1"
-                            Width="128" Height="128">
+                BorderThickness="1"
+                Width="128" Height="128">
                         <Image x:Name="IconImage"
-                               Stretch="Uniform" />
+                   Stretch="Uniform" />
                     </Border>
                     <TextBlock x:Name="EmptyIconText"
-                               Text="No icon set."
-                               Foreground="Gray"
-                               Margin="8"
-                               Visibility="Collapsed"
-                               HorizontalAlignment="Center"/>
+                   Text="No icon set."
+                   Foreground="Gray"
+                   Margin="8"
+                   Visibility="Collapsed"
+                   HorizontalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                Margin="8">
+                    HorizontalAlignment="Center"
+                    Margin="8">
                         <ui:Button Content="Change Icon"
-                                   Click="ChangeIcon_Click"
-                                   Icon="{ui:SymbolIcon ArrowRepeatAll24}"
-                                   Margin="4"/>
+                       Click="ChangeIcon_Click"
+                       Icon="{ui:SymbolIcon ArrowRepeatAll24}"
+                       Margin="4"/>
                         <ui:Button Content="Remove Icon"
-                                   Icon="{ui:SymbolIcon Delete24}"
-                                   Appearance="Danger"
-                                   Click="RemoveIcon_Click"
-                                   Margin="4"/>
+                       Icon="{ui:SymbolIcon Delete24}"
+                       Appearance="Danger"
+                       Click="RemoveIcon_Click"
+                       Margin="4"/>
+                        <!-- New buttons for Icon tab -->
+                        <ui:Button Content="Refresh"
+                       Icon="{ui:SymbolIcon ArrowClockwise24}"
+                       Click="RefreshIcon_Click"
+                       Margin="4"/>
+                        <ui:Button Content="Open Folder"
+                       Icon="{ui:SymbolIcon FolderOpen24}"
+                       Click="OpenIconFolder_Click"
+                       Margin="4"/>
                     </StackPanel>
                 </StackPanel>
             </TabItem>
+
+            <!-- README Tab -->
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -248,15 +259,30 @@
                     </StackPanel>
                 </TabItem.Header>
 
-                
                 <DockPanel>
-                    <ui:Button
-                        Content="Save README"
-                        DockPanel.Dock="Bottom"
-                        Margin="0,8,0,0"
-                        Icon="{ui:SymbolIcon Save24}"
-                        HorizontalAlignment="Right"
-                        Click="SaveReadme_Click" />
+                    <!-- Button panel at bottom -->
+                    <StackPanel DockPanel.Dock="Bottom" 
+                            Orientation="Horizontal" 
+                            HorizontalAlignment="Right"
+                            Margin="0,8,0,0">
+                        <ui:Button
+                            Content="Save README"
+                            Icon="{ui:SymbolIcon Save24}"
+                            Click="SaveReadme_Click"
+                            Margin="0,0,8,0"/>
+
+                        <!-- New buttons for README tab -->
+                        <ui:Button
+                            Content="Open Containing Folder"
+                            Icon="{ui:SymbolIcon FolderOpen24}"
+                            Click="OpenReadmeFolder_Click"
+                            Margin="0,0,8,0"/>
+
+                        <ui:Button
+                            Content="Open in Editor"
+                            Icon="{ui:SymbolIcon Document24}"
+                            Click="OpenReadmeInEditor_Click"/>
+                    </StackPanel>
 
                     <ui:TextBox
                         x:Name="ReadmeEditor"
@@ -268,7 +294,7 @@
                         FontSize="14"/>
                 </DockPanel>
             </TabItem>
-            
+
         </TabControl>
     </Grid>
 </Page>

@@ -62,6 +62,70 @@ namespace Modrix.Views.Pages
             LoadReadme();  // ← טען גם את ה־README
         }
 
+        // Icon tab buttons
+        private void RefreshIcon_Click(object sender, RoutedEventArgs e)
+        {
+            var iconPath = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "icon.png");
+            LoadIcon(iconPath);
+        }
+
+        private void OpenIconFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var iconDir = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId);
+            if (Directory.Exists(iconDir))
+            {
+                Process.Start("explorer.exe", iconDir);
+            }
+        }
+
+        // README tab buttons
+        private void OpenReadmeFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (File.Exists(_readmePath))
+            {
+                Process.Start("explorer.exe", $"/select,\"{_readmePath}\"");
+            }
+            else
+            {
+                Process.Start("explorer.exe", _projectPath);
+            }
+        }
+
+        private void OpenReadmeInEditor_Click(object sender, RoutedEventArgs e)
+        {
+            if (File.Exists(_readmePath))
+            {
+                try
+                {
+                    // Try to open with default editor
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = _readmePath,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage($"Could not open README: {ex.Message}", "Error");
+                }
+            }
+            else
+            {
+                ShowMessage("README.md file not found", "File Missing");
+            }
+        }
+
+        private void ShowMessage(string message, string title)
+        {
+            var msgBox = new MessageBox
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = "OK"
+            };
+            msgBox.ShowDialogAsync();
+        }
+
         private void LoadReadme()
         {
             if (File.Exists(_readmePath))
