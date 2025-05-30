@@ -42,7 +42,20 @@ namespace Modrix.Views.Windows
             _snackbarPresenter = this.SnackbarPresenter;
         }
 
-       
+        private void OpenProjectFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.CurrentProject != null &&
+                Directory.Exists(ViewModel.CurrentProject.Location))
+            {
+                Process.Start("explorer.exe", ViewModel.CurrentProject.Location);
+            }
+            else
+            {
+                ShowSnackbar("Project directory not found", "Error", ControlAppearance.Danger);
+            }
+        }
+
+
 
         public void LoadProject(ModProjectData project) => ViewModel.LoadProject(project);
 

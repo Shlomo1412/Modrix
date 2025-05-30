@@ -61,6 +61,12 @@
                         ToolTip="Export"
                         Click="ExportButton_Click"
                         Margin="4,0"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon FolderOpen24}"
+                        ToolTip="Open Project Folder"
+                        Margin="4,0"
+                        Click="OpenProjectFolder_Click"/>    
                 </StackPanel>
             </ui:TitleBar.Header>
         </ui:TitleBar>
