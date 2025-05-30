@@ -25,12 +25,6 @@ namespace Modrix
 
         private static IConnectivityService? _connectivityService;
 
-        // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
-        // https://docs.microsoft.com/dotnet/core/extensions/generic-host
-        // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
-        // https://docs.microsoft.com/dotnet/core/extensions/configuration
-        // https://docs.microsoft.com/dotnet/core/extensions/logging
-
         
         private static readonly IHost _host = Host
             .CreateDefaultBuilder()

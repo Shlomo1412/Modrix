@@ -91,7 +91,7 @@ namespace Modrix.ViewModels.Windows
                 {
                     Content = "Console",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
-                    TargetPageType = typeof(Views.Pages.ConsolePage) //Added this
+                    TargetPageType = typeof(Views.Pages.ConsolePage)
                 },
                 new NavigationViewItem()
                 {

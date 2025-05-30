@@ -86,7 +86,6 @@ namespace Modrix.Views.Pages
                 );
             };
 
-            // שורה אפורה שמציגה בדיוק מה רצינו להריץ
             AppendLine($"$ {wrapperPath} {gradleTasks}", Brushes.Gray);
 
             proc.Start();
