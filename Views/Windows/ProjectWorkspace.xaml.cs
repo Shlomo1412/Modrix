@@ -60,6 +60,42 @@ namespace Modrix.Views.Windows
             // Not needed
         }
 
+        private async void RunButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.CurrentProject == null)
+            {
+                ShowSnackbar("Please open a project first", "No project loaded");
+                return;
+            }
+
+            var project = ViewModel.CurrentProject;
+            var projectDir = project.Location;
+
+            if (!Directory.Exists(projectDir))
+            {
+                ShowSnackbar("Could not run project", "Project directory not found");
+                return;
+            }
+
+            // 1) Ensure JDK
+            var jdkHelper = new JdkHelper();
+            var jdkHome = await jdkHelper.EnsureRequiredJdkAsync(
+                project.MinecraftVersion,
+                new Progress<(string, int)>()
+            );
+
+            // 2) Pass to ConsolePage the corrected args string
+            ConsolePage.PendingBuild = (
+                projectDir,
+                
+                "runClient --args=\"--username Dev\"",
+                jdkHome
+            );
+
+            // 3) 
+            RootNavigation.Navigate(typeof(Views.Pages.ConsolePage));
+        }
+
         private async void BuildButton_Click(object sender, RoutedEventArgs e)
         {
             if (ViewModel?.CurrentProject == null)

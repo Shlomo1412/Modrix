@@ -37,7 +37,8 @@
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon Play12}"
                         ToolTip="Run"
-                        Margin="4,0"/>
+                        Margin="4,0"
+                        Click="RunButton_Click"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon Bug16}"
