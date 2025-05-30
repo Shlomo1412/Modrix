@@ -50,6 +50,7 @@
                  FontFamily="Consolas"
                  FontSize="14"
                  VerticalScrollBarVisibility="Auto"
+                 Height="600"
                  Margin="8"/>
     </DockPanel>
 </Page>
