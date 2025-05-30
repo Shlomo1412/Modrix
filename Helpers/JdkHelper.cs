@@ -197,4 +197,29 @@ public class JdkHelper
             MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
         });
     }
+
+    public async Task<string> EnsureRequiredJdkAsync(string minecraftVersion,
+                                                    IProgress<(string Message, int Progress)> progress)
+    {
+        int requiredJava = GetRequiredJavaVersion(minecraftVersion);
+        var jdkHome = FindBestJdkHome(requiredJava);
+
+        if (jdkHome == null)
+        {
+            // Prompt user to download JDK
+            bool download = await ShowDownloadDialogAsync(requiredJava);
+            if (!download)
+                throw new OperationCanceledException($"Java {requiredJava} is required but not installed");
+
+            jdkHome = await DownloadAndInstallJdkAsync(requiredJava, progress);
+            if (jdkHome == null)
+                throw new Exception($"Failed to install JDK {requiredJava}");
+        }
+        else
+        {
+            Debug.WriteLine($"[JDK] Found suitable JDK at {jdkHome}");
+        }
+
+        return jdkHome;
+    }
 }

@@ -70,7 +70,8 @@ namespace Modrix.ViewModels.Windows
                 new NavigationViewItem()
                 {
                     Content = "Console",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 }
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
+                    TargetPageType = typeof(Views.Pages.ConsolePage) //Added this
                 },
                 new NavigationViewItem()
                 {

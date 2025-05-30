@@ -47,7 +47,8 @@
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon Box16}"
                         ToolTip="Build"
-                        Margin="4,0"/>
+                        Margin="4,0"
+                        Click="BuildButton_Click"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon ArrowDownload16}"
@@ -95,7 +96,7 @@
 
             
 
-            <!-- Footer Menu Items -->
+            
             
 
             <!-- Snackbar Support -->

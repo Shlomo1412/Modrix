@@ -77,6 +77,9 @@ namespace Modrix
                 services.AddTransient<ResourcesPageViewModel>();
                 services.AddTransient<ResourcesPage>();
 
+                // Console Page
+                services.AddSingleton<ConsolePage>();
+
 
             }).Build();
 
