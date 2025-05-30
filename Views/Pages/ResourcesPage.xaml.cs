@@ -185,7 +185,7 @@ namespace Modrix.Views.Pages
         }
 
         private void OpenTexturesFolder_Click(object sender, RoutedEventArgs e)
-    => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "textures"));
+            => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "textures"));
 
         private void OpenModelsFolder_Click(object sender, RoutedEventArgs e)
             => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "models"));
@@ -316,8 +316,37 @@ namespace Modrix.Views.Pages
             {
                 var contextMenu = new ContextMenu();
 
-                var editItem = new Wpf.Ui.Controls.MenuItem { Header = "Edit..." };
-                var deleteItem = new Wpf.Ui.Controls.MenuItem { Header = "Delete" };
+                var openItem = new Wpf.Ui.Controls.MenuItem
+                {
+                    Header = "Open in Editor",
+                    Icon = new SymbolIcon(SymbolRegular.Edit24)
+                };
+
+                var deleteItem = new Wpf.Ui.Controls.MenuItem
+                {
+                    Header = "Delete",
+                    Icon = new SymbolIcon(SymbolRegular.Delete24)
+                };
+
+                openItem.Click += (s, args) =>
+                {
+                    var filePath = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "textures", img.FileName);
+                    if (File.Exists(filePath))
+                    {
+                        try
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = filePath,
+                                UseShellExecute = true
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            ShowMessage($"Could not open texture: {ex.Message}", "Error");
+                        }
+                    }
+                };
 
                 deleteItem.Click += (s, args) =>
                 {
@@ -331,18 +360,13 @@ namespace Modrix.Views.Pages
                         }
                         catch (Exception ex)
                         {
-                            _ = new MessageBox
-                            {
-                                Title = "Error",
-                                Content = $"Could not delete texture:\n{ex.Message}",
-                                PrimaryButtonText = "OK"
-                            }
-                            .ShowDialogAsync();
+                            ShowMessage($"Could not delete texture: {ex.Message}", "Error");
                         }
                     }
                 };
 
-                contextMenu.Items.Add(editItem);
+                contextMenu.Items.Add(openItem);
+                contextMenu.Items.Add(new Separator());
                 contextMenu.Items.Add(deleteItem);
 
                 contextMenu.IsOpen = true;
