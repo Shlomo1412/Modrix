@@ -59,6 +59,7 @@
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon ArrowUpload16}"
                         ToolTip="Export"
+                        Click="ExportButton_Click"
                         Margin="4,0"/>
                 </StackPanel>
             </ui:TitleBar.Header>

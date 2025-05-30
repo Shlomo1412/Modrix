@@ -1,0 +1,46 @@
+﻿<ui:FluentWindow
+    x:Class="Modrix.Views.Windows.ExportDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="Exporting Mod"
+    SizeToContent="WidthAndHeight"
+    WindowStartupLocation="CenterOwner"
+    ResizeMode="NoResize"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    ExtendsContentIntoTitleBar="True"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+
+    <StackPanel Margin="24" Width="420" Orientation="Vertical">
+
+        <!-- Message -->
+        <TextBlock TextWrapping="Wrap" FontSize="14">
+            Please read and accept the following before exporting your mod:
+            1. If you plan to publish this mod on any platform, you’re encouraged to credit Modrix on the mod’s page — unless that platform explicitly forbids mentioning external tools, in which case you must follow their policy.
+            2. If anyone directly asks whether you built this mod using a mod maker, you must answer truthfully. Do not mislead users.
+        </TextBlock>
+
+        <!-- Terms checkbox -->
+        <CheckBox x:Name="ChkAccept"
+                  Content="I accept the terms"
+                  FontSize="13"
+                  Checked="ChkAccept_Changed"
+                  Unchecked="ChkAccept_Changed"/>
+
+        <!-- Buttons -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <ui:Button x:Name="BtnExport"
+                       Content="Export"
+                       Appearance="Primary"
+                       Width="80"
+                       IsEnabled="False"
+                       Click="BtnExport_Click"/>
+            <ui:Button Content="Close"
+                       Width="80"
+                       Appearance="Secondary"
+                       Click="BtnClose_Click"/>
+        </StackPanel>
+    </StackPanel>
+</ui:FluentWindow>

@@ -60,6 +60,21 @@ namespace Modrix.Views.Windows
             // Not needed
         }
 
+        private async void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.CurrentProject == null) return;
+            string dir = ViewModel.CurrentProject.Location;
+            string jdkHome = await new JdkHelper()
+                .EnsureRequiredJdkAsync(ViewModel.CurrentProject.MinecraftVersion,
+                    new Progress<(string, int)>());
+
+            var dlg = new ExportDialog(dir, jdkHome)
+            {
+                Owner = this
+            };
+            dlg.ShowDialog();
+        }
+
         private async void RunButton_Click(object sender, RoutedEventArgs e)
         {
             if (ViewModel?.CurrentProject == null)

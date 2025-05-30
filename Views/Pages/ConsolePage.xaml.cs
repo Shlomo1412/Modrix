@@ -36,7 +36,7 @@ namespace Modrix.Views.Pages
             }
         }
 
-        public void StartGradleBuild(string projectDir, string gradleTasks, string jdkHome)
+        public async Task StartGradleBuild(string projectDir, string gradleTasks, string jdkHome)
         {
             
             var wrapper = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
