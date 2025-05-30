@@ -135,5 +135,11 @@ namespace Modrix.Views.Pages
                 ConsoleOutput.ScrollToEnd();
             });
         }
+
+        private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            _lineNumber = 0;
+            ConsoleOutput.Document.Blocks.Clear();
+        }
     }
 }
