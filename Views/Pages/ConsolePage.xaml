@@ -7,34 +7,49 @@
       mc:Ignorable="d"
       Title="ConsolePage">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            
-            <RowDefinition Height="Auto"/>
-            
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <DockPanel LastChildFill="True">
+        <!-- Toolbar fixed at top -->
+        <StackPanel DockPanel.Dock="Top"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Margin="8,4,8,4">
+            <CheckBox x:Name="ChkLineIndex"
+                   Content="Show Line Index"
+                   Margin="0,0,8,0"
+                   VerticalAlignment="Center"
+                   Checked="ChkLineIndex_Changed"
+                   Unchecked="ChkLineIndex_Changed"/>
+            <CheckBox x:Name="ChkAutoScroll"
+                   Content="Auto Scroll"
+                   IsChecked="True"
+                   Margin="0,0,16,0"
+                   VerticalAlignment="Center"
+                   Checked="ChkAutoScroll_Changed"
+                   Unchecked="ChkAutoScroll_Changed"/>
+            <ui:Button Appearance="Secondary"
+                 Icon="{ui:SymbolIcon Copy24}"
+                 ToolTip="Copy All"
+                 Margin="0,0,8,0"
+                 Click="CopyButton_Click"/>
+            <ui:Button Appearance="Secondary"
+                 Icon="{ui:SymbolIcon Share24}"
+                 ToolTip="Share Log"
+                 Margin="0,0,8,0"
+                 Click="ShareButton_Click"/>
+            <ui:Button Appearance="Secondary"
+                 Icon="{ui:SymbolIcon Delete24}"
+                 ToolTip="Clear Console"
+                 Click="ClearButton_Click"/>
+        </StackPanel>
 
-        
-        <ui:Button
-        Grid.Row="0"
-        Appearance="Secondary"
-        Icon="{ui:SymbolIcon Delete24}"
-        ToolTip="Clear Console"
-        HorizontalAlignment="Right"
-        Margin="0,8,8,4"
-        Click="ClearButton_Click"/>
-
-        
-        <RichTextBox
-        x:Name="ConsoleOutput"
-        Grid.Row="1"
-        IsReadOnly="True"
-        Background="Black"
-        Foreground="White"
-        FontFamily="Consolas"
-        FontSize="14"
-        VerticalScrollBarVisibility="Auto"
-        Margin="10"/>
-    </Grid>
+        <!-- Console Output fills rest -->
+        <RichTextBox x:Name="ConsoleOutput"
+                 IsReadOnly="True"
+                 Background="Black"
+                 Foreground="White"
+                 FontFamily="Consolas"
+                 FontSize="14"
+                 VerticalScrollBarVisibility="Auto"
+                 Margin="8"/>
+    </DockPanel>
 </Page>

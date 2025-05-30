@@ -14,6 +14,8 @@ namespace Modrix.Views.Pages
         public static (string ProjectDir, string Tasks, string JdkHome)? PendingBuild;
 
         private int _lineNumber;
+        private bool _showIndex = false;
+        private bool _autoScroll = true;
 
         public ConsolePage()
         {
@@ -21,19 +23,22 @@ namespace Modrix.Views.Pages
             Loaded += ConsolePage_Loaded;
         }
 
-        private void ConsolePage_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        private void ConsolePage_Loaded(object sender, RoutedEventArgs e)
         {
+            // reset console
             _lineNumber = 0;
+            ConsoleOutput.Document.Blocks.Clear();
+
             if (PendingBuild is { } info)
             {
-                PendingBuild = null; // כדי שלא ירוץ שוב אם נטען מחדש
+                PendingBuild = null;
                 StartGradleBuild(info.ProjectDir, info.Tasks, info.JdkHome);
             }
         }
 
         public void StartGradleBuild(string projectDir, string gradleTasks, string jdkHome)
         {
-            // בחר את הסקריפט הנכון
+            
             var wrapper = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                           ? "gradlew.bat"
                           : "gradlew";
@@ -61,7 +66,7 @@ namespace Modrix.Views.Pages
 
             var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
 
-            // קישורים ישירים לפלט
+            
             proc.OutputDataReceived += (s, e) => {
                 if (!string.IsNullOrEmpty(e.Data))
                     AppendLine(e.Data, Brushes.White);
@@ -94,52 +99,61 @@ namespace Modrix.Views.Pages
             Dispatcher.Invoke(() =>
             {
                 _lineNumber++;
+                var display = _showIndex
+                  ? $"{_lineNumber:000} | {text}"
+                  : text;
 
-                
-                string display = $"{_lineNumber:000} | {text}";
+                var color = defaultColor;
+                if (text.StartsWith("> Task")) color = Brushes.CornflowerBlue;
+                else if (text.StartsWith("> Configure")) color = Brushes.MediumPurple;
+                else if (text.Contains("INFO")) color = Brushes.ForestGreen;
+                else if (text.Contains("WARN")) color = Brushes.Orange;
+                else if (text.Contains("ERROR") || text.Contains("FAIL")) color = Brushes.Red;
+                else if (text.StartsWith("$")) color = Brushes.Gray;
 
-                
-                Brush color = defaultColor;
-
-                
-                if (text.StartsWith("> Task"))
-                {
-                    color = Brushes.CornflowerBlue;
-                }
-                else if (text.StartsWith("> Configure"))
-                {
-                    color = Brushes.MediumPurple;
-                }
-                else if (text.Contains("INFO"))
-                {
-                    color = Brushes.ForestGreen;
-                }
-                else if (text.Contains("WARN"))
-                {
-                    color = Brushes.Orange;
-                }
-                else if (text.Contains("ERROR") || text.Contains("FAIL"))
-                {
-                    color = Brushes.Red;
-                }
-                else if (text.StartsWith("$"))
-                {
-                    
-                    color = Brushes.Gray;
-                }
-
-                
                 var run = new Run(display) { Foreground = color };
                 var para = new Paragraph(run) { Margin = new Thickness(0) };
                 ConsoleOutput.Document.Blocks.Add(para);
-                ConsoleOutput.ScrollToEnd();
+
+                if (_autoScroll)
+                    ConsoleOutput.ScrollToEnd();
             });
         }
 
-        private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
         {
             _lineNumber = 0;
             ConsoleOutput.Document.Blocks.Clear();
+        }
+
+        private void CopyButton_Click(object sender, RoutedEventArgs e)
+        {
+            var textRange = new TextRange(
+                ConsoleOutput.Document.ContentStart,
+                ConsoleOutput.Document.ContentEnd);
+            Clipboard.SetText(textRange.Text);
+        }
+
+        private void ShareButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tempPath = Path.Combine(
+                Path.GetTempPath(),
+                $"ModrixConsole_{DateTime.Now:yyyyMMdd_HHmmss}.log");
+            var textRange = new TextRange(
+                ConsoleOutput.Document.ContentStart,
+                ConsoleOutput.Document.ContentEnd);
+            File.WriteAllText(tempPath, textRange.Text);
+            Process.Start("explorer.exe", $"/select,\"{tempPath}\"");
+        }
+
+        private void ChkLineIndex_Changed(object sender, RoutedEventArgs e)
+        {
+            _showIndex = ChkLineIndex.IsChecked == true;
+        }
+
+        private void ChkAutoScroll_Changed(object sender, RoutedEventArgs e)
+        {
+            _autoScroll = ChkAutoScroll.IsChecked == true;
         }
     }
 }
