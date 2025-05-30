@@ -66,7 +66,13 @@
                         Icon="{ui:SymbolIcon FolderOpen24}"
                         ToolTip="Open Project Folder"
                         Margin="4,0"
-                        Click="OpenProjectFolder_Click"/>    
+                        Click="OpenProjectFolder_Click"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon ArrowClockwise24}"
+                        ToolTip="Refresh Project"
+                        Margin="4,0"
+                        Click="RefreshButton_Click"/>
                 </StackPanel>
             </ui:TitleBar.Header>
         </ui:TitleBar>

@@ -42,6 +42,34 @@ namespace Modrix.Views.Windows
             _snackbarPresenter = this.SnackbarPresenter;
         }
 
+        private void RefreshButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.CurrentProject != null)
+            {
+                // Refresh the entire project
+                RefreshProject(ViewModel.CurrentProject);
+            }
+            else
+            {
+                ShowSnackbar("No project loaded", "Please open a project first");
+            }
+        }
+
+        private void RefreshProject(ModProjectData project)
+        {
+           
+
+            
+
+            // Reload project
+            ViewModel.LoadProject(project);
+
+            // Navigate to workspace page
+            RootNavigation.Navigate(typeof(Views.Pages.ResourcesPage));
+
+            ShowSnackbar("Project refreshed", "All resources reloaded", ControlAppearance.Success);
+        }
+
         private void OpenProjectFolder_Click(object sender, RoutedEventArgs e)
         {
             if (ViewModel?.CurrentProject != null &&

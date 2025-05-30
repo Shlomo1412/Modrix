@@ -24,6 +24,27 @@ namespace Modrix.ViewModels.Windows
             InitializeMenuItems();
         }
 
+        public void ReloadProject()
+        {
+            if (CurrentProject != null)
+            {
+                // Create a copy to force property changed notifications
+                var project = new ModProjectData
+                {
+                    Location = CurrentProject.Location,
+                    ModId = CurrentProject.ModId,
+                    Name = CurrentProject.Name,
+                    Package = CurrentProject.Package,
+                    MinecraftVersion = CurrentProject.MinecraftVersion,
+                    ModType = CurrentProject.ModType,
+                    IconPath = CurrentProject.IconPath,
+                    // Copy other properties as needed
+                };
+
+                CurrentProject = project;
+            }
+        }
+
         [ObservableProperty]
         private ModProjectData? _currentProject;
 
@@ -35,10 +56,9 @@ namespace Modrix.ViewModels.Windows
             ModType = project.ModType;
             ApplicationTitle = $"Workspace — {project.Name}";
             Console.WriteLine($"Workspace — {project.Name}");
-            // …and any other view-model fields you want to pre-fill…
 
-            // Finally, navigate to your default sub-page:
-            //Navigate(typeof(Views.Pages.WorkspacePage));
+            // Trigger property changed for all properties
+            OnPropertyChanged(nameof(CurrentProject));
         }
 
         private void InitializeMenuItems()

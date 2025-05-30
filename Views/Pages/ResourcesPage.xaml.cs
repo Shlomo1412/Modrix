@@ -29,6 +29,22 @@ namespace Modrix.Views.Pages
             Loaded += OnLoaded;
         }
 
+        public void Refresh()
+        {
+            if (string.IsNullOrEmpty(_projectPath) || string.IsNullOrEmpty(_modId))
+            {
+                var workspace = Application.Current.Windows.OfType<ProjectWorkspace>().FirstOrDefault();
+                if (workspace?.ViewModel?.CurrentProject != null)
+                {
+                    _projectPath = workspace.ViewModel.CurrentProject.Location;
+                    _modId = workspace.ViewModel.CurrentProject.ModId;
+                    _readmePath = Path.Combine(_projectPath, "README.md");
+                }
+            }
+
+            LoadResources();
+        }
+
         private void UpdateEmptyStates()
         {
             // Textures
