@@ -29,6 +29,28 @@ namespace Modrix.Views.Pages
             Loaded += OnLoaded;
         }
 
+        private void UpdateEmptyStates()
+        {
+            // Textures
+            TexturesEmptyState.Visibility = TexturesList.Items.Count == 0 ?
+                Visibility.Visible : Visibility.Collapsed;
+
+            // Models
+            ModelsEmptyState.Visibility = ModelsList.Items.Count == 0 ?
+                Visibility.Visible : Visibility.Collapsed;
+
+            // Sounds
+            SoundsEmptyState.Visibility = SoundsList.Items.Count == 0 ?
+                Visibility.Visible : Visibility.Collapsed;
+
+            
+            
+
+            // README
+            ReadmeEmptyState.Visibility = string.IsNullOrWhiteSpace(ReadmeEditor.Text) ?
+                Visibility.Visible : Visibility.Collapsed;
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             var workspace = Application.Current.Windows
@@ -59,7 +81,9 @@ namespace Modrix.Views.Pages
             LoadIcon(Path.Combine(_projectPath,
                                      "src", "main", "resources", "assets", _modId, "icon.png"));
 
-            LoadReadme();  // ← טען גם את ה־README
+            LoadReadme();
+
+            UpdateEmptyStates();
         }
 
         // Icon tab buttons
@@ -67,6 +91,8 @@ namespace Modrix.Views.Pages
         {
             var iconPath = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "icon.png");
             LoadIcon(iconPath);
+
+            UpdateEmptyStates();
         }
 
         private void OpenIconFolder_Click(object sender, RoutedEventArgs e)
@@ -76,6 +102,8 @@ namespace Modrix.Views.Pages
             {
                 Process.Start("explorer.exe", iconDir);
             }
+
+            UpdateEmptyStates();
         }
 
         // README tab buttons
@@ -89,6 +117,8 @@ namespace Modrix.Views.Pages
             {
                 Process.Start("explorer.exe", _projectPath);
             }
+
+            UpdateEmptyStates();
         }
 
         private void OpenReadmeInEditor_Click(object sender, RoutedEventArgs e)
@@ -113,6 +143,8 @@ namespace Modrix.Views.Pages
             {
                 ShowMessage("README.md file not found", "File Missing");
             }
+
+            UpdateEmptyStates();
         }
 
         private void ShowMessage(string message, string title)
@@ -124,6 +156,8 @@ namespace Modrix.Views.Pages
                 PrimaryButtonText = "OK"
             };
             msgBox.ShowDialogAsync();
+
+            UpdateEmptyStates();
         }
 
         private void LoadReadme()
@@ -132,6 +166,8 @@ namespace Modrix.Views.Pages
                 ReadmeEditor.Text = File.ReadAllText(_readmePath);
             else
                 ReadmeEditor.Text = string.Empty;
+
+            UpdateEmptyStates();
         }
 
         private void SaveReadme_Click(object sender, RoutedEventArgs e)
@@ -140,7 +176,7 @@ namespace Modrix.Views.Pages
             {
                 File.WriteAllText(_readmePath, ReadmeEditor.Text);
 
-                // אפשר כאן להראות Snackbar אם תגדירי ShowSnackbar במיינווינדו שלך
+                UpdateEmptyStates();
                 // var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
                 // mainWindow?.ShowSnackbar("README.md saved successfully!");
             }
@@ -153,6 +189,7 @@ namespace Modrix.Views.Pages
                     PrimaryButtonText = "OK"
                 }
                 .ShowDialogAsync();
+                UpdateEmptyStates();
             }
         }
 
@@ -182,6 +219,7 @@ namespace Modrix.Views.Pages
             }
 
             TexturesList.ItemsSource = list;
+            UpdateEmptyStates();
         }
 
         private void OpenTexturesFolder_Click(object sender, RoutedEventArgs e)
@@ -206,6 +244,7 @@ namespace Modrix.Views.Pages
                                 .ToList();
 
             ModelsList.ItemsSource = list;
+            UpdateEmptyStates();
         }
 
         private void LoadSounds(string dir)
@@ -221,6 +260,7 @@ namespace Modrix.Views.Pages
                                 .ToList();
 
             SoundsList.ItemsSource = list;
+            UpdateEmptyStates();
         }
 
         private void LoadIcon(string path)
@@ -244,6 +284,8 @@ namespace Modrix.Views.Pages
                 IconImage.Visibility = Visibility.Collapsed;
                 EmptyIconText.Visibility = Visibility.Visible;
             }
+
+            UpdateEmptyStates();
         }
 
         #region Import Handlers
@@ -283,6 +325,7 @@ namespace Modrix.Views.Pages
                 // refresh
                 reloadAction(targetDir);
             }
+            UpdateEmptyStates();
         }
         #endregion
 
@@ -308,6 +351,8 @@ namespace Modrix.Views.Pages
                     .ShowDialogAsync();
                 }
             }
+
+            UpdateEmptyStates();
         }
 
         private void TexturesList_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -372,6 +417,8 @@ namespace Modrix.Views.Pages
                 contextMenu.IsOpen = true;
                 e.Handled = true;
             }
+
+            UpdateEmptyStates();
         }
 
         private void ChangeIcon_Click(object sender, RoutedEventArgs e)
@@ -382,6 +429,8 @@ namespace Modrix.Views.Pages
                 Filter = "Image Files|*.png;*.jpg;*.jpeg",
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)
             };
+
+            UpdateEmptyStates();
 
             if (dlg.ShowDialog() == true)
             {
@@ -427,6 +476,8 @@ namespace Modrix.Views.Pages
                     .ShowDialogAsync();
                 }
             }
+
+            UpdateEmptyStates();
         }
 
         // Helper classes

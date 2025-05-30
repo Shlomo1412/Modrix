@@ -52,7 +52,7 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        
+
                         <ScrollViewer 
                                 x:Name="HeaderScroll" 
                                 Grid.Row="0"
@@ -66,17 +66,17 @@
                         </ScrollViewer>
 
                         <ContentPresenter 
-                    Grid.Row="1" 
-                    ContentSource="SelectedContent"/>
+                            Grid.Row="1" 
+                            ContentSource="SelectedContent"/>
                     </Grid>
 
                     <ControlTemplate.Triggers>
-                        
+
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter 
-                        TargetName="HeaderScroll" 
-                        Property="HorizontalScrollBarVisibility" 
-                        Value="Auto"/>
+                                TargetName="HeaderScroll" 
+                                Property="HorizontalScrollBarVisibility" 
+                                Value="Auto"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -101,28 +101,37 @@
                                     Width="200"
                                     Margin="8,0,0,0"/>
                     </StackPanel>
-                <ScrollViewer>
-                        <ItemsControl x:Name="TexturesList" PreviewMouseRightButtonDown="TexturesList_PreviewMouseRightButtonDown">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="5">
-                                    <Image Source="{Binding Image}"
-                                           Width="64" Height="64"
-                                           ToolTip="{Binding FileName}"/>
-                                    <TextBlock Text="{Binding FileName}"
-                                               HorizontalAlignment="Center"
-                                               FontSize="10"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-                </DockPanel>    
+                    <ScrollViewer>
+                        <Grid>
+                            <ItemsControl x:Name="TexturesList" PreviewMouseRightButtonDown="TexturesList_PreviewMouseRightButtonDown">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="5">
+                                            <Image Source="{Binding Image}"
+                                                   Width="64" Height="64"
+                                                   ToolTip="{Binding FileName}"/>
+                                            <TextBlock Text="{Binding FileName}"
+                                                       HorizontalAlignment="Center"
+                                                       FontSize="10"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ui:TextBlock x:Name="TexturesEmptyState"
+                                Text="No textures found. Click Import to add some."
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="20"
+                                FontStyle="Italic"
+                                Visibility="Collapsed"/>
+                        </Grid>
+                    </ScrollViewer>
+                </DockPanel>
             </TabItem>
 
             <!-- Models -->
@@ -145,18 +154,24 @@
                                     Width="200"
                                     Margin="8,0,0,0"/>
                     </StackPanel>
-                <ScrollViewer>
-                    <ListBox x:Name="ModelsList"
-                             
-                             Margin="5">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding FileName}"
-                                           Margin="4"/>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </ScrollViewer>
+                    <ScrollViewer>
+                        <Grid>
+                            <ListBox x:Name="ModelsList" Margin="5">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding FileName}" Margin="4"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <ui:TextBlock x:Name="ModelsEmptyState"
+                                Text="No models found. Click Import to add some."
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="20"
+                                FontStyle="Italic"
+                                Visibility="Collapsed"/>
+                        </Grid>
+                    </ScrollViewer>
                 </DockPanel>
             </TabItem>
 
@@ -180,25 +195,34 @@
                                     Width="200"
                                     Margin="8,0,0,0"/>
                     </StackPanel>
-                <StackPanel Margin="10">
-                    <ListBox x:Name="SoundsList" Margin="5">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding FileName}"
-                                               VerticalAlignment="Center"
-                                               Width="200"/>
-                                    <ui:Button Content="▶"
-                                               Tag="{Binding FullPath}"
-                                               Click="PlaySound_Click"
-                                               Width="32"
-                                               Height="24"
-                                               Margin="5,0"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </StackPanel>
+                    <StackPanel Margin="10">
+                        <Grid>
+                            <ListBox x:Name="SoundsList" Margin="5">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding FileName}"
+                                                       VerticalAlignment="Center"
+                                                       Width="200"/>
+                                            <ui:Button Content="▶"
+                                                       Tag="{Binding FullPath}"
+                                                       Click="PlaySound_Click"
+                                                       Width="32"
+                                                       Height="24"
+                                                       Margin="5,0"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <ui:TextBlock x:Name="SoundsEmptyState"
+                                Text="No sounds found. Click Import to add some."
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="20"
+                                FontStyle="Italic"
+                                Visibility="Collapsed"/>
+                        </Grid>
+                    </StackPanel>
                 </DockPanel>
             </TabItem>
 
@@ -286,14 +310,26 @@
                             Click="OpenReadmeInEditor_Click"/>
                     </StackPanel>
 
-                    <ui:TextBox
-                        x:Name="ReadmeEditor"
-                        AcceptsReturn="True"
-                        AcceptsTab="True"
-                        VerticalScrollBarVisibility="Auto"
-                        HorizontalScrollBarVisibility="Auto"
-                        FontFamily="Consolas"
-                        FontSize="14"/>
+                    <Grid>
+                        <ui:TextBox
+                            x:Name="ReadmeEditor"
+                            AcceptsReturn="True"
+                            AcceptsTab="True"
+                            VerticalScrollBarVisibility="Auto"
+                            HorizontalScrollBarVisibility="Auto"
+                            FontFamily="Consolas"
+                            FontSize="14"/>
+                        <ui:TextBlock x:Name="ReadmeEmptyState"
+                            Text="No README.md file exists. Create one by typing in the editor and clicking Save."
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="20"
+                            FontStyle="Italic"
+                            TextWrapping="Wrap"
+                            TextAlignment="Center"
+                            MaxWidth="400"
+                            Visibility="Collapsed"/>
+                    </Grid>
                 </DockPanel>
             </TabItem>
 
