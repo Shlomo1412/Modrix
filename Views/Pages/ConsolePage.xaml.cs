@@ -10,8 +10,10 @@ namespace Modrix.Views.Pages
 {
     public partial class ConsolePage : Page
     {
-        // שדה סטטי שבו נשמור מה לבנות ברגע שנגיע לעמוד
+        
         public static (string ProjectDir, string Tasks, string JdkHome)? PendingBuild;
+
+        private int _lineNumber;
 
         public ConsolePage()
         {
@@ -21,6 +23,7 @@ namespace Modrix.Views.Pages
 
         private void ConsolePage_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
+            _lineNumber = 0;
             if (PendingBuild is { } info)
             {
                 PendingBuild = null; // כדי שלא ירוץ שוב אם נטען מחדש
@@ -86,12 +89,48 @@ namespace Modrix.Views.Pages
             proc.BeginErrorReadLine();
         }
 
-        private void AppendLine(string text, Brush color)
+        private void AppendLine(string text, Brush defaultColor)
         {
             Dispatcher.Invoke(() =>
             {
-                var run = new Run(text) { Foreground = color };
-                var para = new Paragraph(run) { Margin = new System.Windows.Thickness(0) };
+                _lineNumber++;
+
+                
+                string display = $"{_lineNumber:000} | {text}";
+
+                
+                Brush color = defaultColor;
+
+                
+                if (text.StartsWith("> Task"))
+                {
+                    color = Brushes.CornflowerBlue;
+                }
+                else if (text.StartsWith("> Configure"))
+                {
+                    color = Brushes.MediumPurple;
+                }
+                else if (text.Contains("INFO"))
+                {
+                    color = Brushes.ForestGreen;
+                }
+                else if (text.Contains("WARN"))
+                {
+                    color = Brushes.Orange;
+                }
+                else if (text.Contains("ERROR") || text.Contains("FAIL"))
+                {
+                    color = Brushes.Red;
+                }
+                else if (text.StartsWith("$"))
+                {
+                    
+                    color = Brushes.Gray;
+                }
+
+                
+                var run = new Run(display) { Foreground = color };
+                var para = new Paragraph(run) { Margin = new Thickness(0) };
                 ConsoleOutput.Document.Blocks.Add(para);
                 ConsoleOutput.ScrollToEnd();
             });
