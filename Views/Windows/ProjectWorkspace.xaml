@@ -57,7 +57,7 @@
                         Margin="4,0"/>
                     <ui:Button
                         Appearance="Secondary"
-                        Icon="{ui:SymbolIcon ArrowUpload16}"
+                        Icon="{ui:SymbolIcon ArrowExportLtr24}"
                         ToolTip="Export"
                         Click="ExportButton_Click"
                         Margin="4,0"/>

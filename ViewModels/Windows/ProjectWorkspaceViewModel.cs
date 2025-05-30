@@ -54,7 +54,7 @@ namespace Modrix.ViewModels.Windows
                 new NavigationViewItem()
                 {
                     Content = "Resources",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.Box16 },
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.DesignIdeas16 },
                     TargetPageType = typeof(Views.Pages.ResourcesPage)
                 },
                 new NavigationViewItem()

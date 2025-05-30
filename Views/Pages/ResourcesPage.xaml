@@ -25,13 +25,13 @@
                         <Setter.Value>
                             <ControlTemplate TargetType="TabItem">
                                 <Border x:Name="Bd"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="6,6,0,0"
-                            Padding="{TemplateBinding Padding}">
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="6,6,0,0"
+                                        Padding="{TemplateBinding Padding}">
                                     <ContentPresenter
-                            ContentSource="Header"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
+                                        ContentSource="Header"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
@@ -71,7 +71,7 @@
                     </Grid>
 
                     <ControlTemplate.Triggers>
-                        <!-- כשמרחפים מעל ה-TabControl, אפשר פס גלילה -->
+                        
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter 
                         TargetName="HeaderScroll" 
@@ -206,7 +206,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Image20" />
+                        <ui:SymbolIcon Symbol="ImageShadow20" />
                         <TextBlock Text="Icon" Margin="4,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -248,17 +248,17 @@
                     </StackPanel>
                 </TabItem.Header>
 
-                <!-- בתוכן: עורך טקסט מלא-מסך + כפתור שמירה -->
+                
                 <DockPanel>
-                    <Button
+                    <ui:Button
                         Content="Save README"
                         DockPanel.Dock="Bottom"
                         Margin="0,8,0,0"
-                        Width="120"
+                        Icon="{ui:SymbolIcon Save24}"
                         HorizontalAlignment="Right"
                         Click="SaveReadme_Click" />
 
-                    <TextBox
+                    <ui:TextBox
                         x:Name="ReadmeEditor"
                         AcceptsReturn="True"
                         AcceptsTab="True"
