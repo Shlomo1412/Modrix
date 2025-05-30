@@ -262,7 +262,6 @@
                             Appearance="Danger"
                             Click="RemoveIcon_Click"
                             Margin="4"/>
-                        <!-- New buttons for Icon tab -->
                         <ui:Button ToolTip="Refresh"
                             Icon="{ui:SymbolIcon ArrowClockwise24}"
                             Click="RefreshIcon_Click"
@@ -297,7 +296,6 @@
                             Appearance="Primary"
                             Margin="0,0,8,0"/>
 
-                        <!-- New buttons for README tab -->
                         <ui:Button
                             Content="Open Containing Folder"
                             Icon="{ui:SymbolIcon FolderOpen24}"

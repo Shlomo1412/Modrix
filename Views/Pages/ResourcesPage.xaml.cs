@@ -20,7 +20,7 @@ namespace Modrix.Views.Pages
     {
         private string _projectPath;
         private string _modId;
-        private string _readmePath;  // ← הוסף שדה זה
+        private string _readmePath;
         private MediaPlayer _mediaPlayer = new();
 
         public ResourcesPage()
@@ -77,7 +77,7 @@ namespace Modrix.Views.Pages
             {
                 _projectPath = workspace.ViewModel.CurrentProject.Location;
                 _modId = workspace.ViewModel.CurrentProject.ModId;
-                _readmePath = Path.Combine(_projectPath, "README.md");  // ← קבע כאן
+                _readmePath = Path.Combine(_projectPath, "README.md");
 
                 LoadResources();
             }
@@ -193,8 +193,6 @@ namespace Modrix.Views.Pages
                 File.WriteAllText(_readmePath, ReadmeEditor.Text);
 
                 UpdateEmptyStates();
-                // var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
-                // mainWindow?.ShowSnackbar("README.md saved successfully!");
             }
             catch (IOException ex)
             {
@@ -351,8 +349,8 @@ namespace Modrix.Views.Pages
             {
                 try
                 {
-                    _mediaPlayer.Stop(); // ← עצור קודם
-                    _mediaPlayer.Close(); // ← נקה את המדיה הקודמת
+                    _mediaPlayer.Stop();
+                    _mediaPlayer.Close();
                     _mediaPlayer.Open(new Uri(path));
                     _mediaPlayer.Play();
                 }

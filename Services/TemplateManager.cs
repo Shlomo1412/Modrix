@@ -128,7 +128,7 @@ namespace Modrix.Services
                 Path.Combine(data.Location, "modrix.config"),
                 $"ModId={data.ModId}\n" +
                 $"Name={data.Name}\n" +
-                $"ModType=Fabric Mod\n" + // ????? ??? ????
+                $"ModType=Fabric Mod\n" + 
                 $"MinecraftVersion={data.MinecraftVersion}"
             );
 
