@@ -63,10 +63,10 @@ namespace Modrix.ViewModels.Pages
         [RelayCommand]
         private async Task DownloadJdkAsync()
         {
-            // 1) קבל גרסאות
+            
             var versions = _jdkHelper.GetAvailableJdkVersions();
 
-            // 2) בנה את התוכן
+            
             var comboBox = new ComboBox
             {
                 ItemsSource = versions,
@@ -86,7 +86,7 @@ namespace Modrix.ViewModels.Pages
         }
             };
 
-            // 3) הגדר את אפשרויות הדיאלוג
+           
             var options = new SimpleContentDialogCreateOptions
             {
                 Title = "Install JDK",
@@ -95,12 +95,12 @@ namespace Modrix.ViewModels.Pages
                 CloseButtonText = "Cancel"
             };
 
-            // 4) הצג דיאלוג דרך השירות (DialogHost כבר הוגדר ב־App.OnStartup)
+            
             var result = await _dialogService.ShowSimpleDialogAsync(options);
             if (result != ContentDialogResult.Primary)
                 return;
 
-            // 5) התקן
+            
             var selectedVersion = (int)comboBox.SelectedItem!;
             await InstallJdkAsync(selectedVersion);
         }
@@ -112,10 +112,10 @@ namespace Modrix.ViewModels.Pages
             InstallationStatus = "Starting JDK installation...";
             InstallationProgress = 0;
 
-            var progress = new Progress<(string, int)>(report =>
+            var progress = new Progress<(string message, int percent)>(tuple =>
             {
-                InstallationStatus = report.Item1;
-                InstallationProgress = report.Item2;
+                InstallationStatus = tuple.message;
+                InstallationProgress = tuple.percent;
             });
 
             try

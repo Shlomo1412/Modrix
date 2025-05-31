@@ -88,6 +88,7 @@
                     <Grid Margin="0,24,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
@@ -129,7 +130,7 @@
                         </StackPanel>
 
                         <ItemsControl 
-                            Grid.Row="1"
+                            Grid.Row="2"
                             ItemsSource="{Binding ViewModel.InstalledJdks}"
                             Margin="0,12,0,0">
                             <ItemsControl.ItemTemplate>
