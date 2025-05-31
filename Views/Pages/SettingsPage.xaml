@@ -7,6 +7,8 @@
     xmlns:local="clr-namespace:Modrix.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:converters="clr-namespace:Modrix.Helpers"
     Title="SettingsPage"
     d:DataContext="{d:DesignInstance local:SettingsPage,
                                      IsDesignTimeCreatable=False}"
@@ -18,81 +20,186 @@
     mc:Ignorable="d">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
 
-    <StackPanel>
-        <!-- Personalization Section -->
-        <Expander Margin="0,0,0,0" IsExpanded="True">
-            <Expander.Header>
-                <TextBlock 
-                    FontSize="20"
-                    FontWeight="Medium"
-                    Text="Personalization" />
-            </Expander.Header>
-            <StackPanel>
-                <!-- Theme selection controls -->
-                <TextBlock Margin="0,12,0,0" Text="Theme" />
-                <RadioButton
-                    Margin="0,12,0,0"
-                    Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                    CommandParameter="theme_light"
-                    Content="Light"
-                    GroupName="themeSelect"
-                    IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
-                <RadioButton
-                    Margin="0,8,0,0"
-                    Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                    CommandParameter="theme_dark"
-                    Content="Dark"
-                    GroupName="themeSelect"
-                    IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
-                <RadioButton
-                    Margin="0,8,0,0"
-                    Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                    CommandParameter="theme_highcontrast"
-                    Content="High Contrast"
-                    GroupName="themeSelect"
-                    IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
-            </StackPanel>
-        </Expander>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <!-- Personalization Section -->
+            <Expander Margin="24,24,24,0" IsExpanded="True">
+                <Expander.Header>
+                    <TextBlock 
+                        FontSize="20"
+                        FontWeight="Medium"
+                        Text="Personalization" />
+                </Expander.Header>
+                <StackPanel>
+                    <!-- Theme selection controls -->
+                    <TextBlock Margin="0,12,0,0" Text="Theme" />
+                    <RadioButton
+                        Margin="0,12,0,0"
+                        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                        CommandParameter="theme_light"
+                        Content="Light"
+                        GroupName="themeSelect"
+                        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
+                    <RadioButton
+                        Margin="0,8,0,0"
+                        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                        CommandParameter="theme_dark"
+                        Content="Dark"
+                        GroupName="themeSelect"
+                        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+                    <RadioButton
+                        Margin="0,8,0,0"
+                        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                        CommandParameter="theme_highcontrast"
+                        Content="High Contrast"
+                        GroupName="themeSelect"
+                        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
+                </StackPanel>
+            </Expander>
 
-        <!-- Installation Section -->
-        <Expander Margin="0,24,0,0">
-            <Expander.Header>
-                <TextBlock 
-                    FontSize="20"
-                    FontWeight="Medium"
-                    Text="Installation" />
-            </Expander.Header>
-            <StackPanel>
-                <ui:Button
-                    Margin="0,12,0,0"
-                    Appearance="Primary"
-                    Icon="{ui:SymbolIcon ArrowReset24}"
-                    Content="Reinstall" />
-                <ui:Button
-                    Margin="0,8,0,0"
-                    Appearance="Danger"
-                    Icon="{ui:SymbolIcon Delete24}"
-                    Content="Uninstall" />
-                <ui:ToggleSwitch
-                    Margin="0,12,0,0"
-                    Content="Keep Projects" />
-            </StackPanel>
-        </Expander>
-        <Expander Margin="0,24,0,0" IsExpanded="False">
-            <Expander.Header>
-                <TextBlock 
-                    FontSize="20"
-                    FontWeight="Medium"
-                    Text="About" />
-            </Expander.Header>
-            <StackPanel>
-                <TextBlock Margin="0,12,0,0" Text="Version: 1.0.0" />
-                <TextBlock Margin="0,8,0,0" Text="Build Date: 2023-10-01" />
-                <TextBlock Margin="0,8,0,0" Text="License: MIT" />
-                <TextBlock Margin="0,8,0,0" Text="© 2025 Modrix Team" />
-            </StackPanel>
-        </Expander>
-    </StackPanel>
+            <!-- Installation Section -->
+            <Expander Margin="24,24,24,0">
+                <Expander.Header>
+                    <TextBlock 
+                        FontSize="20"
+                        FontWeight="Medium"
+                        Text="Installation" />
+                </Expander.Header>
+                <StackPanel>
+                    <ui:Button
+                        Margin="0,12,0,0"
+                        Appearance="Primary"
+                        Icon="{ui:SymbolIcon ArrowReset24}"
+                        Content="Reinstall" />
+                    <ui:Button
+                        Margin="0,8,0,0"
+                        Appearance="Danger"
+                        Icon="{ui:SymbolIcon Delete24}"
+                        Content="Uninstall" />
+                    <ui:ToggleSwitch
+                        Margin="0,12,0,0"
+                        Content="Keep Projects" />
+
+                    <!-- Java JDKs Section -->
+                    <Grid Margin="0,24,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock 
+                                Text="Java JDKs" 
+                                FontWeight="Medium"
+                                VerticalAlignment="Center"/>
+
+                            <ui:Button
+                                Margin="12,0,0,0"
+                                Appearance="Secondary"
+                                Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                Command="{Binding ViewModel.RefreshJdksCommand}"
+                                ToolTip="Refresh JDK list"
+                                Width="32"
+                                Height="32"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <ItemsControl 
+                            Grid.Row="1"
+                            ItemsSource="{Binding ViewModel.InstalledJdks}"
+                            Margin="0,12,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border 
+                                        Margin="0,0,0,8"
+                                        Padding="12"
+                                        CornerRadius="6"
+                                        Background="{DynamicResource ControlFillColorDefaultBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel>
+                                                <TextBlock 
+                                                    Text="{Binding Path}"
+                                                    FontWeight="SemiBold"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <TextBlock Text="Version: " Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding Version}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    <TextBlock Text=" • " Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding Source}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                <ui:Button
+                                                    Command="{Binding DataContext.ViewModel.OpenJdkFolderCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    CommandParameter="{Binding}"
+                                                    Margin="0,0,8,0"
+                                                    Appearance="Secondary"
+                                                    Icon="{ui:SymbolIcon FolderOpen24}"
+                                                    ToolTip="Open JDK folder"
+                                                    Width="32"
+                                                    Height="32"/>
+
+                                                <ui:Button
+                                                    Command="{Binding DataContext.ViewModel.RemoveJdkCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    CommandParameter="{Binding}"
+                                                    Appearance="Danger"
+                                                    Icon="{ui:SymbolIcon Delete24}"
+                                                    ToolTip="Remove JDK"
+                                                    Visibility="{Binding IsRemovable, Converter={StaticResource BoolToVisibility}}"
+                                                    Width="32"
+                                                    Height="32"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock 
+                            Grid.Row="1"
+                            Text="No JDKs detected"
+                            Margin="0,12,0,0"
+                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ViewModel.InstalledJdks.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </StackPanel>
+            </Expander>
+
+            <Expander Margin="24,24,24,0" IsExpanded="False">
+                <Expander.Header>
+                    <TextBlock 
+                        FontSize="20"
+                        FontWeight="Medium"
+                        Text="About" />
+                </Expander.Header>
+                <StackPanel>
+                    <TextBlock Margin="0,12,0,0" Text="Version: 1.0.0" />
+                    <TextBlock Margin="0,8,0,0" Text="Build Date: 2023-10-01" />
+                    <TextBlock Margin="0,8,0,0" Text="License: MIT" />
+                    <TextBlock Margin="0,8,0,0" Text="© 2025 Modrix Team" />
+                </StackPanel>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

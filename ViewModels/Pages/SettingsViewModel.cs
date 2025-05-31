@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using Modrix.Services;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
@@ -16,7 +19,10 @@ namespace Modrix.ViewModels.Pages
         [ObservableProperty]
         private ApplicationTheme _currentTheme = ApplicationTheme.Unknown;
 
-        
+        [ObservableProperty]
+        private ObservableCollection<JdkHelper.JdkInfo> _installedJdks = new();
+
+
         public SettingsViewModel(IThemeService themeService)
         {
             _themeService = themeService;
@@ -37,7 +43,47 @@ namespace Modrix.ViewModels.Pages
             
             CurrentTheme = _themeService.LoadTheme();
             AppVersion = $"Modrix – v{GetAssemblyVersion()}";
+            RefreshJdks();
             _isInitialized = true;
+        }
+
+        [RelayCommand]
+        private void RefreshJdks()
+        {
+            var helper = new JdkHelper();
+            var jdks = helper.GetInstalledJdks();
+            InstalledJdks.Clear();
+            foreach (var jdk in jdks)
+            {
+                InstalledJdks.Add(jdk);
+            }
+        }
+
+        [RelayCommand]
+        private void OpenJdkFolder(JdkHelper.JdkInfo jdk)
+        {
+            if (jdk != null && Directory.Exists(jdk.Path))
+            {
+                Process.Start("explorer.exe", jdk.Path);
+            }
+        }
+
+        [RelayCommand]
+        private void RemoveJdk(JdkHelper.JdkInfo jdk)
+        {
+            if (jdk != null && jdk.IsRemovable && Directory.Exists(jdk.Path))
+            {
+                try
+                {
+                    Directory.Delete(jdk.Path, true);
+                    RefreshJdks();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to remove JDK: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private string GetAssemblyVersion()
