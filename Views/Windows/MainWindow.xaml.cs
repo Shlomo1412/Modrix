@@ -125,7 +125,7 @@ namespace Modrix.Views.Windows
             }
         }
 
-
+        public ContentPresenter DialogHost => RootContentDialogHost;
 
         INavigationView INavigationWindow.GetNavigation()
         {

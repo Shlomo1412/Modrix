@@ -21,6 +21,7 @@
     WindowCornerPreference="Round"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+    
     <ui:FluentWindow.InputBindings>
         <KeyBinding
             Key="F"
@@ -72,5 +73,8 @@
         </ui:NavigationView>
 
         <ContentPresenter x:Name="RootContentDialog" Grid.Row="0" />
+        <ContentPresenter x:Name="RootContentDialogHost" Grid.Row="0" />
     </Grid>
+    
+    
 </ui:FluentWindow>

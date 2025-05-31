@@ -63,7 +63,9 @@ namespace Modrix
                 services.AddSingleton<DataViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<SettingsViewModel>(sp =>
-                new SettingsViewModel(sp.GetRequiredService<IThemeService>()));
+                new SettingsViewModel(
+                    sp.GetRequiredService<IThemeService>(),
+                    sp.GetRequiredService<IContentDialogService>()));
                 services.AddSingleton<ProjectWorkspace>();
                 services.AddSingleton<ProjectWorkspaceViewModel>();
 
@@ -73,6 +75,9 @@ namespace Modrix
 
                 // Console Page
                 services.AddSingleton<ConsolePage>();
+
+                //Content dialog
+                services.AddSingleton<IContentDialogService, ContentDialogService>();
 
 
             }).Build();
@@ -102,13 +107,18 @@ namespace Modrix
             var saved = themeService.LoadTheme();
             ApplicationThemeManager.Apply(saved);
 
-
+            var dialogService = Services.GetRequiredService<IContentDialogService>();
+            var navigationWindow = Services.GetService<INavigationWindow>();
+            if (navigationWindow is MainWindow main)
+            {
+                dialogService.SetDialogHost(main.DialogHost);
+            }
 
 
             // Check connectivity and show snackbar if offline
             if (_connectivityService?.IsInternetAvailable() == false)
             {
-                var navigationWindow = Services.GetService<INavigationWindow>();
+                
                 if (navigationWindow is MainWindow mainWindow)
                 {
                     mainWindow.ShowOfflineSnackbar();

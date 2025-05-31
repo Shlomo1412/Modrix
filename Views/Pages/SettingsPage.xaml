@@ -20,6 +20,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
 
@@ -99,10 +100,32 @@
                             <ui:Button
                                 Margin="12,0,0,0"
                                 Appearance="Secondary"
-                                Icon="{ui:SymbolIcon ArrowClockwise20}"
+                                Icon="{ui:SymbolIcon ArrowClockwise24}"
                                 Command="{Binding ViewModel.RefreshJdksCommand}"
                                 ToolTip="Refresh JDK list"
                                 VerticalAlignment="Center"/>
+
+                            <ui:Button
+                                Margin="12,0,0,0"
+                                Appearance="Primary"
+                                Icon="{ui:SymbolIcon ArrowDownload24}"
+                                Command="{Binding ViewModel.DownloadJdkCommand}"
+                                ToolTip="Download and install a JDK"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- JDK Installation Progress -->
+                        <StackPanel Grid.Row="1"
+                                Margin="0,12,0,0"
+                                Visibility="{Binding ViewModel.IsInstallingJdk, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{Binding ViewModel.InstallationStatus}" 
+                                Margin="0,0,0,8"
+                                HorizontalAlignment="Center"/>
+                            <ProgressBar
+                                Value="{Binding ViewModel.InstallationProgress}"
+                                Minimum="0"
+                                Maximum="100"
+                                Height="8"/>
                         </StackPanel>
 
                         <ItemsControl 

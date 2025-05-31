@@ -18,6 +18,11 @@ public class JdkHelper
         public bool IsRemovable { get; set; }
     }
 
+    public List<int> GetAvailableJdkVersions()
+    {
+        return new List<int> { 8, 17, 21 };
+    }
+
     /// <summary>
     /// Ensures that a JDK of at least the required major version is available.
     /// If none is found locally, prompts the user to download/install it.
@@ -297,7 +302,7 @@ public class JdkHelper
                   .ContinueWith(t => t.Result == Wpf.Ui.Controls.MessageBoxResult.Primary);
     }
 
-    private async Task<string> DownloadAndInstallJdkAsync(int version, IProgress<(string, int)> progress)
+    public async Task<string> DownloadAndInstallJdkAsync(int version, IProgress<(string, int)> progress)
     {
         try
         {
