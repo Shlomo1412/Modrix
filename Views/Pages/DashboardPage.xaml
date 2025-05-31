@@ -24,8 +24,10 @@
                 <Grid Margin="0,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
@@ -35,16 +37,51 @@
                         Text="Your Projects"
                         FontSize="24"
                         FontWeight="Medium"
-                        VerticalAlignment="Center"/>
+                        VerticalAlignment="Center"
+                        Margin="0,0,12,0"/>
+
+                    <!-- Refresh Button -->
+                    <ui:Button
+                        Grid.Column="1"
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon ArrowClockwise24}"
+                        Command="{Binding ViewModel.RefreshProjectsCommand}"
+                        Width="36"
+                        Height="36"
+                        VerticalAlignment="Center"
+                        Margin="0,0,6,0"
+                        ToolTip="Refresh Projects List"/>
+
+                    <!-- Open Folder Button -->
+                    <ui:Button
+                        Grid.Column="2"
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon Folder24}"
+                        Command="{Binding ViewModel.OpenProjectsFolderCommand}"
+                        Width="36"
+                        Height="36"
+                        VerticalAlignment="Center"
+                        Margin="0,0,6,0"
+                        ToolTip="Open Projects Folder"/>
+
+                    <!-- Add Project Button -->
+                    <ui:Button
+                        Grid.Column="3"
+                        Appearance="Primary"
+                        Icon="{ui:SymbolIcon Add24}"
+                        Command="{Binding ViewModel.CreateNewProjectCommand}"
+                        Width="36"
+                        Height="36"
+                        VerticalAlignment="Center"
+                        Margin="0,0,12,0"
+                        ToolTip="Create New Project"/>
 
                     <!-- Search Bar -->
                     <ui:TextBox
-                        Grid.Column="1"
-                        PlaceholderText="Search projects..."
+                        Grid.Column="4"
+                        PlaceholderText="Search..."
                         Text="{Binding ViewModel.SearchText, UpdateSourceTrigger=PropertyChanged}"
-                        Margin="12,0,12,0"
                         Width="Auto"
-                        MinWidth="180"
                         VerticalAlignment="Center">
                         <ui:TextBox.Icon>
                             <ui:SymbolIcon Symbol="Search24" />
@@ -53,10 +90,10 @@
 
                     <!-- Game Version Filter -->
                     <ComboBox
-                        Grid.Column="2"
+                        Grid.Column="5"
                         ItemsSource="{Binding ViewModel.GameVersions}"
                         SelectedItem="{Binding ViewModel.SelectedGameVersion}"
-                        Margin="0,0,12,0"
+                        Margin="12,0,12,0"
                         Width="120"
                         VerticalAlignment="Center"
                         ToolTip="Filter by Minecraft version">
@@ -69,10 +106,10 @@
 
                     <!-- Mod Loader Filter -->
                     <ComboBox
-                        Grid.Column="3"
+                        Grid.Column="6"
                         ItemsSource="{Binding ViewModel.ModLoaders}"
                         SelectedItem="{Binding ViewModel.SelectedModLoader}"
-                        Margin="0,0,12,0"
+                        Margin="0,0,0,0"
                         Width="100"
                         VerticalAlignment="Center"
                         ToolTip="Filter by mod loader">
@@ -82,8 +119,6 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-
-
                 </Grid>
 
                 <!-- Projects List -->
@@ -170,40 +205,5 @@
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
-
-        <!-- Add New Project FAB -->
-        <ui:Button
-            Appearance="Primary"
-            Icon="{ui:SymbolIcon Add24}"
-            Width="48"
-            Height="48"
-            VerticalAlignment="Bottom"
-            HorizontalAlignment="Right"
-            Margin="0,0,24,24"
-            Command="{Binding ViewModel.CreateNewProjectCommand}"
-            ToolTip="Create New Project"/>
-
-        <!-- Action Buttons -->
-        <ui:Button
-            Appearance="Secondary"
-            Icon="{ui:SymbolIcon Folder24}"
-            Command="{Binding ViewModel.OpenProjectsFolderCommand}"
-            Width="48"
-            Height="48"
-            VerticalAlignment="Bottom"
-            HorizontalAlignment="Right"
-            Margin="0,0,84,24"
-            ToolTip="Open Projects Folder"/>
-
-        <ui:Button
-            Appearance="Secondary"
-            Icon="{ui:SymbolIcon ArrowClockwise24}"
-            Command="{Binding ViewModel.RefreshProjectsCommand}"
-            Width="48"
-            Height="48"
-            VerticalAlignment="Bottom"
-            HorizontalAlignment="Right"
-            Margin="0,0,144,24"
-            ToolTip="Refresh Projects List"/>
     </Grid>
 </Page>
