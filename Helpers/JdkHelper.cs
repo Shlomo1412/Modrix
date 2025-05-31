@@ -8,6 +8,15 @@ using System.Windows;
 
 public class JdkHelper
 {
+
+    public class JdkInfo
+    {
+        public string Path { get; set; }
+        public string Source { get; set; } // "Modrix JDKs", "JAVA_HOME", etc.
+        public string Version { get; set; }
+        public bool IsRemovable { get; set; }
+    }
+
     /// <summary>
     /// Ensures that a JDK of at least the required major version is available.
     /// If none is found locally, prompts the user to download/install it.
@@ -35,6 +44,114 @@ public class JdkHelper
 
         // At this point you can set JAVA_HOME or pass jdkHome to your Gradle invocation
         Environment.SetEnvironmentVariable("JAVA_HOME", jdkHome);
+    }
+
+    public List<JdkInfo> GetInstalledJdks()
+    {
+        var jdks = new List<JdkInfo>();
+
+        // 1. Check Modrix JDKs directory
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var modrixJdksRoot = Path.Combine(localAppData, "Modrix", "JDKs");
+        if (Directory.Exists(modrixJdksRoot))
+        {
+            foreach (var dir in Directory.GetDirectories(modrixJdksRoot))
+            {
+                if (IsValidJdk(dir))
+                {
+                    jdks.Add(new JdkInfo
+                    {
+                        Path = dir,
+                        Source = "Modrix JDKs",
+                        Version = GetJavaVersion(dir),
+                        IsRemovable = true
+                    });
+                }
+            }
+        }
+
+        // 2. Check JAVA_HOME
+        var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
+        if (!string.IsNullOrEmpty(javaHome) && Directory.Exists(javaHome) && IsValidJdk(javaHome))
+        {
+            jdks.Add(new JdkInfo
+            {
+                Path = javaHome,
+                Source = "JAVA_HOME",
+                Version = GetJavaVersion(javaHome),
+                IsRemovable = false
+            });
+        }
+
+        // 3. Check common installation paths
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        var commonJdkPaths = new[]
+        {
+            Path.Combine(programFiles, "Java"),
+            Path.Combine(programFiles, "Eclipse Foundation"),
+            Path.Combine(programFiles, "AdoptOpenJDK"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Java")
+        };
+
+        foreach (var basePath in commonJdkPaths)
+        {
+            if (Directory.Exists(basePath))
+            {
+                foreach (var jdkDir in Directory.GetDirectories(basePath, "jdk*"))
+                {
+                    if (IsValidJdk(jdkDir))
+                    {
+                        jdks.Add(new JdkInfo
+                        {
+                            Path = jdkDir,
+                            Source = "System Installation",
+                            Version = GetJavaVersion(jdkDir),
+                            IsRemovable = false
+                        });
+                    }
+                }
+            }
+        }
+
+        return jdks;
+    }
+
+    private string GetJavaVersion(string jdkPath)
+    {
+        var javaExe = Path.Combine(jdkPath, "bin", "java.exe");
+        try
+        {
+            var startInfo = new ProcessStartInfo(javaExe, "-version")
+            {
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (var process = Process.Start(startInfo))
+            {
+                process.WaitForExit(2000);
+                var versionOutput = process.StandardError.ReadToEnd();
+
+                // Parse version from output like: "java version "1.8.0_301""
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    versionOutput,
+                    @"version\s+""(\d+(\.\d+)*(_\d+)?"
+                );
+
+                return match.Success ? match.Groups[1].Value : "Unknown";
+            }
+        }
+        catch
+        {
+            return "Unknown";
+        }
+    }
+
+    private bool IsValidJdk(string path)
+    {
+        var javaExe = Path.Combine(path, "bin", "java.exe");
+        return File.Exists(javaExe);
     }
 
     /// <summary>
