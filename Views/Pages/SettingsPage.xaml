@@ -99,11 +99,9 @@
                             <ui:Button
                                 Margin="12,0,0,0"
                                 Appearance="Secondary"
-                                Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                Icon="{ui:SymbolIcon ArrowClockwise20}"
                                 Command="{Binding ViewModel.RefreshJdksCommand}"
                                 ToolTip="Refresh JDK list"
-                                Width="32"
-                                Height="32"
                                 VerticalAlignment="Center"/>
                         </StackPanel>
 
@@ -144,9 +142,7 @@
                                                     Margin="0,0,8,0"
                                                     Appearance="Secondary"
                                                     Icon="{ui:SymbolIcon FolderOpen24}"
-                                                    ToolTip="Open JDK folder"
-                                                    Width="32"
-                                                    Height="32"/>
+                                                    ToolTip="Open JDK folder"/>
 
                                                 <ui:Button
                                                     Command="{Binding DataContext.ViewModel.RemoveJdkCommand, RelativeSource={RelativeSource AncestorType=Page}}"
@@ -154,9 +150,7 @@
                                                     Appearance="Danger"
                                                     Icon="{ui:SymbolIcon Delete24}"
                                                     ToolTip="Remove JDK"
-                                                    Visibility="{Binding IsRemovable, Converter={StaticResource BoolToVisibility}}"
-                                                    Width="32"
-                                                    Height="32"/>
+                                                    Visibility="{Binding IsRemovable, Converter={StaticResource BoolToVisibility}}"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>

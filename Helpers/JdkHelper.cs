@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -70,7 +71,27 @@ public class JdkHelper
             }
         }
 
-        // 2. Check JAVA_HOME
+        // 2. Check user's .jdks folder
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var userJdksPath = Path.Combine(userProfile, ".jdks");
+        if (Directory.Exists(userJdksPath))
+        {
+            foreach (var dir in Directory.GetDirectories(userJdksPath))
+            {
+                if (IsValidJdk(dir))
+                {
+                    jdks.Add(new JdkInfo
+                    {
+                        Path = dir,
+                        Source = "User .jdks",
+                        Version = GetJavaVersion(dir),
+                        IsRemovable = false // Typically managed by IDEs
+                    });
+                }
+            }
+        }
+
+        // 3. Check JAVA_HOME
         var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
         if (!string.IsNullOrEmpty(javaHome) && Directory.Exists(javaHome) && IsValidJdk(javaHome))
         {
@@ -83,7 +104,7 @@ public class JdkHelper
             });
         }
 
-        // 3. Check common installation paths
+        // 4. Check common installation paths
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
         var commonJdkPaths = new[]
         {
@@ -124,6 +145,7 @@ public class JdkHelper
             var startInfo = new ProcessStartInfo(javaExe, "-version")
             {
                 RedirectStandardError = true,
+                RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
@@ -132,11 +154,14 @@ public class JdkHelper
             {
                 process.WaitForExit(2000);
                 var versionOutput = process.StandardError.ReadToEnd();
+                if (string.IsNullOrWhiteSpace(versionOutput))
+                    versionOutput = process.StandardOutput.ReadToEnd();
 
-                // Parse version from output like: "java version "1.8.0_301""
-                var match = System.Text.RegularExpressions.Regex.Match(
+                // Parse version from various output formats
+                var match = Regex.Match(
                     versionOutput,
-                    @"version\s+""(\d+(\.\d+)*(_\d+)?"
+                    @"version\s+""?(\d+(\.\d+)*)([._]\d+)?",
+                    RegexOptions.IgnoreCase
                 );
 
                 return match.Success ? match.Groups[1].Value : "Unknown";
@@ -168,12 +193,7 @@ public class JdkHelper
         {
             var candidates = Directory
                 .GetDirectories(jdkRoot, $"jdk-{requiredJava}*")
-                .Where(d =>
-                {
-                    // optionally verify it's really a JDK by checking bin\java(.exe)
-                    var javaExe = Path.Combine(d, "bin", "java.exe");
-                    return File.Exists(javaExe);
-                })
+                .Where(IsValidJdk)
                 .OrderByDescending(d => d) // pick the highest sub-version first
                 .ToList();
 
@@ -181,39 +201,64 @@ public class JdkHelper
                 return candidates[0];
         }
 
-        // 2) Fall back to system JAVA_HOME if it matches
-        var sysJavaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
-        if (!string.IsNullOrWhiteSpace(sysJavaHome))
+        // 2) Check user's .jdks folder
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var userJdksPath = Path.Combine(userProfile, ".jdks");
+        if (Directory.Exists(userJdksPath))
         {
-            var javaExe = Path.Combine(sysJavaHome!, "bin", "java.exe");
-            if (File.Exists(javaExe))
-            {
-                try
-                {
-                    var versionOutput = Process
-                        .Start(new ProcessStartInfo(javaExe, "-version")
-                        {
-                            RedirectStandardError = true,
-                            UseShellExecute = false,
-                            CreateNoWindow = true
-                        })!
-                        .StandardError
-                        .ReadLine(); // something like 'java version "21.0.2"'
+            var candidates = Directory
+                .GetDirectories(userJdksPath, $"*jdk-{requiredJava}*")
+                .Where(IsValidJdk)
+                .OrderByDescending(d => d)
+                .ToList();
 
-                    if (versionOutput != null &&
-                        versionOutput.Contains($"\"{requiredJava}."))
-                    {
-                        return sysJavaHome;
-                    }
-                }
-                catch
+            if (candidates.Count > 0)
+                return candidates[0];
+        }
+
+        // 3) Fall back to system JAVA_HOME if it matches
+        var sysJavaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
+        if (!string.IsNullOrWhiteSpace(sysJavaHome) && Directory.Exists(sysJavaHome) && IsValidJdk(sysJavaHome))
+        {
+            try
+            {
+                var version = GetJavaVersion(sysJavaHome);
+                if (!string.IsNullOrEmpty(version) && version.StartsWith(requiredJava.ToString()))
                 {
-                    // ignore parse errors
+                    return sysJavaHome;
                 }
+            }
+            catch
+            {
+                // ignore parse errors
             }
         }
 
-        // not found
+        // 4) Check common installation paths
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        var commonJdkPaths = new[]
+        {
+            Path.Combine(programFiles, "Java"),
+            Path.Combine(programFiles, "Eclipse Foundation"),
+            Path.Combine(programFiles, "AdoptOpenJDK"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Java")
+        };
+
+        foreach (var basePath in commonJdkPaths)
+        {
+            if (Directory.Exists(basePath))
+            {
+                var candidates = Directory
+                    .GetDirectories(basePath, $"*jdk*{requiredJava}*")
+                    .Where(IsValidJdk)
+                    .OrderByDescending(d => d)
+                    .ToList();
+
+                if (candidates.Count > 0)
+                    return candidates[0];
+            }
+        }
+
         return null;
     }
 
