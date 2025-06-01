@@ -94,7 +94,7 @@
                         ItemsSource="{Binding ViewModel.GameVersions}"
                         SelectedItem="{Binding ViewModel.SelectedGameVersion}"
                         Margin="12,0,12,0"
-                        Width="120"
+                        Width="90"
                         VerticalAlignment="Center"
                         ToolTip="Filter by Minecraft version">
                         <ComboBox.ItemTemplate>
@@ -110,7 +110,7 @@
                         ItemsSource="{Binding ViewModel.ModLoaders}"
                         SelectedItem="{Binding ViewModel.SelectedModLoader}"
                         Margin="0,0,0,0"
-                        Width="100"
+                        Width="93"
                         VerticalAlignment="Center"
                         ToolTip="Filter by mod loader">
                         <ComboBox.ItemTemplate>
