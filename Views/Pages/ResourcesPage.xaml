@@ -91,7 +91,7 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportTextures_Click" Height="40"/>
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportTextures_Click" Height="40" Appearance="Primary"/>
                         <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Height="40"
@@ -144,7 +144,7 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportModels_Click" Height="40"/>
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportModels_Click" Height="40" Appearance="Primary"/>
                         <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Height="40"
@@ -185,7 +185,7 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportSounds_Click" Height="40"/>
+                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportSounds_Click" Height="40" Appearance="Primary"/>
                         <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Height="40"
