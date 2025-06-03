@@ -9,14 +9,13 @@ using System.Windows.Input;
 
 namespace Modrix.ViewModels.Pages;
 
-[ObservableObject]
-public partial class TextureEditorViewModel : INavigationAware
+public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 {
     [ObservableProperty]
-    private string _pngPath;
+    private string _pngPath = string.Empty;
 
     [ObservableProperty]
-    private BitmapImage _currentImage;
+    private BitmapImage _currentImage = new();
 
     [ObservableProperty]
     private bool _hasUnsavedChanges;
@@ -28,7 +27,7 @@ public partial class TextureEditorViewModel : INavigationAware
     private int _imageHeight;
 
     [ObservableProperty]
-    private string _fileName;
+    private string _fileName = string.Empty;
 
     public TextureEditorViewModel()
     {

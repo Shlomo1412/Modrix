@@ -375,16 +375,64 @@ namespace Modrix.Views.Pages
             {
                 var contextMenu = new ContextMenu();
 
+                var editItem = new Wpf.Ui.Controls.MenuItem
+                {
+                    Header = "Edit...",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Edit24)
+                };
+
                 var openItem = new Wpf.Ui.Controls.MenuItem
                 {
-                    Header = "Open in Editor",
-                    Icon = new SymbolIcon(SymbolRegular.Edit24)
+                    Header = "Open in External Editor",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Open28)
                 };
 
                 var deleteItem = new Wpf.Ui.Controls.MenuItem
                 {
                     Header = "Delete",
-                    Icon = new SymbolIcon(SymbolRegular.Delete24)
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Delete24)
+                };
+
+                editItem.Click += (s, args) =>
+                {
+                    var filePath = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "textures", img.FileName);
+                    if (File.Exists(filePath))
+                    {
+                        // Create the editor page
+                        var editorVm = new ViewModels.Pages.TextureEditorViewModel();
+                        var editorPage = new TextureEditorPage(editorVm);
+                        editorVm.SetPngPath(filePath);
+
+                        // Create a Frame to host the page
+                        var frame = new Frame();
+                        frame.Navigate(editorPage);
+
+                        // Create a new tab
+                        var tab = new TabItem
+                        {
+                            Header = new StackPanel
+                            {
+                                Orientation = Orientation.Horizontal,
+                                Children =
+                                {
+                                    new Wpf.Ui.Controls.SymbolIcon
+                                    {
+                                        Symbol = Wpf.Ui.Controls.SymbolRegular.ImageEdit24,
+                                        Margin = new Thickness(0, 0, 4, 0)
+                                    },
+                                    new System.Windows.Controls.TextBlock
+                                    {
+                                        Text = $"Edit: {img.FileName}"
+                                    }
+                                }
+                            },
+                            Content = frame
+                        };
+
+                        // Add and select the new tab
+                        ResourcesTabs.Items.Add(tab);
+                        ResourcesTabs.SelectedItem = tab;
+                    }
                 };
 
                 openItem.Click += (s, args) =>
@@ -424,6 +472,7 @@ namespace Modrix.Views.Pages
                     }
                 };
 
+                contextMenu.Items.Add(editItem);
                 contextMenu.Items.Add(openItem);
                 contextMenu.Items.Add(new Separator());
                 contextMenu.Items.Add(deleteItem);
