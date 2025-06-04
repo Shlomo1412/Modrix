@@ -6,7 +6,8 @@
     xmlns:local="clr-namespace:Modrix.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="Workspace"
+    xmlns:converters="clr-namespace:Modrix.Converters"
+    Title="{Binding ViewModel.ApplicationTitle}"
     Width="1200"
     Height="800"
     d:DesignHeight="450"
@@ -20,15 +21,26 @@
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
 
+    <ui:FluentWindow.Resources>
+        <converters:ProjectIconConverter x:Key="ProjectIconConverter"/>
+    </ui:FluentWindow.Resources>
+
     <Grid>
         <!-- Title Bar -->
         <ui:TitleBar
             x:Name="TitleBar"
-            Title="Workspace"
+            Title="{Binding ViewModel.ApplicationTitle}"
             Grid.Row="0"
             CloseWindowByDoubleClickOnIcon="True">
             <ui:TitleBar.Icon>
-                <ui:ImageIcon Source="pack://application:,,,/Resources/ModrixIcon.ico" />
+                <ui:ImageIcon>
+                    <ui:ImageIcon.Source>
+                        <MultiBinding Converter="{StaticResource ProjectIconConverter}">
+                            <Binding Path="ViewModel.CurrentProject.Location"/>
+                            <Binding Path="ViewModel.CurrentProject.ModId"/>
+                        </MultiBinding>
+                    </ui:ImageIcon.Source>
+                </ui:ImageIcon>
             </ui:TitleBar.Icon>
             <!-- Toolbar Buttons -->
             <ui:TitleBar.Header>
@@ -107,11 +119,6 @@
                     </ui:AutoSuggestBox.Icon>
                 </ui:AutoSuggestBox>
             </ui:NavigationView.AutoSuggestBox>
-
-            
-
-            
-            
 
             <!-- Snackbar Support -->
             <ui:NavigationView.ContentOverlay>
