@@ -21,6 +21,20 @@ namespace Modrix.Services
         {
             try
             {
+                // Initialize project structure
+                data.ProjectDir = data.Location;
+                data.SrcDir = Path.Combine(data.ProjectDir, "src", "main");
+                data.JavaDir = Path.Combine(data.SrcDir, "java");
+                data.ResourcesDir = Path.Combine(data.SrcDir, "resources");
+                data.PackageDir = Path.Combine(data.JavaDir, data.Package.Replace('.', Path.DirectorySeparatorChar));
+
+                // Ensure base directories exist
+                Directory.CreateDirectory(data.ProjectDir);
+                Directory.CreateDirectory(data.JavaDir);
+                Directory.CreateDirectory(data.ResourcesDir);
+                Directory.CreateDirectory(data.PackageDir);
+                Directory.CreateDirectory(Path.Combine(data.ResourcesDir, "META-INF"));
+
                 await CopyTemplateFilesAsync(data.Location, progress, data.ModId);
                 await FixAssetsFolder(data.Location, data.ModId);
                 await UpdateModMetadataAsync(data, progress);
@@ -137,10 +151,12 @@ namespace Modrix.Services
 
         private async Task UpdatePackageStructure(ModProjectData data)
         {
+            // Ensure all required directories exist
             var srcPath = Path.Combine(data.Location, "src");
             var packagePath = data.Package.Replace('.', Path.DirectorySeparatorChar);
             var mainPath = Path.Combine(srcPath, "main", "java", packagePath);
 
+            // Create the package directory structure
             Directory.CreateDirectory(mainPath);
 
             // Move and update main mod class
@@ -153,15 +169,24 @@ namespace Modrix.Services
                     .Replace("ExampleMod", $"{data.ModId}Mod");
 
                 var newMainClass = Path.Combine(mainPath, $"{data.ModId}Mod.java");
+                
+                // Ensure the directory exists before writing the file
+                Directory.CreateDirectory(Path.GetDirectoryName(newMainClass));
                 await File.WriteAllTextAsync(newMainClass, content);
-            }
 
-            // Clean up old package structure
-            var oldPackagePath = Path.Combine(srcPath, "main", "java", "com", "example");
-            if (Directory.Exists(oldPackagePath))
-            {
-                Directory.Delete(oldPackagePath, true);
-                CleanEmptyAncestorDirectories(oldPackagePath);
+                // Only try to clean up after successfully creating the new file
+                try
+                {
+                    if (Directory.Exists(Path.Combine(srcPath, "main", "java", "com", "example")))
+                    {
+                        Directory.Delete(Path.Combine(srcPath, "main", "java", "com", "example"), true);
+                        CleanEmptyAncestorDirectories(Path.Combine(srcPath, "main", "java", "com"));
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore cleanup errors as they don't affect functionality
+                }
             }
         }
 
