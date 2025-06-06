@@ -29,37 +29,41 @@
     <Resource Include="Assets\wpfui-icon-1024.png" />
   </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Scriban" Version="5.0.0" />
-		<PackageReference Include="WPF-UI.Markdown" Version="4.0.2" />
-		<EmbeddedResource Include="Resources\Templates\Forge\**\*.scriban" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Scriban" Version="5.0.0" />
+    <PackageReference Include="WPF-UI.Markdown" Version="4.0.2" />
+    <EmbeddedResource Include="Resources\Templates\Forge\**\*.scriban" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Include="Resources\Templates\Forge\Wrapper\**\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Templates\Forge\Wrapper\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Resources\ModrixIcon.ico" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<Resource Include="Resources\ModrixIcon.ico" />
-	</ItemGroup>
+  <ItemGroup>
+    <Content Include="Templates\FabricMod\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\ForgeMod\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
-	<ItemGroup>
-		<Content Include="Templates\FabricMod\**\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="ModElements\Fabric\" />
-	  <Folder Include="Templates\FabricMod\src\client\java\com\example\mixin\client\" />
-	  <Folder Include="Templates\FabricMod\src\main\java\com\example\mixin\" />
-	  <Folder Include="Templates\FabricMod\src\main\resources\assets\modid\" />
-	  <Folder Include="Views\ModElements\Controls\" />
-	  <Folder Include="Views\ModElements\Windows\" />
-	  <Folder Include="Views\ModElements\Pages\" />
-	</ItemGroup>
+  <ItemGroup>
+    <Folder Include="ModElements\Fabric\" />
+    <Folder Include="Templates\FabricMod\src\client\java\com\example\mixin\client\" />
+    <Folder Include="Templates\FabricMod\src\main\java\com\example\mixin\" />
+    <Folder Include="Templates\FabricMod\src\main\resources\assets\modid\" />
+    <Folder Include="Templates\ForgeMod\src\main\java\com\example\" />
+    <Folder Include="Templates\ForgeMod\src\main\resources\assets\modid\" />
+    <Folder Include="Views\ModElements\Controls\" />
+    <Folder Include="Views\ModElements\Windows\" />
+    <Folder Include="Views\ModElements\Pages\" />
+  </ItemGroup>
 
 </Project>
