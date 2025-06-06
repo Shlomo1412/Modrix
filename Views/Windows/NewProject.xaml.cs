@@ -217,10 +217,14 @@ namespace Modrix.Views.Windows
                 var manager = new FabricTemplateManager();
                 await manager.FullSetupWithGradle(ProjectData, progress);
             }
+            else if (ProjectData.ModType == "Forge Mod")
+            {
+                var manager = new ForgeTemplateManager();
+                await manager.FullSetupWithGradle(ProjectData, progress);
+            }
             else
             {
-                var manager = new TemplateManager();
-                await manager.FullSetupWithGradle(ProjectData, progress);
+                throw new ArgumentException($"Unsupported mod type: {ProjectData.ModType}");
             }
         }
 
