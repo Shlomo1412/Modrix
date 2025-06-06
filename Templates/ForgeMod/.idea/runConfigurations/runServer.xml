@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<component>
+  <configuration default="false" factoryName="Application" name="runServer" singleton="false" type="Application">
+    <option name="MAIN_CLASS_NAME" value="net.minecraftforge.bootstrap.ForgeBootstrap"/>
+    <option name="VM_PARAMETERS" value="-Dforge.logging.console.level=debug -Dforge.logging.markers=REGISTRIES -Dnet.minecraftforge.gradle.GradleStart.srg.srg-mcp=C:\Users\shlom\AppData\Local\Modrix\Projects\Example\build\createSrgToMcp\output.srg -Dmixin.env.remapRefMap=true -Dmixin.env.refMapRemappingFile=C:\Users\shlom\AppData\Local\Modrix\Projects\Example\build\createSrgToMcp\output.srg -Dforge.enabledGameTestNamespaces=example -Dforge.enableGameTest=true -Djava.net.preferIPv6Addresses=system"/>
+    <option name="PROGRAM_PARAMETERS" value="--launchTarget forge_userdev_server --gameDir . --nogui --mixin.config example.mixins.json"/>
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$\run"/>
+    <module name="example.main"/>
+    <envs>
+      <env name="MOD_CLASSES" value="$PROJECT_DIR$\build\sourcesSets\main"/>
+      <env name="MCP_MAPPINGS" value="official_1.21.5"/>
+    </envs>
+    <method v="2">
+      <option enabled="true" name="Make"/>
+      <option enabled="true" externalProjectPath="$PROJECT_DIR$" name="Gradle.BeforeRunTask" tasks=":prepareRunServerCompile"/>
+    </method>
+  </configuration>
+</component>
