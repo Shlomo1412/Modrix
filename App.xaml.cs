@@ -76,6 +76,10 @@ namespace Modrix
                 // Console Page
                 services.AddSingleton<ConsolePage>();
 
+                // IDE Page
+                services.AddSingleton<IDEPageViewModel>();
+                services.AddSingleton<IDEPage>();
+
                 //Content dialog
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
 

@@ -73,6 +73,12 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
+                    Content = "IDE",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Code24 },
+                    TargetPageType = typeof(Views.Pages.IDEPage)
+                },
+                new NavigationViewItem()
+                {
                     Content = "Resources",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.DesignIdeas16 },
                     TargetPageType = typeof(Views.Pages.ResourcesPage)
