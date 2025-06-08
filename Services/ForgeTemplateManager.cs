@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -15,7 +16,12 @@ namespace Modrix.Services
     public class ForgeTemplateManager
     {
         private readonly JdkHelper _jdkHelper = new JdkHelper();
-        private const string ForgeVersion = "54.1.3";
+
+        private static readonly Dictionary<string, (string forgeVersion, string loaderVersion)> ForgeVersions = new()
+        {
+            { "1.21.4", ("54.1.3", "54") },
+            { "1.21.5", ("55.0.22", "55") }
+        };
 
         public async Task FullSetupWithGradle(ModProjectData data, IProgress<(string Message, int Progress)> progress)
         {
@@ -56,13 +62,7 @@ namespace Modrix.Services
                     $"MinecraftVersion={data.MinecraftVersion}\n" +
                     $"IconPath=src/main/resources/assets/{data.ModId}/icon.png");
 
-                progress.Report(("Verifying Java environment...", 95));
-                await _jdkHelper.EnsureRequiredJdk(data.MinecraftVersion, progress);
-                
-                // Run Gradle setup
-                await RunGradleSetup(data.Location, progress);
-
-                progress.Report(("Project ready!", 100));
+                progress.Report(("Project created successfully!", 100));
 
                 // Show success snackbar
                 var navWin = App.Services.GetService<INavigationWindow>();
@@ -133,17 +133,63 @@ namespace Modrix.Services
             var gradlePropsPath = Path.Combine(data.Location, "gradle.properties");
             var gradleContent = await File.ReadAllTextAsync(gradlePropsPath);
 
+            // Get the appropriate Forge version for the Minecraft version
+            if (!ForgeVersions.TryGetValue(data.MinecraftVersion, out var forgeInfo))
+            {
+                throw new Exception($"Unsupported Minecraft version: {data.MinecraftVersion}. Supported versions are: {string.Join(", ", ForgeVersions.Keys)}");
+            }
+
+            // Replace minecraft version and related properties
             gradleContent = gradleContent
+                .Replace("minecraft_version=1.21.5", $"minecraft_version={data.MinecraftVersion}")
+                .Replace("minecraft_version_range=[1.21.5,1.22)", $"minecraft_version_range=[{data.MinecraftVersion},1.22)")
+                .Replace("mapping_version=1.21.5", $"mapping_version={data.MinecraftVersion}")
+                .Replace("forge_version=55.0.22", $"forge_version={forgeInfo.forgeVersion}")
+                .Replace("forge_version_range=[55,)", $"forge_version_range=[{forgeInfo.loaderVersion},)")
+                .Replace("loader_version_range=[55,)", $"loader_version_range=[{forgeInfo.loaderVersion},)");
+
+            // Replace mod properties
+            gradleContent = gradleContent
+                .Replace("mod_id=example", $"mod_id={data.ModId}")
+                .Replace("mod_name=Example", $"mod_name={data.Name}")
+                .Replace("mod_license=Apache 2.0", $"mod_license={data.License}")
                 .Replace("mod_version=1.0.0", $"mod_version={data.Version}")
                 .Replace("mod_group_id=com.example", $"mod_group_id={data.Package}")
-                .Replace("mod_id=examplemod", $"mod_id={data.ModId}")
-                .Replace("mod_name=Example Mod", $"mod_name={data.Name}")
-                .Replace("mod_license=All Rights Reserved", $"mod_license={data.License}")
-                .Replace("mod_version=1.0.0", $"mod_version={data.ModVersion}")
-                .Replace("mod_authors=Author Name", $"mod_authors={data.Authors}")
-                .Replace("mod_description=Example mod description", $"mod_description={data.Description}");
+                .Replace("mod_authors=YourName", $"mod_authors={data.Authors}")
+                .Replace("mod_description=A simple example mod that demonstrates Forge setup.", $"mod_description={data.Description}");
 
             await File.WriteAllTextAsync(gradlePropsPath, gradleContent);
+
+            // Update settings.gradle
+            var settingsPath = Path.Combine(data.Location, "settings.gradle");
+            var settingsContent = await File.ReadAllTextAsync(settingsPath);
+            settingsContent = settingsContent.Replace("rootProject.name = 'example'", $"rootProject.name = '{data.ModId}'");
+            await File.WriteAllTextAsync(settingsPath, settingsContent);
+
+            // Update mixins.json
+            var oldMixinsPath = Path.Combine(data.Location, "src", "main", "resources", "example.mixins.json");
+            var newMixinsPath = Path.Combine(data.Location, "src", "main", "resources", $"{data.ModId}.mixins.json");
+            if (File.Exists(oldMixinsPath))
+            {
+                var mixinsContent = await File.ReadAllTextAsync(oldMixinsPath);
+                mixinsContent = mixinsContent
+                    .Replace("\"package\": \"com.example.mixin\"", $"\"package\": \"{data.Package}.mixin\"")
+                    .Replace("\"compatibilityLevel\": \"JAVA_8\"", "\"compatibilityLevel\": \"JAVA_17\"")
+                    .Replace("\"refmap\": \"example.refmap.json\"", $"\"refmap\": \"{data.ModId}.refmap.json\"");
+
+                await File.WriteAllTextAsync(newMixinsPath, mixinsContent);
+                if (oldMixinsPath != newMixinsPath)
+                    File.Delete(oldMixinsPath);
+            }
+
+            // Update pack.mcmeta
+            var mcmetaPath = Path.Combine(data.Location, "src", "main", "resources", "pack.mcmeta");
+            if (File.Exists(mcmetaPath))
+            {
+                var mcmetaContent = await File.ReadAllTextAsync(mcmetaPath);
+                mcmetaContent = mcmetaContent.Replace("\"description\": \"example resources\"", $"\"description\": \"{data.ModId} resources\"");
+                await File.WriteAllTextAsync(mcmetaPath, mcmetaContent);
+            }
 
             progress.Report(("Updating package structure...", 50));
             await UpdatePackageStructure(data);
@@ -155,38 +201,64 @@ namespace Modrix.Services
             var srcPath = Path.Combine(data.Location, "src");
             var packagePath = data.Package.Replace('.', Path.DirectorySeparatorChar);
             var mainPath = Path.Combine(srcPath, "main", "java", packagePath);
+            var oldPackagePath = Path.Combine(srcPath, "main", "java", "com", "example");
 
             // Create the package directory structure
             Directory.CreateDirectory(mainPath);
 
-            // Move and update main mod class
-            var oldMainClass = Path.Combine(srcPath, "main", "java", "com", "example", "ExampleMod.java");
-            if (File.Exists(oldMainClass))
+            // Move and update main mod class and other files
+            var filesToUpdate = Directory.GetFiles(oldPackagePath, "*.java", SearchOption.AllDirectories);
+            foreach (var oldFile in filesToUpdate)
             {
-                var content = await File.ReadAllTextAsync(oldMainClass);
+                var fileName = Path.GetFileName(oldFile);
+                var newFileName = fileName;
+
+                // Rename Example.java and ExampleMod.java to {ModId}Mod.java
+                if (fileName == "Example.java" || fileName == "ExampleMod.java")
+                {
+                    newFileName = $"{char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod.java";
+                }
+
+                var content = await File.ReadAllTextAsync(oldFile);
+
+                // Update package declaration
+                content = content.Replace("package com.example", $"package {data.Package}");
+
+                // Update mod class name and MODID
                 content = content
-                    .Replace("com.example", data.Package)
-                    .Replace("ExampleMod", $"{data.ModId}Mod");
+                    .Replace("class Example", $"class {char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod")
+                    .Replace("class ExampleMod", $"class {char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod")
+                    .Replace("@Mod(Example.MODID)", $"@Mod({char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod.MODID)")
+                    .Replace("@Mod(ExampleMod.MODID)", $"@Mod({char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod.MODID)")
+                    .Replace("public static final String MODID = \"example\"", $"public static final String MODID = \"{data.ModId}\"")
+                    .Replace("example:example_block", $"{data.ModId}:{data.ModId}_block")
+                    .Replace("example:example_item", $"{data.ModId}:{data.ModId}_item")
+                    .Replace("example:example_tab", $"{data.ModId}:{data.ModId}_tab")
+                    .Replace("EXAMPLE_BLOCK", $"{data.ModId.ToUpper()}_BLOCK")
+                    .Replace("EXAMPLE_ITEM", $"{data.ModId.ToUpper()}_ITEM")
+                    .Replace("EXAMPLE_TAB", $"{data.ModId.ToUpper()}_TAB")
+                    .Replace("example_block", $"{data.ModId}_block")
+                    .Replace("example_item", $"{data.ModId}_item")
+                    .Replace("example_tab", $"{data.ModId}_tab")
+                    .Replace("@Mod.EventBusSubscriber(modid = MODID", $"@Mod.EventBusSubscriber(modid = MODID");
 
-                var newMainClass = Path.Combine(mainPath, $"{data.ModId}Mod.java");
-                
-                // Ensure the directory exists before writing the file
-                Directory.CreateDirectory(Path.GetDirectoryName(newMainClass));
-                await File.WriteAllTextAsync(newMainClass, content);
+                var newFilePath = Path.Combine(mainPath, newFileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(newFilePath));
+                await File.WriteAllTextAsync(newFilePath, content);
+            }
 
-                // Only try to clean up after successfully creating the new file
-                try
+            // Clean up old package structure
+            try
+            {
+                if (Directory.Exists(oldPackagePath))
                 {
-                    if (Directory.Exists(Path.Combine(srcPath, "main", "java", "com", "example")))
-                    {
-                        Directory.Delete(Path.Combine(srcPath, "main", "java", "com", "example"), true);
-                        CleanEmptyAncestorDirectories(Path.Combine(srcPath, "main", "java", "com"));
-                    }
+                    Directory.Delete(oldPackagePath, true);
+                    CleanEmptyAncestorDirectories(Path.GetDirectoryName(oldPackagePath));
                 }
-                catch (Exception)
-                {
-                    // Ignore cleanup errors as they don't affect functionality
-                }
+            }
+            catch (Exception)
+            {
+                // Ignore cleanup errors as they don't affect functionality
             }
         }
 
@@ -199,8 +271,27 @@ namespace Modrix.Services
             if (File.Exists(settingsPath))
             {
                 var settingsContent = await File.ReadAllTextAsync(settingsPath);
-                settingsContent = settingsContent.Replace("rootProject.name = 'examplemod'", $"rootProject.name = '{data.ModId}'");
+                settingsContent = settingsContent.Replace("rootProject.name = 'example'", $"rootProject.name = '{data.ModId}'");
                 await File.WriteAllTextAsync(settingsPath, settingsContent);
+            }
+
+            // Update build.gradle
+            var buildGradlePath = Path.Combine(data.Location, "build.gradle");
+            if (File.Exists(buildGradlePath))
+            {
+                var buildContent = await File.ReadAllTextAsync(buildGradlePath);
+
+                // Update mixin configuration
+                buildContent = buildContent
+                    .Replace("${mod_id}.refmap.json", $"{data.ModId}.refmap.json")
+                    .Replace("\"${mod_id}.mixins.json\"", $"\"{data.ModId}.mixins.json\"");
+
+                // Update run configurations
+                buildContent = buildContent
+                    .Replace("property 'forge.enabledGameTestNamespaces', mod_id", $"property 'forge.enabledGameTestNamespaces', '{data.ModId}'")
+                    .Replace("args '--mod', mod_id,", $"args '--mod', '{data.ModId}',");
+
+                await File.WriteAllTextAsync(buildGradlePath, buildContent);
             }
         }
 
@@ -218,46 +309,6 @@ namespace Modrix.Services
                 .Replace("description='''\\nThis is an example description!\\n'''", $"description='''\\n{data.Description}\\n'''");
 
             await File.WriteAllTextAsync(modTomlPath, content);
-        }
-
-        private async Task RunGradleSetup(string projectPath, IProgress<(string, int)> progress)
-        {
-            string gradlewPath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
-                ? Path.Combine(projectPath, "gradlew.bat")
-                : Path.Combine(projectPath, "gradlew");
-
-            if (!File.Exists(gradlewPath))
-                throw new FileNotFoundException("Gradle wrapper not found");
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var chmod = new ProcessStartInfo
-                {
-                    FileName = "/bin/chmod",
-                    Arguments = $"+x {gradlewPath}",
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                Process.Start(chmod)?.WaitForExit();
-            }
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = gradlewPath,
-                Arguments = "genIntellijRuns",
-                WorkingDirectory = projectPath,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using var process = new Process { StartInfo = startInfo };
-            process.Start();
-            await process.WaitForExitAsync();
-
-            if (process.ExitCode != 0)
-                throw new Exception("Gradle setup failed");
         }
 
         private async Task CreateReadmeFile(ModProjectData data)
