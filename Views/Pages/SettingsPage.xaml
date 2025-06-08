@@ -9,6 +9,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:converters="clr-namespace:Modrix.Helpers"
+    xmlns:models="clr-namespace:Modrix.Models"
     Title="SettingsPage"
     d:DataContext="{d:DesignInstance local:SettingsPage,
                                      IsDesignTimeCreatable=False}"
@@ -20,8 +21,13 @@
     mc:Ignorable="d">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
-        
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <helpers:BytesToMegabytesConverter x:Key="BytesToMegabytesConverter" />
+        <ObjectDataProvider x:Key="LineEndingTypes" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="models:LineEndingType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -58,6 +64,171 @@
                         Content="High Contrast"
                         GroupName="themeSelect"
                         IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
+                </StackPanel>
+            </Expander>
+
+            <!-- Workspace Section -->
+            <Expander Margin="24,24,24,0" IsExpanded="False">
+                <Expander.Header>
+                    <TextBlock 
+                        FontSize="20"
+                        FontWeight="Medium"
+                        Text="Workspace" />
+                </Expander.Header>
+                <StackPanel>
+                    <!-- IDE Settings -->
+                    <TextBlock Margin="0,12,0,8" FontWeight="SemiBold" Text="IDE Settings" />
+                    
+                    <!-- Editor Settings -->
+                    <ui:Card Margin="0,8,0,0">
+                        <StackPanel>
+                            <TextBlock FontWeight="Medium" Text="Editor" Margin="0,0,0,8"/>
+                            
+                            <ui:ToggleSwitch
+                                Content="Auto Save"
+                                IsChecked="{Binding ViewModel.IdeSettings.AutoSave}"/>
+                            
+                            <DockPanel Margin="0,8,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
+                                <TextBlock Text="Auto Save Interval (seconds):" VerticalAlignment="Center"/>
+                                <ui:NumberBox
+                                    Margin="8,0,0,0"
+                                    Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}"
+                                    Minimum="5"
+                                    Maximum="300"
+                                    Width="80"/>
+                            </DockPanel>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Word Wrap"
+                                IsChecked="{Binding ViewModel.IdeSettings.WordWrap}"/>
+
+                            <DockPanel Margin="0,8,0,0">
+                                <TextBlock Text="Tab Size:" VerticalAlignment="Center"/>
+                                <ui:NumberBox
+                                    Margin="8,0,0,0"
+                                    Value="{Binding ViewModel.IdeSettings.TabSize}"
+                                    Minimum="1"
+                                    Maximum="8"
+                                    Width="80"/>
+                            </DockPanel>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Use Spaces for Tabs"
+                                IsChecked="{Binding ViewModel.IdeSettings.UseSpacesForTabs}"/>
+
+                            <DockPanel Margin="0,8,0,0">
+                                <TextBlock Text="Line Endings:" VerticalAlignment="Center"/>
+                                <ComboBox
+                                    Margin="8,0,0,0"
+                                    ItemsSource="{Binding Source={StaticResource LineEndingTypes}}"
+                                    SelectedItem="{Binding ViewModel.IdeSettings.LineEndings}"
+                                    Width="120"/>
+                            </DockPanel>
+
+                            <DockPanel Margin="0,8,0,0">
+                                <TextBlock Text="Font Size:" VerticalAlignment="Center"/>
+                                <ui:NumberBox
+                                    Margin="8,0,0,0"
+                                    Value="{Binding ViewModel.IdeSettings.FontSize}"
+                                    Minimum="8"
+                                    Maximum="32"
+                                    Width="80"/>
+                            </DockPanel>
+
+                            <DockPanel Margin="0,8,0,0">
+                                <TextBlock Text="Font Family:" VerticalAlignment="Center"/>
+                                <ComboBox
+                                    Margin="8,0,0,0"
+                                    ItemsSource="{Binding ViewModel.MonospaceFonts}"
+                                    SelectedItem="{Binding ViewModel.IdeSettings.FontFamily}"
+                                    Width="200"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <!-- Visual Settings -->
+                    <ui:Card Margin="0,16,0,0">
+                        <StackPanel>
+                            <TextBlock FontWeight="Medium" Text="Visual" Margin="0,0,0,8"/>
+                            
+                            <ui:ToggleSwitch
+                                Content="Show Line Numbers"
+                                IsChecked="{Binding ViewModel.IdeSettings.ShowLineNumbers}"/>
+                            
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Show Whitespace Characters"
+                                IsChecked="{Binding ViewModel.IdeSettings.ShowWhitespace}"/>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Show Line Endings"
+                                IsChecked="{Binding ViewModel.IdeSettings.ShowLineEndings}"/>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Show Minimap"
+                                IsChecked="{Binding ViewModel.IdeSettings.ShowMinimap}"/>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Show Indent Guides"
+                                IsChecked="{Binding ViewModel.IdeSettings.ShowIndentGuides}"/>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Highlight Current Line"
+                                IsChecked="{Binding ViewModel.IdeSettings.HighlightCurrentLine}"/>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Highlight Matching Brackets"
+                                IsChecked="{Binding ViewModel.IdeSettings.HighlightMatchingBrackets}"/>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Enable Code Folding"
+                                IsChecked="{Binding ViewModel.IdeSettings.EnableCodeFolding}"/>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <!-- File Settings -->
+                    <ui:Card Margin="0,16,0,0">
+                        <StackPanel>
+                            <TextBlock FontWeight="Medium" Text="File Handling" Margin="0,0,0,8"/>
+                            
+                            <DockPanel>
+                                <TextBlock Text="Default Encoding:" VerticalAlignment="Center"/>
+                                <ComboBox
+                                    Margin="8,0,0,0"
+                                    ItemsSource="{Binding ViewModel.EncodingOptions}"
+                                    SelectedItem="{Binding ViewModel.IdeSettings.DefaultEncoding}"
+                                    Width="120"/>
+                            </DockPanel>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Auto-reload when Changed Externally"
+                                IsChecked="{Binding ViewModel.IdeSettings.AutoReloadExternalChanges}"/>
+
+                            <ui:ToggleSwitch
+                                Margin="0,8,0,0"
+                                Content="Create Backup Files Before Saving"
+                                IsChecked="{Binding ViewModel.IdeSettings.CreateBackupFiles}"/>
+
+                            <DockPanel Margin="0,8,0,0">
+                                <TextBlock Text="Max File Size (MB):" VerticalAlignment="Center"/>
+                                <ui:NumberBox
+                                    Margin="8,0,0,0"
+                                    Value="{Binding ViewModel.IdeSettings.MaxFileSize, Converter={StaticResource BytesToMegabytesConverter}}"
+                                    Minimum="1"
+                                    Maximum="100"
+                                    Width="80"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </ui:Card>
                 </StackPanel>
             </Expander>
 
