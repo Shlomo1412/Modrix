@@ -2,7 +2,9 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Modrix.Models;
 using Modrix.ViewModels.Windows;
 
@@ -24,11 +26,17 @@ namespace Modrix.ViewModels.Pages
         [ObservableProperty]
         private string _selectedFileName;
 
+        [ObservableProperty]
+        private bool _hasUnsavedChanges;
+
         public IDEPageViewModel(ProjectWorkspaceViewModel workspaceViewModel)
         {
             _workspaceViewModel = workspaceViewModel;
+            SaveCommand = new RelayCommand(SaveFile, () => HasUnsavedChanges);
             LoadFileTree();
         }
+
+        public ICommand SaveCommand { get; }
 
         public void LoadFileTree()
         {
@@ -76,10 +84,36 @@ namespace Modrix.ViewModels.Pages
                 SelectedFilePath = filePath;
                 SelectedFileName = Path.GetFileName(filePath);
                 SelectedFileContent = File.ReadAllText(filePath);
+                HasUnsavedChanges = false;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error opening file: {ex.Message}");
+            }
+        }
+
+        public void SaveFile()
+        {
+            if (string.IsNullOrEmpty(SelectedFilePath) || string.IsNullOrEmpty(SelectedFileContent))
+                return;
+
+            try
+            {
+                File.WriteAllText(SelectedFilePath, SelectedFileContent);
+                HasUnsavedChanges = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error saving file: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public void UpdateContent(string newContent)
+        {
+            if (SelectedFileContent != newContent)
+            {
+                SelectedFileContent = newContent;
+                HasUnsavedChanges = true;
             }
         }
     }

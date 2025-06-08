@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using ICSharpCode.AvalonEdit.Highlighting;
 using Modrix.ViewModels.Pages;
 using Wpf.Ui.Abstractions.Controls;
@@ -31,7 +32,15 @@ namespace Modrix.Views.Pages
         {
             if (e.PropertyName == nameof(ViewModel.SelectedFileContent) && !_updatingText)
             {
-                CodeEditor.Text = ViewModel.SelectedFileContent;
+                _updatingText = true;
+                try
+                {
+                    CodeEditor.Text = ViewModel.SelectedFileContent;
+                }
+                finally
+                {
+                    _updatingText = false;
+                }
             }
         }
 
@@ -58,16 +67,18 @@ namespace Modrix.Views.Pages
             // Handle text changes
             CodeEditor.TextChanged += (s, e) =>
             {
-                try
+                if (!_updatingText)
                 {
-                    _updatingText = true;
-                    ViewModel.SelectedFileContent = CodeEditor.Text;
+                    try
+                    {
+                        _updatingText = true;
+                        ViewModel.UpdateContent(CodeEditor.Text);
+                    }
+                    finally
+                    {
+                        _updatingText = false;
+                    }
                 }
-                finally
-                {
-                    _updatingText = false;
-                }
-
                 UpdateSyntaxHighlighting();
             };
         }
@@ -96,6 +107,16 @@ namespace Modrix.Views.Pages
             {
                 CodeEditor.SyntaxHighlighting = null;
             }
+        }
+
+        private void SaveCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ViewModel.SaveCommand.Execute(null);
+        }
+
+        private void SaveCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = ViewModel.HasUnsavedChanges;
         }
     }
 }

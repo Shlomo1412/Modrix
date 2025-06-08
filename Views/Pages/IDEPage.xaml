@@ -12,7 +12,19 @@
 
     <Page.Resources>
         <converters:BoolToFolderIconConverter x:Key="BoolToFolderIconConverter"/>
+        
+        <RoutedCommand x:Key="SaveCommand">
+            <RoutedCommand.InputGestures>
+                <KeyGesture>Ctrl+S</KeyGesture>
+            </RoutedCommand.InputGestures>
+        </RoutedCommand>
     </Page.Resources>
+
+    <Page.CommandBindings>
+        <CommandBinding Command="{StaticResource SaveCommand}" 
+                      Executed="SaveCommand_Executed" 
+                      CanExecute="SaveCommand_CanExecute"/>
+    </Page.CommandBindings>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -54,13 +66,39 @@
             </Grid.RowDefinitions>
 
             <!-- Tab Header -->
-            <ui:Card Grid.Row="0" 
-                     Margin="0,0,0,5"
-                     Background="{DynamicResource ControlFillColorDefaultBrush}">
-                <TextBlock Text="{Binding ViewModel.SelectedFileName}"
-                         Margin="8,4"
-                         FontSize="13"/>
-            </ui:Card>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <ui:Card Grid.Column="0"
+                         Margin="0,0,0,5"
+                         Background="{DynamicResource ControlFillColorDefaultBrush}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding ViewModel.SelectedFileName}"
+                                 Margin="8,4"
+                                 FontSize="13"/>
+                        <TextBlock Grid.Column="1" 
+                                 Text="*" 
+                                 Margin="0,4,8,4"
+                                 FontSize="13"
+                                 Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                 Visibility="{Binding ViewModel.HasUnsavedChanges, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </Grid>
+                </ui:Card>
+
+                <ui:Button Grid.Column="1"
+                          Margin="8,0,0,5"
+                          Appearance="Primary"
+                          Command="{Binding ViewModel.SaveCommand}"
+                          ToolTip="Save (Ctrl+S)"
+                          Icon="Save24"/>
+            </Grid>
 
             <!-- Code Editor -->
             <avalonedit:TextEditor
