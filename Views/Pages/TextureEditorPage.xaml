@@ -65,8 +65,7 @@
                     Margin="0,0,8,0"
                     Appearance="Primary"
                     Command="{Binding ViewModel.SaveCommand}"
-                    Icon="Save24">
-                    Save
+                    Icon="{ui:SymbolIcon Save24}">
                 </ui:Button>
             </StackPanel>
         </Grid>
@@ -107,7 +106,7 @@
                         ToolTip="Eraser (E)"
                         Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Eraser}">
                         <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Delete24" />
+                            <ui:SymbolIcon Symbol="Eraser24" />
                         </ui:Button.Icon>
                     </ui:Button>
 
