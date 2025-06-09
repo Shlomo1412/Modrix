@@ -65,7 +65,8 @@ namespace Modrix
                 services.AddSingleton<SettingsViewModel>(sp =>
                 new SettingsViewModel(
                     sp.GetRequiredService<IThemeService>(),
-                    sp.GetRequiredService<IContentDialogService>()));
+                    sp.GetRequiredService<IContentDialogService>(),
+                    sp.GetRequiredService<IConfiguration>()));
                 services.AddSingleton<ProjectWorkspace>();
                 services.AddSingleton<ProjectWorkspaceViewModel>();
 
