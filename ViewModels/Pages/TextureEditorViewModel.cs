@@ -172,7 +172,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 
                 case EditorTool.Bucket:
                     var targetColor = _pixelData[x, y];
-                    if (targetColor != SelectedColor)
+                    if (!targetColor.Equals(SelectedColor))
                     {
                         FloodFill(x, y, targetColor, SelectedColor);
                     }
@@ -193,12 +193,26 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 
         try
         {
-            // Safe pixel writing without unsafe code
-            var rect = new Int32Rect(x, y, 1, 1);
-            byte[] colorData = { color.B, color.G, color.R, color.A };
-            _bitmap.WritePixels(rect, colorData, 4, 0);
-
-            _pixelData[x, y] = color;
+            // Create a color array with BGRA format (which is what WriteableBitmap expects)
+            var colorData = new byte[] { color.B, color.G, color.R, color.A };
+            
+            // Lock the bitmap for writing
+            _bitmap.Lock();
+            
+            try
+            {
+                // Write the pixel
+                Int32Rect rect = new Int32Rect(x, y, 1, 1);
+                _bitmap.WritePixels(rect, colorData, 4, 0);
+                
+                // Update our pixel data cache
+                _pixelData[x, y] = color;
+            }
+            finally
+            {
+                // Always unlock the bitmap
+                _bitmap.Unlock();
+            }
         }
         catch (Exception ex)
         {

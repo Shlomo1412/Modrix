@@ -10,6 +10,7 @@
     xmlns:converters="clr-namespace:Modrix.ViewModels.Converters"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     Title="Texture Editor"
+    x:Name="TextureEditorPageRoot"
     d:DataContext="{d:DesignInstance Type=local:TextureEditorPage, IsDesignTimeCreatable=False}"
     d:DesignHeight="500"
     d:DesignWidth="600"
@@ -20,6 +21,9 @@
 
     <Page.Resources>
         <converters:ToolToAppearanceConverter x:Key="ToolToAppearanceConverter" />
+        
+        <!-- Local multiply converter -->
+        <local:ZoomMultiplierConverter x:Key="MultiplyByZoomConverter"/>
     </Page.Resources>
 
     <Grid Margin="8">
@@ -136,7 +140,7 @@
 
                     <xctk:ColorPicker
                         Margin="4"
-                        SelectedColor="{Binding ViewModel.SelectedColor}"
+                        SelectedColor="{Binding ViewModel.SelectedColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         DisplayColorAndName="True"
                         ShowRecentColors="True"
                         Width="120"
@@ -154,10 +158,19 @@
                 CornerRadius="6">
                 <ScrollViewer
                     HorizontalScrollBarVisibility="Auto"
-                    VerticalScrollBarVisibility="Auto">
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
                     <Grid>
                         <!-- Checkerboard Background -->
-                        <Rectangle>
+                        <Rectangle 
+                            Width="{Binding ViewModel.ImageWidth}"
+                            Height="{Binding ViewModel.ImageHeight}">
+                            <Rectangle.LayoutTransform>
+                                <ScaleTransform 
+                                    ScaleX="{Binding ViewModel.ZoomLevel, ElementName=TextureEditorPageRoot}"
+                                    ScaleY="{Binding ViewModel.ZoomLevel, ElementName=TextureEditorPageRoot}"/>
+                            </Rectangle.LayoutTransform>
                             <Rectangle.Fill>
                                 <DrawingBrush
                                     TileMode="Tile"
@@ -187,13 +200,13 @@
                         <!-- Image -->
                         <Image
                             x:Name="PixelCanvas"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
                             MouseDown="Image_MouseDown"
                             MouseMove="Image_MouseMove"
                             MouseUp="Image_MouseUp"
                             RenderOptions.BitmapScalingMode="NearestNeighbor"
                             Source="{Binding ViewModel.CurrentImage}"
+                            Width="{Binding ViewModel.ImageWidth}"
+                            Height="{Binding ViewModel.ImageHeight}"
                             Stretch="None">
                             <Image.LayoutTransform>
                                 <ScaleTransform
