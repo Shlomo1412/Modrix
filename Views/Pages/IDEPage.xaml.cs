@@ -5,6 +5,8 @@ using ICSharpCode.AvalonEdit.Highlighting;
 using Modrix.ViewModels.Pages;
 using Wpf.Ui.Abstractions.Controls;
 using System.ComponentModel;
+using Microsoft.Win32;
+using Wpf.Ui.Controls;
 
 namespace Modrix.Views.Pages
 {
@@ -53,6 +55,67 @@ namespace Modrix.Views.Pages
                     ViewModel.OpenFile(item.FullPath);
                 }
             };
+
+            FileTreeView.PreviewMouseRightButtonDown += FileTreeView_PreviewMouseRightButtonDown;
+        }
+
+        private void FileTreeView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is FrameworkElement element && element.DataContext is FileTreeItem item)
+            {
+                var contextMenu = new ContextMenu();
+
+                if (item.IsDirectory)
+                {
+                    var addMenu = new Wpf.Ui.Controls.MenuItem
+                    {
+                        Header = "Add",
+                        Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Add24)
+                    };
+
+                    var addFileItem = new Wpf.Ui.Controls.MenuItem
+                    {
+                        Header = "File",
+                        Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Document24)
+                    };
+
+                    var addFolderItem = new Wpf.Ui.Controls.MenuItem
+                    {
+                        Header = "Folder",
+                        Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Folder24)
+                    };
+
+                    addFileItem.Click += (s, args) =>
+                    {
+                        ViewModel.CreateNewFile(item.FullPath);
+                    };
+
+                    addFolderItem.Click += (s, args) =>
+                    {
+                        ViewModel.CreateNewFolder(item.FullPath);
+                    };
+
+                    addMenu.Items.Add(addFileItem);
+                    addMenu.Items.Add(addFolderItem);
+                    contextMenu.Items.Add(addMenu);
+                    contextMenu.Items.Add(new Separator());
+                }
+
+                var deleteItem = new Wpf.Ui.Controls.MenuItem
+                {
+                    Header = "Delete",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Delete24)
+                };
+
+                deleteItem.Click += (s, args) =>
+                {
+                    ViewModel.DeleteItem(item.FullPath);
+                };
+
+                contextMenu.Items.Add(deleteItem);
+                contextMenu.IsOpen = true;
+                e.Handled = true;
+            }
         }
 
         private void SetupEditor()

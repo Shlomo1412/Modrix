@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 using Modrix.Models;
 using Modrix.ViewModels.Windows;
 
@@ -115,6 +116,88 @@ namespace Modrix.ViewModels.Pages
                 SelectedFileContent = newContent;
                 HasUnsavedChanges = true;
             }
+        }
+
+        public void CreateNewFile(string parentPath)
+        {
+            try
+            {
+                var dialog = new SaveFileDialog
+                {
+                    Title = "Create New File",
+                    InitialDirectory = parentPath,
+                    Filter = "All Files|*.*"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    File.Create(dialog.FileName).Dispose();
+                    RefreshFileTree();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public void CreateNewFolder(string parentPath)
+        {
+            try
+            {
+                var dialog = new SaveFileDialog
+                {
+                    Title = "Create New Folder",
+                    InitialDirectory = parentPath,
+                    FileName = "New Folder"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    var folderPath = Path.GetDirectoryName(dialog.FileName);
+                    if (!string.IsNullOrEmpty(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                        RefreshFileTree();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error creating folder: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public void DeleteItem(string path)
+        {
+            try
+            {
+                var isDirectory = Directory.Exists(path);
+                var message = $"Are you sure you want to delete this {(isDirectory ? "folder" : "file")}?";
+                var result = MessageBox.Show(message, "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    if (isDirectory)
+                    {
+                        Directory.Delete(path, true);
+                    }
+                    else
+                    {
+                        File.Delete(path);
+                    }
+                    RefreshFileTree();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RefreshFileTree()
+        {
+            LoadFileTree();
         }
     }
 
