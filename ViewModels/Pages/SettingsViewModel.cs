@@ -83,7 +83,8 @@ namespace Modrix.ViewModels.Pages
             LoadMonospaceFonts();
             LoadEncodingOptions();
             LoadIdeSettings();
-            
+            RefreshJdks();
+
             _isInitialized = true;
         }
 
@@ -199,7 +200,6 @@ namespace Modrix.ViewModels.Pages
                 InitializeViewModel();
 
             RefreshJdks();
-
             await Task.CompletedTask;
         }
 
@@ -285,16 +285,15 @@ namespace Modrix.ViewModels.Pages
             stackPanel.Children.Add(new TextBlock { Text = "Select JDK version to download:" });
             stackPanel.Children.Add(comboBox);
 
-            var dialog = new ContentDialog
+            var options = new SimpleContentDialogCreateOptions
             {
                 Title = "Download JDK",
                 Content = stackPanel,
                 PrimaryButtonText = "Download",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Primary
+                CloseButtonText = "Cancel"
             };
 
-            var result = await dialog.ShowAsync();
+            var result = await _dialogService.ShowSimpleDialogAsync(options);
 
             if (result == ContentDialogResult.Primary && selectedVersion != -1)
             {

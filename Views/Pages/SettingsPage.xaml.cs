@@ -11,7 +11,7 @@ namespace Modrix.Views.Pages
         public SettingsPage(SettingsViewModel viewModel)
         {
             ViewModel = viewModel;
-            DataContext = viewModel;
+            DataContext = this;
 
             InitializeComponent();
         }

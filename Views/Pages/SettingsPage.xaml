@@ -10,9 +10,9 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:converters="clr-namespace:Modrix.Helpers"
     xmlns:models="clr-namespace:Modrix.Models"
+    xmlns:vm="clr-namespace:Modrix.ViewModels.Pages"
     Title="SettingsPage"
-    d:DataContext="{d:DesignInstance local:SettingsPage,
-                                     IsDesignTimeCreatable=False}"
+    d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel, IsDesignTimeCreatable=False}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
