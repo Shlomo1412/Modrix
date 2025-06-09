@@ -7,6 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:Modrix.ViewModels.Pages"
+    xmlns:converters="clr-namespace:Modrix.ViewModels.Converters"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     Title="Texture Editor"
     d:DataContext="{d:DesignInstance Type=local:TextureEditorPage, IsDesignTimeCreatable=False}"
     d:DesignHeight="500"
@@ -15,6 +17,10 @@
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:ToolToAppearanceConverter x:Key="ToolToAppearanceConverter" />
+    </Page.Resources>
 
     <Grid Margin="8">
         <Grid.RowDefinitions>
@@ -84,7 +90,8 @@
                     <ui:Button
                         Margin="2"
                         Command="{Binding ViewModel.SelectPencilCommand}"
-                        ToolTip="Pencil (P)">
+                        ToolTip="Pencil (P)"
+                        Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Pencil}">
                         <ui:Button.Icon>
                             <ui:SymbolIcon Symbol="Edit24" />
                         </ui:Button.Icon>
@@ -93,7 +100,8 @@
                     <ui:Button
                         Margin="2"
                         Command="{Binding ViewModel.SelectEraserCommand}"
-                        ToolTip="Eraser (E)">
+                        ToolTip="Eraser (E)"
+                        Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Eraser}">
                         <ui:Button.Icon>
                             <ui:SymbolIcon Symbol="Delete24" />
                         </ui:Button.Icon>
@@ -102,7 +110,8 @@
                     <ui:Button
                         Margin="2"
                         Command="{Binding ViewModel.SelectBucketCommand}"
-                        ToolTip="Bucket Fill (B)">
+                        ToolTip="Bucket Fill (B)"
+                        Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Bucket}">
                         <ui:Button.Icon>
                             <ui:SymbolIcon Symbol="PaintBrush24" />
                         </ui:Button.Icon>
@@ -111,7 +120,8 @@
                     <ui:Button
                         Margin="2"
                         Command="{Binding ViewModel.SelectPickerCommand}"
-                        ToolTip="Color Picker (I)">
+                        ToolTip="Color Picker (I)"
+                        Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Picker}">
                         <ui:Button.Icon>
                             <ui:SymbolIcon Symbol="Eyedropper24" />
                         </ui:Button.Icon>
@@ -124,37 +134,15 @@
                         FontWeight="Medium"
                         Text="Color" />
 
-                    <Border
-                        Width="30"
-                        Height="30"
+                    <xctk:ColorPicker
                         Margin="4"
-                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                        BorderThickness="1">
-                        <Rectangle Fill="{Binding ViewModel.SelectedColorBrush}" />
-                    </Border>
+                        SelectedColor="{Binding ViewModel.SelectedColor}"
+                        DisplayColorAndName="True"
+                        ShowRecentColors="True"
+                        Width="120"
+                        UsingAlphaChannel="True"
+                        Height="25"/>
 
-                    <!-- Simple RGB input since Wpf.Ui ColorPicker isn't available -->
-                    <StackPanel Orientation="Horizontal" Margin="2">
-                        <TextBlock Text="R:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <TextBox 
-                            Text="{Binding ViewModel.RedValue, UpdateSourceTrigger=PropertyChanged}"
-                            Width="30"
-                            VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="2">
-                        <TextBlock Text="G:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <TextBox 
-                            Text="{Binding ViewModel.GreenValue, UpdateSourceTrigger=PropertyChanged}"
-                            Width="30"
-                            VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="2">
-                        <TextBlock Text="B:" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                        <TextBox 
-                            Text="{Binding ViewModel.BlueValue, UpdateSourceTrigger=PropertyChanged}"
-                            Width="30"
-                            VerticalAlignment="Center"/>
-                    </StackPanel>
                 </StackPanel>
             </Border>
 
@@ -191,24 +179,6 @@
                                                 </GeometryDrawing.Geometry>
                                             </GeometryDrawing>
                                         </DrawingGroup>
-                                    </DrawingBrush.Drawing>
-                                </DrawingBrush>
-                            </Rectangle.Fill>
-                        </Rectangle>
-
-                        <!-- Pixel Grid Overlay -->
-                        <Rectangle>
-                            <Rectangle.Fill>
-                                <DrawingBrush
-                                    TileMode="Tile"
-                                    Viewport="0,0,1,1"
-                                    ViewportUnits="Absolute">
-                                    <DrawingBrush.Drawing>
-                                        <GeometryDrawing Brush="#20000000">
-                                            <GeometryDrawing.Geometry>
-                                                <RectangleGeometry Rect="0,0,1,1" />
-                                            </GeometryDrawing.Geometry>
-                                        </GeometryDrawing>
                                     </DrawingBrush.Drawing>
                                 </DrawingBrush>
                             </Rectangle.Fill>

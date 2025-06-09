@@ -44,9 +44,10 @@ namespace Modrix.Views.Pages
 
         private void ProcessPixelAction(Point position)
         {
+            Point relativePoint = PixelCanvas.TranslatePoint(position, PixelCanvas);
             // Adjust for zoom level
-            int x = (int)(position.X / ViewModel.ZoomLevel);
-            int y = (int)(position.Y / ViewModel.ZoomLevel);
+            int x = (int)(relativePoint.X / ViewModel.ZoomLevel);
+            int y = (int)(relativePoint.Y / ViewModel.ZoomLevel);
 
             ViewModel.HandlePixelAction(x, y);
         }

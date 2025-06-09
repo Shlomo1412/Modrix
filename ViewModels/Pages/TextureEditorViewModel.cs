@@ -47,7 +47,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     private SolidColorBrush _selectedColorBrush = new(Colors.Black);
 
     [ObservableProperty]
-    private int _zoomLevel = 8; // Default 800% zoom
+    private int _zoomLevel = 5; // Default 500% zoom
 
     [ObservableProperty]
     private bool _isDrawing;
