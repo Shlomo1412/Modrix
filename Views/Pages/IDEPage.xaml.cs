@@ -101,6 +101,17 @@ namespace Modrix.Views.Pages
                     contextMenu.Items.Add(new Separator());
                 }
 
+                var renameItem = new Wpf.Ui.Controls.MenuItem
+                {
+                    Header = "Rename",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Rename24)
+                };
+
+                renameItem.Click += (s, args) =>
+                {
+                    ViewModel.RenameItem(item.FullPath);
+                };
+
                 var deleteItem = new Wpf.Ui.Controls.MenuItem
                 {
                     Header = "Delete",
@@ -112,6 +123,7 @@ namespace Modrix.Views.Pages
                     ViewModel.DeleteItem(item.FullPath);
                 };
 
+                contextMenu.Items.Add(renameItem);
                 contextMenu.Items.Add(deleteItem);
                 contextMenu.IsOpen = true;
                 e.Handled = true;

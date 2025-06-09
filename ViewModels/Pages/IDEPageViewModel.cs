@@ -207,6 +207,59 @@ namespace Modrix.ViewModels.Pages
             }
         }
 
+        public void RenameItem(string path)
+        {
+            try
+            {
+                var isDirectory = Directory.Exists(path);
+                var oldName = Path.GetFileName(path);
+                
+                var dialog = new Views.Windows.RenameDialog(oldName, !isDirectory)
+                {
+                    Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(x => x.IsActive)
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    var newName = dialog.NewName;
+                    if (newName == oldName) return;
+
+                    var directory = Path.GetDirectoryName(path);
+                    if (directory == null) return;
+
+                    var newPath = Path.Combine(directory, newName);
+
+                    if (File.Exists(newPath) || Directory.Exists(newPath))
+                    {
+                        MessageBox.Show($"An item named '{newName}' already exists.", "Item Exists", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    if (isDirectory)
+                    {
+                        Directory.Move(path, newPath);
+                    }
+                    else
+                    {
+                        // If this is the currently open file, close it first
+                        if (path == SelectedFilePath)
+                        {
+                            SelectedFilePath = null;
+                            SelectedFileName = null;
+                            SelectedFileContent = null;
+                        }
+
+                        File.Move(path, newPath);
+                    }
+                    RefreshFileTree();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error renaming item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void RefreshFileTree()
         {
             LoadFileTree();
