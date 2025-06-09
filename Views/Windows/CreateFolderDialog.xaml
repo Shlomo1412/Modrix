@@ -5,40 +5,63 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="Create New Folder" 
-        Height="150" 
+        Title="Create New Folder"
+        Height="160"
         Width="300"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
-    
-    <Grid Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
 
-        <TextBlock 
+	<Grid Margin="12">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<!-- Title -->
+			<RowDefinition Height="Auto"/>
+			<!-- Spacer -->
+			<RowDefinition Height="Auto"/>
+			<!-- Label -->
+			<RowDefinition Height="Auto"/>
+			<!-- TextBox -->
+			<RowDefinition Height="*"/>
+			<!-- Spacer -->
+			<RowDefinition Height="Auto"/>
+			<!-- Buttons -->
+		</Grid.RowDefinitions>
+
+		<TextBlock
+            Text="Create New Folder"
+            FontSize="16"
+            FontWeight="Bold"
+            Margin="0,0,0,24"/>
+
+		<!-- Spacer row (Row 1) intentionally left empty -->
+
+		<TextBlock
+            Grid.Row="2"
             Text="Enter folder name:"
-            Margin="0,0,0,8"/>
+            Margin="0,0,0,4"/>
 
-        <TextBox 
+		<ui:TextBox
             x:Name="FolderNameTextBox"
-            Grid.Row="1"
-            Margin="0,0,0,16"/>
+            Grid.Row="3"
+			Icon="{ui:SymbolIcon Edit24}"
+			PlaceholderText="Folder Name"
+            Margin="0,0,0,0"/>
 
-        <StackPanel 
-            Grid.Row="2" 
-            Orientation="Horizontal" 
-            HorizontalAlignment="Right">
-            <ui:Button
+		<StackPanel
+            Grid.Row="5"
+            Orientation="Horizontal"
+            HorizontalAlignment="Right"
+            Margin="0,12,0,0">
+			<ui:Button
                 Appearance="Primary"
-                Content="OK"
+                Content="Create"
                 Margin="0,0,8,0"
+				Icon="{ui:SymbolIcon Add24}"
                 Click="OkButton_Click"/>
-            <ui:Button
+			<ui:Button
                 Content="Cancel"
-                Click="CancelButton_Click"/>
-        </StackPanel>
-    </Grid>
+                Click="CancelButton_Click"
+				Icon="{ui:SymbolIcon Dismiss24}"/>
+		</StackPanel>
+	</Grid>
 </ui:FluentWindow>

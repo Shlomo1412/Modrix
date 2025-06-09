@@ -5,68 +5,79 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="Create New File" 
-        Height="200" 
+        Title="Create New File"
+        Height="160"
         Width="400"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
-    
-    <Grid Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
 
-        <TextBlock 
+	<Grid Margin="12">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<!-- File name -->
+			<RowDefinition Height="Auto"/>
+			<!-- File type -->
+			<RowDefinition Height="Auto"/>
+			<!-- Note -->
+			<RowDefinition Height="*"/>
+			<!-- Spacer -->
+			<RowDefinition Height="Auto"/>
+			<!-- Buttons -->
+		</Grid.RowDefinitions>
+
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+
+		<TextBlock
             Text="File name:"
             VerticalAlignment="Center"
             Margin="0,0,12,0"/>
 
-        <ui:TextBox 
+		<ui:TextBox
             x:Name="FileNameTextBox"
             Grid.Column="1"
-            Margin="0,0,0,16"/>
+			Icon="{ui:SymbolIcon Edit24}"
+			PlaceholderText="File Name"
+            Margin="0,0,0,12"/>
 
-        <TextBlock 
+		<TextBlock
             Grid.Row="1"
             Text="File type:"
             VerticalAlignment="Center"
             Margin="0,0,12,0"/>
 
-        <ComboBox
+		<ComboBox
             x:Name="FileTypeComboBox"
             Grid.Row="1"
             Grid.Column="1"
-            Margin="0,0,0,16"/>
+            Margin="0,0,0,12"/>
 
-        <TextBlock 
+		<TextBlock
             Grid.Row="2"
             Grid.ColumnSpan="2"
             Text="Note: You can include the file extension in the name to override the selected type"
             TextWrapping="Wrap"
             Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-            Margin="0,0,0,16"/>
+            Margin="0,0,0,8"/>
 
-        <StackPanel 
-            Grid.Row="3"
+		<StackPanel
+            Grid.Row="4"
             Grid.ColumnSpan="2"
-            Orientation="Horizontal" 
-            HorizontalAlignment="Right">
-            <ui:Button
+            Orientation="Horizontal"
+            HorizontalAlignment="Right"
+            Margin="0,12,0,0">
+			<ui:Button
                 Appearance="Primary"
-                Content="OK"
+                Content="Create"
                 Margin="0,0,8,0"
-                Click="OkButton_Click"/>
-            <ui:Button
+                Click="OkButton_Click"
+				Icon="{ui:SymbolIcon Add24}"/>
+			<ui:Button
                 Content="Cancel"
-                Click="CancelButton_Click"/>
-        </StackPanel>
-    </Grid>
+                Click="CancelButton_Click"
+				Icon="{ui:SymbolIcon Dismiss24}"/>
+		</StackPanel>
+	</Grid>
 </ui:FluentWindow>
