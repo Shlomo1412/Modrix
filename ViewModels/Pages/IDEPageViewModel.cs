@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -145,21 +146,24 @@ namespace Modrix.ViewModels.Pages
         {
             try
             {
-                var dialog = new SaveFileDialog
+                var dialog = new Views.Windows.CreateFolderDialog
                 {
-                    Title = "Create New Folder",
-                    InitialDirectory = parentPath,
-                    FileName = "New Folder"
+                    Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(x => x.IsActive)
                 };
 
                 if (dialog.ShowDialog() == true)
                 {
-                    var folderPath = Path.GetDirectoryName(dialog.FileName);
-                    if (!string.IsNullOrEmpty(folderPath))
+                    var folderName = dialog.FolderName;
+                    var newFolderPath = Path.Combine(parentPath, folderName);
+
+                    if (Directory.Exists(newFolderPath))
                     {
-                        Directory.CreateDirectory(folderPath);
-                        RefreshFileTree();
+                        MessageBox.Show($"A folder named '{folderName}' already exists.", "Folder Exists", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
                     }
+
+                    Directory.CreateDirectory(newFolderPath);
+                    RefreshFileTree();
                 }
             }
             catch (Exception ex)
