@@ -11,9 +11,33 @@
     WindowCornerPreference="Round"
     ExtendsContentIntoTitleBar="True"
     Background="{DynamicResource ApplicationBackgroundBrush}"
-    Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}" Height="304">
 
-    <StackPanel Margin="24" Width="420" Orientation="Vertical">
+    <DockPanel Margin="24" Width="420">
+
+        <!-- Bottom Panel: CheckBox + Buttons -->
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,24,0,0" Height="80">
+            <CheckBox x:Name="ChkAccept"
+                      Content="I accept the terms"
+                      FontSize="13"
+                      Checked="ChkAccept_Changed"
+                      Unchecked="ChkAccept_Changed"
+                      Margin="0,0,0,12"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button x:Name="BtnExport"
+                           Content="Export"
+                           Appearance="Primary"
+                           Width="80"
+                           Margin="0,0,8,0"
+                           IsEnabled="False"
+                           Click="BtnExport_Click"/>
+                <ui:Button Content="Close"
+                           Width="80"
+                           Appearance="Secondary"
+                           Icon="{ui:SymbolIcon Dismiss24}"
+                           Click="BtnClose_Click"/>
+            </StackPanel>
+        </StackPanel>
 
         <!-- Message -->
         <TextBlock TextWrapping="Wrap" FontSize="14">
@@ -22,25 +46,5 @@
             2. If anyone directly asks whether you built this mod using a mod maker, you must answer truthfully. Do not mislead users.
         </TextBlock>
 
-        <!-- Terms checkbox -->
-        <CheckBox x:Name="ChkAccept"
-                  Content="I accept the terms"
-                  FontSize="13"
-                  Checked="ChkAccept_Changed"
-                  Unchecked="ChkAccept_Changed"/>
-
-        <!-- Buttons -->
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <ui:Button x:Name="BtnExport"
-                       Content="Export"
-                       Appearance="Primary"
-                       Width="80"
-                       IsEnabled="False"
-                       Click="BtnExport_Click"/>
-            <ui:Button Content="Close"
-                       Width="80"
-                       Appearance="Secondary"
-                       Click="BtnClose_Click"/>
-        </StackPanel>
-    </StackPanel>
+    </DockPanel>
 </ui:FluentWindow>
