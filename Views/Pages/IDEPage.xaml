@@ -97,7 +97,7 @@
                           Appearance="Primary"
                           Command="{Binding ViewModel.SaveCommand}"
                           ToolTip="Save (Ctrl+S)"
-                          Icon="Save24"/>
+                          Icon="{ui:SymbolIcon Save24}"/>
             </Grid>
 
             <!-- Code Editor -->
