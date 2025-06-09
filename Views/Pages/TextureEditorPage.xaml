@@ -8,7 +8,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:Modrix.ViewModels.Pages"
     xmlns:converters="clr-namespace:Modrix.ViewModels.Converters"
-    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+    xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
     Title="Texture Editor"
     x:Name="TextureEditorPageRoot"
     d:DataContext="{d:DesignInstance Type=local:TextureEditorPage, IsDesignTimeCreatable=False}"
@@ -24,6 +24,7 @@
         
         <!-- Local multiply converter -->
         <local:ZoomMultiplierConverter x:Key="MultiplyByZoomConverter"/>
+
     </Page.Resources>
 
     <Grid Margin="8">
@@ -137,14 +138,10 @@
                         FontWeight="Medium"
                         Text="Color" />
 
-                    <xctk:ColorPicker
-                        Margin="4"
-                        SelectedColor="{Binding ViewModel.SelectedColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        DisplayColorAndName="True"
-                        ShowRecentColors="True"
+                    <colorpicker:PortableColorPicker
                         Width="120"
-                        UsingAlphaChannel="True"
-                        Height="25"/>
+                        Height="100"
+                        SelectedColor="{Binding ViewModel.SelectedColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                 </StackPanel>
             </Border>
