@@ -36,6 +36,7 @@ namespace Modrix.Views.Pages
     public partial class TextureEditorPage : INavigableView<TextureEditorViewModel>
     {
         public TextureEditorViewModel ViewModel { get; }
+        private Point _lastProcessedPoint;
 
         public TextureEditorPage(TextureEditorViewModel viewModel)
         {
@@ -48,32 +49,20 @@ namespace Modrix.Views.Pages
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                var image = sender as FrameworkElement;
-                if (image != null)
-                {
-                    var pos = e.GetPosition(image);
-                    ProcessPixelAction(pos);
-                    ViewModel.IsDrawing = true;
-                }
+                var pixelCoords = GetPixelCoordinates(e.GetPosition(PixelCanvas));
+                ProcessPixelAction(pixelCoords);
+                ViewModel.IsDrawing = true;
             }
         }
 
         private void Image_MouseMove(object sender, MouseEventArgs e)
         {
-            var image = sender as FrameworkElement;
-            if (image != null)
-            {
-                var pos = e.GetPosition(image);
-                
-                // Convert position to actual pixel coordinates for status display
-                int pixelX = (int)(pos.X / ViewModel.ZoomLevel);
-                int pixelY = (int)(pos.Y / ViewModel.ZoomLevel);
-                ViewModel.UpdateCursorPosition(pixelX, pixelY);
+            var pixelCoords = GetPixelCoordinates(e.GetPosition(PixelCanvas));
+            ViewModel.UpdateCursorPosition(pixelCoords.Item1, pixelCoords.Item2);
 
-                if (e.LeftButton == MouseButtonState.Pressed && ViewModel.IsDrawing)
-                {
-                    ProcessPixelAction(pos);
-                }
+            if (e.LeftButton == MouseButtonState.Pressed && ViewModel.IsDrawing)
+            {
+                ProcessPixelAction(pixelCoords);
             }
         }
 
@@ -82,21 +71,41 @@ namespace Modrix.Views.Pages
             ViewModel.IsDrawing = false;
         }
 
-        private void ProcessPixelAction(Point position)
+        private (int x, int y) GetPixelCoordinates(Point mousePosition)
         {
-            if (!(PixelCanvas.Source is WriteableBitmap bitmap))
-                return;
+            // Get the scroll viewer's offset
+            var scrollViewer = FindParent<ScrollViewer>(PixelCanvas);
+            double scrollX = scrollViewer?.HorizontalOffset ?? 0;
+            double scrollY = scrollViewer?.VerticalOffset ?? 0;
 
-            // Convert position to actual pixel coordinates
-            int pixelX = (int)(position.X / ViewModel.ZoomLevel);
-            int pixelY = (int)(position.Y / ViewModel.ZoomLevel);
+            // Do NOT divide by zoom level, since LayoutTransform already applies it
+            int x = (int)(mousePosition.X + scrollX);
+            int y = (int)(mousePosition.Y + scrollY);
 
+            return (x, y);
+        }
+
+        private void ProcessPixelAction((int x, int y) coordinates)
+        {
             // Ensure we're within the image bounds
-            if (pixelX >= 0 && pixelX < ViewModel.ImageWidth && 
-                pixelY >= 0 && pixelY < ViewModel.ImageHeight)
+            if (coordinates.x >= 0 && coordinates.x < ViewModel.ImageWidth && 
+                coordinates.y >= 0 && coordinates.y < ViewModel.ImageHeight)
             {
-                ViewModel.HandlePixelAction(pixelX, pixelY);
+                ViewModel.HandlePixelAction(coordinates.x, coordinates.y);
             }
+        }
+
+        private static T FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+            if (parentObject == null)
+                return null;
+
+            if (parentObject is T parent)
+                return parent;
+
+            return FindParent<T>(parentObject);
         }
     }
 }
