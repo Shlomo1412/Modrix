@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using Modrix.Models;
 using Modrix.ViewModels.Windows;
+using Modrix.Views.Windows;
 
 namespace Modrix.ViewModels.Pages
 {
@@ -123,16 +124,23 @@ namespace Modrix.ViewModels.Pages
         {
             try
             {
-                var dialog = new SaveFileDialog
+                var dialog = new CreateFileDialog
                 {
-                    Title = "Create New File",
-                    InitialDirectory = parentPath,
-                    Filter = "All Files|*.*"
+                    Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(x => x.IsActive)
                 };
 
                 if (dialog.ShowDialog() == true)
                 {
-                    File.Create(dialog.FileName).Dispose();
+                    var fileName = dialog.FileName;
+                    var newFilePath = Path.Combine(parentPath, fileName);
+
+                    if (File.Exists(newFilePath))
+                    {
+                        MessageBox.Show($"A file named '{fileName}' already exists.", "File Exists", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    File.Create(newFilePath).Dispose();
                     RefreshFileTree();
                 }
             }
@@ -146,7 +154,7 @@ namespace Modrix.ViewModels.Pages
         {
             try
             {
-                var dialog = new Views.Windows.CreateFolderDialog
+                var dialog = new CreateFolderDialog
                 {
                     Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(x => x.IsActive)
                 };
