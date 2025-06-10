@@ -10,6 +10,11 @@ using Microsoft.Win32;
 using Modrix.Models;
 using Modrix.ViewModels.Windows;
 using Modrix.Views.Windows;
+using Wpf.Ui.Controls;
+using System.Threading.Tasks;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
+using MessageBoxButton = Wpf.Ui.Controls.MessageBoxButton;
+using MessageBoxResult = Wpf.Ui.Controls.MessageBoxResult;
 
 namespace Modrix.ViewModels.Pages
 {
@@ -55,6 +60,28 @@ namespace Modrix.ViewModels.Pages
             }
         }
 
+        private async Task ShowErrorAsync(string message, string title = "Error")
+        {
+            var errorBox = new MessageBox
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK"
+            };
+            await errorBox.ShowDialogAsync();
+        }
+
+        private async Task ShowWarningAsync(string message, string title = "Warning")
+        {
+            var warningBox = new MessageBox
+            {
+                Title = title,
+                Content = message,
+                CloseButtonText = "OK"
+            };
+            await warningBox.ShowDialogAsync();
+        }
+
         private void PopulateFileTree(FileTreeItem item)
         {
             try
@@ -75,8 +102,7 @@ namespace Modrix.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                // Handle any directory access errors
-                MessageBox.Show($"Error accessing directory: {ex.Message}");
+                ShowErrorAsync($"Error accessing directory: {ex.Message}");
             }
         }
 
@@ -91,7 +117,7 @@ namespace Modrix.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error opening file: {ex.Message}");
+                ShowErrorAsync($"Error opening file: {ex.Message}");
             }
         }
 
@@ -107,7 +133,7 @@ namespace Modrix.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving file: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowErrorAsync($"Error saving file: {ex.Message}", "Save Error");
             }
         }
 
@@ -136,7 +162,7 @@ namespace Modrix.ViewModels.Pages
 
                     if (File.Exists(newFilePath))
                     {
-                        MessageBox.Show($"A file named '{fileName}' already exists.", "File Exists", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ShowWarningAsync($"A file named '{fileName}' already exists.", "File Exists");
                         return;
                     }
 
@@ -146,7 +172,7 @@ namespace Modrix.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowErrorAsync($"Error creating file: {ex.Message}");
             }
         }
 
@@ -166,7 +192,7 @@ namespace Modrix.ViewModels.Pages
 
                     if (Directory.Exists(newFolderPath))
                     {
-                        MessageBox.Show($"A folder named '{folderName}' already exists.", "Folder Exists", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ShowWarningAsync($"A folder named '{folderName}' already exists.", "Folder Exists");
                         return;
                     }
 
@@ -176,19 +202,25 @@ namespace Modrix.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating folder: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowErrorAsync($"Error creating folder: {ex.Message}");
             }
         }
 
-        public void DeleteItem(string path)
+        public async Task DeleteItemAsync(string path)
         {
             try
             {
                 var isDirectory = Directory.Exists(path);
                 var message = $"Are you sure you want to delete this {(isDirectory ? "folder" : "file")}?";
-                var result = MessageBox.Show(message, "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
+                var messageBox = new MessageBox
+                {
+                    Title = "Confirm Delete",
+                    Content = message,
+                    PrimaryButtonText = "Delete",
+                    CloseButtonText = "Cancel"
+                };
+                var result = await messageBox.ShowDialogAsync();
+                if (result == MessageBoxResult.Primary)
                 {
                     if (isDirectory)
                     {
@@ -203,7 +235,7 @@ namespace Modrix.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                await ShowErrorAsync($"Error deleting item: {ex.Message}");
             }
         }
 
@@ -231,7 +263,7 @@ namespace Modrix.ViewModels.Pages
 
                     if (File.Exists(newPath) || Directory.Exists(newPath))
                     {
-                        MessageBox.Show($"An item named '{newName}' already exists.", "Item Exists", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ShowWarningAsync($"An item named '{newName}' already exists.", "Item Exists");
                         return;
                     }
 
@@ -256,7 +288,7 @@ namespace Modrix.ViewModels.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error renaming item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowErrorAsync($"Error renaming item: {ex.Message}");
             }
         }
 

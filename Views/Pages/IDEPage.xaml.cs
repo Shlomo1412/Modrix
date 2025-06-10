@@ -118,9 +118,9 @@ namespace Modrix.Views.Pages
                     Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Delete24)
                 };
 
-                deleteItem.Click += (s, args) =>
+                deleteItem.Click += async (s, args) =>
                 {
-                    ViewModel.DeleteItem(item.FullPath);
+                    await ViewModel.DeleteItemAsync(item.FullPath);
                 };
 
                 contextMenu.Items.Add(renameItem);
