@@ -121,8 +121,8 @@ namespace Modrix
             }
 
             // Update Taskbar JumpList with all projects
-            var taskBarService = Services.GetService<Modrix.Services.IModrixTaskBarService>();
             var allProjects = Modrix.Services.TemplateManager.LoadAllProjects();
+            var taskBarService = Services.GetRequiredService<Modrix.Services.IModrixTaskBarService>();
             taskBarService?.UpdateJumpListWithProjects(allProjects);
 
             // Handle JumpList activation (open project from JumpList)

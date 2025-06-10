@@ -11,6 +11,7 @@ using Modrix.Views.Windows;
 public partial class DashboardViewModel : ObservableObject
 {
     private readonly TemplateManager _templateManager;
+    private readonly IModrixTaskBarService _taskBarService;
 
     [ObservableProperty]
     private ObservableCollection<ModProjectData> _allProjects = new();
@@ -30,9 +31,10 @@ public partial class DashboardViewModel : ObservableObject
     public List<string> GameVersions { get; } = new List<string>();
     public List<string> ModLoaders { get; } = new List<string> { "All", "Fabric", "Forge" };
 
-    public DashboardViewModel()
+    public DashboardViewModel(IModrixTaskBarService taskBarService)
     {
         _templateManager = new TemplateManager();
+        _taskBarService = taskBarService;
 
         // Initialize filtered projects first
         FilteredProjects = CollectionViewSource.GetDefaultView(AllProjects);
@@ -90,6 +92,9 @@ public partial class DashboardViewModel : ObservableObject
 
         // Only refresh if FilteredProjects is initialized
         FilteredProjects?.Refresh();
+
+        // Update the JumpList whenever projects are loaded/changed
+        _taskBarService?.UpdateJumpListWithProjects(AllProjects);
     }
 
     [RelayCommand]
