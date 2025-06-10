@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Threading;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +12,7 @@ using Modrix.ViewModels.Windows;
 using Modrix.Views.Pages;
 using Modrix.Views.Windows;
 using Wpf.Ui;
+using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.DependencyInjection;
 using IThemeService = Modrix.Services.IThemeService;
@@ -49,6 +51,7 @@ namespace Modrix
                 services.AddSingleton<Services.IThemeService, Services.ThemeService>();
                 // TaskBar manipulation
                 services.AddSingleton<ITaskBarService, TaskBarService>();
+                services.AddSingleton<Modrix.Services.IModrixTaskBarService, Modrix.Services.ModrixTaskBarService>();
 
                 // Service containing navigation, same as INavigationWindow... but without window
                 services.AddSingleton<INavigationService, NavigationService>();
@@ -105,8 +108,6 @@ namespace Modrix
             // Get the connectivity service
             _connectivityService = Services.GetService<IConnectivityService>();
 
-
-
             // Load saved theme:
             var themeService = Services.GetRequiredService<IThemeService>();
             var saved = themeService.LoadTheme();
@@ -119,11 +120,38 @@ namespace Modrix
                 dialogService.SetDialogHost(main.DialogHost);
             }
 
+            // Update Taskbar JumpList with all projects
+            var taskBarService = Services.GetService<Modrix.Services.IModrixTaskBarService>();
+            var allProjects = Modrix.Services.TemplateManager.LoadAllProjects();
+            taskBarService?.UpdateJumpListWithProjects(allProjects);
+
+            // Handle JumpList activation (open project from JumpList)
+            var args = Environment.GetCommandLineArgs();
+            var openArg = args.FirstOrDefault(a => a.StartsWith("--open-project="));
+            if (openArg != null)
+            {
+                var projectPath = openArg.Substring("--open-project=".Length).Trim('"');
+                if (!string.IsNullOrEmpty(projectPath) && System.IO.Directory.Exists(projectPath))
+                {
+                    // Try to open the project workspace window
+                    var project = allProjects.FirstOrDefault(p => p.Location == projectPath);
+                    if (project != null)
+                    {
+                        var viewModel = Services.GetRequiredService<ProjectWorkspaceViewModel>();
+                        var navigationViewPageProvider = Services.GetRequiredService<INavigationViewPageProvider>();
+                        var navigationService = Services.GetRequiredService<INavigationService>();
+                        var workspaceWindow = new ProjectWorkspace(viewModel, navigationViewPageProvider, navigationService);
+                        workspaceWindow.LoadProject(project);
+                        workspaceWindow.Show();
+                        workspaceWindow.Activate();
+                        return;
+                    }
+                }
+            }
 
             // Check connectivity and show snackbar if offline
             if (_connectivityService?.IsInternetAvailable() == false)
             {
-                
                 if (navigationWindow is MainWindow mainWindow)
                 {
                     mainWindow.ShowOfflineSnackbar();
