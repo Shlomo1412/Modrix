@@ -133,12 +133,14 @@
                         Appearance="Primary"
                         Icon="{ui:SymbolIcon FolderOpen24}"
                         Content="Open Project Folder"
+                        Margin="0,0,0,4"
                         Click="FlyoutOpenFolderButton_Click"/>
                     <ui:Button
                         x:Name="FlyoutOpenInIDEButton"
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon Open24}"
                         Content="Open in IDE"
+                        Width="169"
                         Click="FlyoutOpenInIDEButton_Click"/>
                 </StackPanel>
             </ui:Flyout>
