@@ -128,14 +128,13 @@
                         Icon="{ui:SymbolIcon Delete20}"
                         Content="Delete Project"
                         Margin="0,0,0,4"
-                        Padding="4"
+                        Width="169"
                         Click="FlyoutDeleteButton_Click"/>
                     <ui:Button
                         x:Name="FlyoutOpenFolderButton"
                         Appearance="Primary"
                         Icon="{ui:SymbolIcon FolderOpen24}"
                         Content="Open Project Folder"
-                        Padding="4"
                         Click="FlyoutOpenFolderButton_Click"/>
                 </StackPanel>
             </ui:Flyout>
