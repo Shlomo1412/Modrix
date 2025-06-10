@@ -29,10 +29,28 @@ namespace Modrix.Views.Controls
         {
             InitializeComponent();
 
-            
             EditButton.Click += (s, e) => EditClicked?.Invoke(this, e);
-            DeleteButton.Click += (s, e) => DeleteClicked?.Invoke(this, e);
-            OpenFolderButton.Click += (s, e) => OpenFolderClicked?.Invoke(this, e);
+            OptionsButton.Click += OptionsButton_Click;
+            FlyoutDeleteButton.Click += FlyoutDeleteButton_Click;
+            FlyoutOpenFolderButton.Click += FlyoutOpenFolderButton_Click;
+        }
+
+        private void OptionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            OptionsFlyout.IsOpen = true;
+            e.Handled = true;
+        }
+
+        private void FlyoutDeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            OptionsFlyout.IsOpen = false;
+            DeleteClicked?.Invoke(this, e);
+        }
+
+        private void FlyoutOpenFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            OptionsFlyout.IsOpen = false;
+            OpenFolderClicked?.Invoke(this, e);
         }
 
         private static void OnProjectDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -62,10 +80,10 @@ namespace Modrix.Views.Controls
                 using (var stream = File.OpenRead(fullIconPath))
                 {
                     bmp.BeginInit();
-                    bmp.CacheOption = BitmapCacheOption.OnLoad; // ← load into memory immediately
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
                     bmp.StreamSource = stream;
                     bmp.EndInit();
-                    bmp.Freeze();  // ← make it cross-thread and immutable
+                    bmp.Freeze();
                 }
                 ProjectIconImage.Source = bmp;
                 ProjectIconImage.Visibility = Visibility.Visible;
@@ -73,20 +91,15 @@ namespace Modrix.Views.Controls
             }
             else
             {
-                
                 ProjectIconImage.Source = null;
                 ProjectIconImage.Visibility = Visibility.Collapsed;
                 DefaultIconText.Visibility = Visibility.Visible;
 
-                
                 DefaultIconText.Text = !string.IsNullOrEmpty(data.Name)
                     ? data.Name.Substring(0, 1).ToUpper()
                     : "?";
             }
         }
     }
-
-
-
 }
 

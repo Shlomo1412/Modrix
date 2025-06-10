@@ -104,25 +104,41 @@
                     Height="32"
                     Margin="0,0,6,0"
                     Padding="4"/>
+                <!-- Options Button -->
                 <ui:Button
-                    x:Name="DeleteButton"
-                    Appearance="Danger"
-                    Icon="{ui:SymbolIcon Delete20}"
-                    ToolTip="Delete Project"
+                    x:Name="OptionsButton"
+                    Appearance="Secondary"
+                    Icon="{ui:SymbolIcon MoreHorizontal24}"
+                    ToolTip="Project Options"
                     Width="32"
                     Height="32"
-                    Margin="0,0,5,0"
-                    Padding="4"/>
-                <ui:Button
-                    x:Name="OpenFolderButton"
-                    Appearance="Primary"
-                    Icon="{ui:SymbolIcon FolderOpen24}"
-                    ToolTip="Open Project Folder"
-                    Width="32"
-                    Height="32"
-                    Margin="0,0,8,0"
-                    Padding="4"/>
+                    Padding="4"
+                    Click="OptionsButton_Click"/>
             </StackPanel>
+
+            <!-- Flyout for project options -->
+            <ui:Flyout
+                x:Name="OptionsFlyout"
+                Placement="Bottom"
+                IsOpen="False">
+                <StackPanel MinWidth="150">
+                    <ui:Button
+                        x:Name="FlyoutDeleteButton"
+                        Appearance="Danger"
+                        Icon="{ui:SymbolIcon Delete20}"
+                        Content="Delete Project"
+                        Margin="0,0,0,4"
+                        Padding="4"
+                        Click="FlyoutDeleteButton_Click"/>
+                    <ui:Button
+                        x:Name="FlyoutOpenFolderButton"
+                        Appearance="Primary"
+                        Icon="{ui:SymbolIcon FolderOpen24}"
+                        Content="Open Project Folder"
+                        Padding="4"
+                        Click="FlyoutOpenFolderButton_Click"/>
+                </StackPanel>
+            </ui:Flyout>
         </Grid>
 
         <ui:CardControl.Triggers>
