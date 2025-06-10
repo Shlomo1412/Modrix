@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Width="300"
+    Width="Auto"
     ToolTipService.InitialShowDelay="200"
     ToolTipService.ShowDuration="5000"
     ToolTipService.BetweenShowDelay="100">
@@ -15,34 +15,36 @@
             <StackPanel Margin="8">
                 <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding Name}" />
                 <TextBlock Margin="2,4,0,0">
-                    <Run Text="Type: "/>
+                    <Run Text="Type: " />
                     <Run Text="{Binding ModType}"/>
                 </TextBlock>
                 <TextBlock>
-                    <Run Text="Minecraft Version: "/>
+                    <Run Text="Minecraft Version: " />
                     <Run Text="{Binding MinecraftVersion}"/>
                 </TextBlock>
                 <TextBlock>
-                    <Run Text="Mod ID: "/>
+                    <Run Text="Mod ID: " />
                     <Run Text="{Binding ModId}"/>
                 </TextBlock>
                 <TextBlock>
-                    <Run Text="Package: "/>
+                    <Run Text="Package: " />
                     <Run Text="{Binding Package}"/>
                 </TextBlock>
             </StackPanel>
         </ToolTip>
     </UserControl.ToolTip>
 
-    <ui:CardControl Padding="12">
+    <ui:CardControl Padding="12" HorizontalAlignment="Left">
         <Grid>
             <Grid.ColumnDefinitions>
+                <!-- Icon -->
                 <ColumnDefinition Width="64"/>
+                <!-- Info -->
                 <ColumnDefinition Width="*"/>
+                <!-- Buttons -->
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            
             <!-- Project Icon -->
             <Border 
                 Grid.Column="0" 
@@ -51,7 +53,6 @@
                 Background="{DynamicResource ControlFillColorDefaultBrush}"
                 CornerRadius="8">
                 <Grid>
-                    <!-- Default Text Icon (shows when no image) -->
                     <TextBlock 
                         x:Name="DefaultIconText"
                         Text=""
@@ -61,7 +62,6 @@
                         VerticalAlignment="Center"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
 
-                    <!-- Project Image Icon -->
                     <Image 
                         x:Name="ProjectIconImage"
                         RenderOptions.BitmapScalingMode="HighQuality"
@@ -69,8 +69,7 @@
                 </Grid>
             </Border>
 
-
-            <!-- Project Info -->
+            <!-- Project Info (adjacent to icon) -->
             <StackPanel 
                 Grid.Column="1" 
                 Margin="12,0,0,0"
@@ -88,7 +87,7 @@
                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
             </StackPanel>
 
-            <!-- Action Buttons -->
+            <!-- Action Buttons (moved to right) -->
             <StackPanel 
                 x:Name="ActionButtons"
                 Grid.Column="2"
@@ -104,7 +103,6 @@
                     Height="32"
                     Margin="0,0,6,0"
                     Padding="4"/>
-                <!-- Options Button -->
                 <ui:Button
                     x:Name="OptionsButton"
                     Appearance="Secondary"
