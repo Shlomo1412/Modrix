@@ -33,6 +33,7 @@ namespace Modrix.Views.Controls
             OptionsButton.Click += OptionsButton_Click;
             FlyoutDeleteButton.Click += FlyoutDeleteButton_Click;
             FlyoutOpenFolderButton.Click += FlyoutOpenFolderButton_Click;
+            FlyoutOpenInIDEButton.Click += FlyoutOpenInIDEButton_Click;
         }
 
         private void OptionsButton_Click(object sender, RoutedEventArgs e)
@@ -51,6 +52,32 @@ namespace Modrix.Views.Controls
         {
             OptionsFlyout.IsOpen = false;
             OpenFolderClicked?.Invoke(this, e);
+        }
+
+        private void FlyoutOpenInIDEButton_Click(object sender, RoutedEventArgs e)
+        {
+            OptionsFlyout.IsOpen = false;
+            if (ProjectData == null) return;
+            var gradlePath = System.IO.Path.Combine(ProjectData.Location, "build.gradle");
+            if (File.Exists(gradlePath))
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = gradlePath,
+                        UseShellExecute = true
+                    });
+                }
+                catch
+                {
+                    MessageBox.Show("Could not open build.gradle in IDE.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("build.gradle not found in project directory.", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         private static void OnProjectDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
