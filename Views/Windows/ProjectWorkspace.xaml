@@ -85,6 +85,12 @@
                         ToolTip="Refresh Project"
                         Margin="4,0"
                         Click="RefreshButton_Click"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon Open24}"
+                        ToolTip="Open Project in an External IDE"
+                        Margin="4,0"
+                        Click="OpenInIDEButton_Click"/>
                 </StackPanel>
             </ui:TitleBar.Header>
         </ui:TitleBar>

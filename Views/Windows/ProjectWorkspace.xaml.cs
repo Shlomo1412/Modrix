@@ -83,7 +83,34 @@ namespace Modrix.Views.Windows
             }
         }
 
-
+        private void OpenInIDEButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.CurrentProject == null)
+            {
+                ShowSnackbar("No project loaded", "Please open a project first");
+                return;
+            }
+            var gradlePath = Path.Combine(ViewModel.CurrentProject.Location, "build.gradle");
+            if (File.Exists(gradlePath))
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = gradlePath,
+                        UseShellExecute = true
+                    });
+                }
+                catch
+                {
+                    ShowSnackbar("Could not open build.gradle in IDE.", "Error", ControlAppearance.Danger);
+                }
+            }
+            else
+            {
+                ShowSnackbar("build.gradle not found in project directory.", "File Not Found", ControlAppearance.Danger);
+            }
+        }
 
         public void LoadProject(ModProjectData project) => ViewModel.LoadProject(project);
 
