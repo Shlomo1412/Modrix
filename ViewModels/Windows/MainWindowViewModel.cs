@@ -52,6 +52,19 @@ namespace Modrix.ViewModels.Windows
         {
             new NavigationViewItem()
             {
+                Content = "Community",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
+                Command = new RelayCommand(() =>
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "https://discord.gg/3M58rQC2",
+                        UseShellExecute = true
+                    });
+                })
+            },
+            new NavigationViewItem()
+            {
                 Content = "Settings",
                 Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
                 TargetPageType = typeof(Views.Pages.SettingsPage)
