@@ -49,26 +49,7 @@
                         Icon="{ui:SymbolIcon Edit24}"
                         ToolTip="The display name of your mod"/>
 
-                    <!-- Project Type -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Project Type" />
-                    <ui:CardControl
-                        ToolTip="Choose your project type"
-                        Margin="0,0,0,16">
-                        <ui:CardControl.Content>
-                            <ComboBox
-                                x:Name="ModTypeComboBox"
-                                Width="371"
-                                MinWidth="200"
-                                SelectionChanged="ModTypeComboBox_SelectionChanged">
-                                <ComboBoxItem Content="Forge Mod" />
-                                <ComboBoxItem Content="Fabric Mod" />
-                                <ComboBoxItem Content="Resource Pack" />
-                            </ComboBox>
-                        </ui:CardControl.Content>
-                    </ui:CardControl>
+                    
 
                     <!-- Mod/Pack ID -->
                     <TextBlock 
@@ -96,6 +77,28 @@
                         PlaceholderText="lowercase_id"
                         Icon="{ui:SymbolIcon Document24}"
                         ToolTip="Unique identifier (lowercase, no spaces)"/>
+
+                    <!-- Project Type -->
+                    <TextBlock 
+                        Margin="0,0,0,4"
+                        FontWeight="Medium" 
+                        Text="Project Type" />
+                    <ui:CardControl
+                        ToolTip="Choose your project type"
+                        Margin="0,0,0,16"
+                        Panel.ZIndex="1">
+                        <ui:CardControl.Content>
+                            <ComboBox
+                                x:Name="ModTypeComboBox"
+                                Width="371"
+                                MinWidth="200"
+                                SelectionChanged="ModTypeComboBox_SelectionChanged">
+                                <ComboBoxItem Content="Forge Mod" />
+                                <ComboBoxItem Content="Fabric Mod" />
+                                <ComboBoxItem Content="Resource Pack" />
+                            </ComboBox>
+                        </ui:CardControl.Content>
+                    </ui:CardControl>
 
                     <!-- Mod-specific fields -->
                     <StackPanel x:Name="ModSpecificFields">

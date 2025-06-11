@@ -47,6 +47,7 @@ namespace Modrix.Views.Windows
             InitializeComponent();
             DataContext = this;
 
+            // Set default selection for ModTypeComboBox
             if (existingProject != null)
             {
                 ProjectNameBox.Text = existingProject.Name;
@@ -73,6 +74,11 @@ namespace Modrix.Views.Windows
 
                 DescriptionBox.Text = existingProject.Description;
                 AuthorsBox.Text = existingProject.Authors;
+            }
+            else
+            {
+                // Set default selection to Fabric Mod
+                ModTypeComboBox.SelectedIndex = 1; // Index of Fabric Mod
             }
 
             SetupEventHandlers();
@@ -111,7 +117,7 @@ namespace Modrix.Views.Windows
 
         private void ModTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ModTypeComboBox.SelectedItem is ComboBoxItem selectedItem)
+            if (ModTypeComboBox?.SelectedItem is ComboBoxItem selectedItem && ModSpecificFields != null)
             {
                 bool isResourcePack = selectedItem.Content.ToString() == "Resource Pack";
                 ModSpecificFields.Visibility = isResourcePack ? Visibility.Collapsed : Visibility.Visible;
@@ -123,12 +129,16 @@ namespace Modrix.Views.Windows
 
         private void ValidateFields()
         {
-            AreFieldsValid = !string.IsNullOrWhiteSpace(ProjectNameBox.Text) &&
-                           !string.IsNullOrWhiteSpace(ModIdBox.Text) &&
-                           !string.IsNullOrWhiteSpace(PackageBox.Text) &&
-
-                           ModTypeComboBox.SelectedItem != null &&
-                           MinecraftVersionComboBox.SelectedItem != null;
+            if (ModTypeComboBox?.SelectedItem is ComboBoxItem selectedItem)
+            {
+                bool isResourcePack = selectedItem.Content.ToString() == "Resource Pack";
+                
+                AreFieldsValid = !string.IsNullOrWhiteSpace(ProjectNameBox?.Text) &&
+                               !string.IsNullOrWhiteSpace(ModIdBox?.Text) &&
+                               (!isResourcePack || string.IsNullOrWhiteSpace(PackageBox?.Text)) &&
+                               ModTypeComboBox?.SelectedItem != null &&
+                               (isResourcePack || MinecraftVersionComboBox?.SelectedItem != null);
+            }
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
