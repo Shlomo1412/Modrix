@@ -398,6 +398,29 @@ namespace Modrix.Views.Pages
                     var filePath = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "textures", img.FileName);
                     if (File.Exists(filePath))
                     {
+                        // Check if a tab for this texture is already open
+                        TabItem existingTab = null;
+                        foreach (var item in ResourcesTabs.Items)
+                        {
+                            if (item is TabItem tabItem && tabItem.Header is StackPanel headerPanel)
+                            {
+                                foreach (var child in headerPanel.Children)
+                                {
+                                    if (child is System.Windows.Controls.TextBlock tb && tb.Text == $"Edit: {img.FileName}")
+                                    {
+                                        existingTab = tabItem;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (existingTab != null) break;
+                        }
+                        if (existingTab != null)
+                        {
+                            // Tab already open, just select it
+                            ResourcesTabs.SelectedItem = existingTab;
+                            return;
+                        }
                         // Create the editor page
                         var editorVm = new ViewModels.Pages.TextureEditorViewModel();
                         var editorPage = new TextureEditorPage(editorVm);
