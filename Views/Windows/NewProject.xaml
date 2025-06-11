@@ -49,79 +49,107 @@
                         Icon="{ui:SymbolIcon Edit24}"
                         ToolTip="The display name of your mod"/>
 
-                    <!-- Mod ID -->
+                    <!-- Project Type -->
                     <TextBlock 
                         Margin="0,0,0,4"
                         FontWeight="Medium" 
-                        Text="Mod ID" />
-                    <ui:TextBox
-                        x:Name="ModIdBox"
-                        Margin="0,0,0,16"
-                        PlaceholderText="mod_id"
-                        Icon="{ui:SymbolIcon Document24}"
-                        ToolTip="Unique identifier for your mod (lowercase, no spaces)"/>
-
-                    <!-- Package -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Package" />
-                    <ui:TextBox
-                        x:Name="PackageBox"
-                        Margin="0,0,0,16"
-                        PlaceholderText="net.modrix.mymod"
-                        Icon="{ui:SymbolIcon Box24}"
-                        ToolTip="Java package name for your mod"/>
-
-                    <!-- Mod Type -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Mod Type" />
+                        Text="Project Type" />
                     <ui:CardControl
-                        ToolTip="Choose your mod's platform"
+                        ToolTip="Choose your project type"
                         Margin="0,0,0,16">
                         <ui:CardControl.Content>
                             <ComboBox
                                 x:Name="ModTypeComboBox"
                                 Width="371"
-                                MinWidth="200">
-                                
+                                MinWidth="200"
+                                SelectionChanged="ModTypeComboBox_SelectionChanged">
                                 <ComboBoxItem Content="Forge Mod" />
                                 <ComboBoxItem Content="Fabric Mod" />
+                                <ComboBoxItem Content="Resource Pack" />
                             </ComboBox>
                         </ui:CardControl.Content>
                     </ui:CardControl>
 
-                    <!-- Minecraft Version -->
+                    <!-- Mod/Pack ID -->
                     <TextBlock 
                         Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Minecraft Version" />
-                    <ui:CardControl
-                        ToolTip="Select the Minecraft version for your mod"
-                        Margin="0,0,0,16">
-                        <ui:CardControl.Content>
-                            <ComboBox
-                                x:Name="MinecraftVersionComboBox"
-                                Width="371"
-                                MinWidth="200">
-                                <ComboBoxItem Content="1.21.4" />
-                                
-                            </ComboBox>
-                        </ui:CardControl.Content>
-                    </ui:CardControl>
+                        FontWeight="Medium">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
+                                        <Setter Property="Text" Value="Pack ID" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Forge Mod">
+                                        <Setter Property="Text" Value="Mod ID" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Fabric Mod">
+                                        <Setter Property="Text" Value="Mod ID" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <ui:TextBox
+                        x:Name="ModIdBox"
+                        Margin="0,0,0,16"
+                        PlaceholderText="lowercase_id"
+                        Icon="{ui:SymbolIcon Document24}"
+                        ToolTip="Unique identifier (lowercase, no spaces)"/>
 
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="License (Optional)" />
-                    <ui:CardControl
+                    <!-- Mod-specific fields -->
+                    <StackPanel x:Name="ModSpecificFields">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <!-- Package -->
+                        <TextBlock 
+                            Margin="0,0,0,4"
+                            FontWeight="Medium" 
+                            Text="Package" />
+                        <ui:TextBox
+                            x:Name="PackageBox"
+                            Margin="0,0,0,16"
+                            PlaceholderText="net.modrix.mymod"
+                            Icon="{ui:SymbolIcon Box24}"
+                            ToolTip="Java package name for your mod"/>
+
+                        <!-- Minecraft Version -->
+                        <TextBlock 
+                            Margin="0,0,0,4"
+                            FontWeight="Medium" 
+                            Text="Minecraft Version" />
+                        <ui:CardControl
+                            ToolTip="Select the Minecraft version for your mod"
+                            Margin="0,0,0,16">
+                            <ui:CardControl.Content>
+                                <ComboBox
+                                    x:Name="MinecraftVersionComboBox"
+                                    Width="371"
+                                    MinWidth="200">
+                                    <ComboBoxItem Content="1.21.4" />
+                                </ComboBox>
+                            </ui:CardControl.Content>
+                        </ui:CardControl>
+
+                        <!-- License -->
+                        <TextBlock 
+                            Margin="0,0,0,4"
+                            FontWeight="Medium" 
+                            Text="License (Optional)" />
+                        <ui:CardControl
                             ToolTip="Choose a license for your mod"
                             Margin="0,0,0,16">
                         <ui:CardControl.Content>
                             <ComboBox
-                                 x:Name="LicenseComboBox"
+                                x:Name="LicenseComboBox"
                                 IsEditable="True"
                                 Width="371"
                                 MinWidth="200">
@@ -134,41 +162,38 @@
                                 <ComboBoxItem Content="Custom License" />
                             </ComboBox>
                         </ui:CardControl.Content>
-                    </ui:CardControl>
+                        </ui:CardControl>
 
-                    <!-- Description -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Description (Optional)" />
-                    <ui:TextBox
-                        x:Name="DescriptionBox"
-                        Margin="0,0,0,16"
-                        PlaceholderText="A brief description of your mod"
-                        Icon="{ui:SymbolIcon Comment24}"
-                        ToolTip="Describe what your mod does"
-                        TextWrapping="Wrap"
-                        AcceptsReturn="True"
-                        Height="80"
-                        VerticalContentAlignment="Top"/>
+                        <!-- Description -->
+                        <TextBlock 
+                            Margin="0,0,0,4"
+                            FontWeight="Medium" 
+                            Text="Description (Optional)" />
+                        <ui:TextBox
+                            x:Name="DescriptionBox"
+                            Margin="0,0,0,16"
+                            PlaceholderText="A brief description of your mod"
+                            Icon="{ui:SymbolIcon Comment24}"
+                            ToolTip="Describe what your mod does"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            Height="80"
+                            VerticalContentAlignment="Top"/>
 
+                        <!-- Authors -->
+                        <TextBlock 
+                            Margin="0,0,0,4"
+                            FontWeight="Medium" 
+                            Text="Authors (Optional)" />
+                        <ui:TextBox
+                            x:Name="AuthorsBox"
+                            Margin="0,0,0,16"
+                            PlaceholderText="Comma-separated list of authors"
+                            Icon="{ui:SymbolIcon People24}"
+                            ToolTip="List the authors of the mod (comma-separated)"/>
+                    </StackPanel>
 
-                 
-
-                    <!-- Authors -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Authors (Optional)" />
-                    <ui:TextBox
-                        x:Name="AuthorsBox"
-                        Margin="0,0,0,16"
-                        PlaceholderText="Comma-separated list of authors"
-                        Icon="{ui:SymbolIcon People24}"
-                        ToolTip="List the authors of the mod (comma-separated)"/>
-
-
-                    <!-- Project Icon section (after Location section) -->
+                    <!-- Project Icon section -->
                     <TextBlock 
                         Margin="0,0,0,4"
                         FontWeight="Medium" 
@@ -176,9 +201,7 @@
                     <Grid x:Name="IconSection" Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="48"/>
-                            <!-- For the icon/button -->
                             <ColumnDefinition Width="Auto"/>
-                            <!-- For the additional buttons -->
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
@@ -228,9 +251,6 @@
                         </StackPanel>
                     </Grid>
 
-                    
-                    
-
                     <Expander Header="Other" IsExpanded="False">
                         <StackPanel>
                             <CheckBox
@@ -242,8 +262,6 @@
                         </StackPanel>
                     </Expander>
                 </StackPanel>
-                
-                
             </ScrollViewer>
             <ui:DynamicScrollBar 
                 HorizontalAlignment="Right" 

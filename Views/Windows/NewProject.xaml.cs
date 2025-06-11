@@ -25,13 +25,9 @@ namespace Modrix.Views.Windows
 
         public ModProjectData? ProjectData { get; private set; }
 
-
         private readonly TemplateManager _templateManager = new();
 
-
-
         public event PropertyChangedEventHandler? PropertyChanged;
-
 
         public bool AreFieldsValid
         {
@@ -83,7 +79,6 @@ namespace Modrix.Views.Windows
             ValidateFields();
         }
 
-
         private void SetupEventHandlers()
         {
             // Only validate on text change
@@ -110,10 +105,20 @@ namespace Modrix.Views.Windows
                 ValidateFields();
             };
 
-
-
-            ModTypeComboBox.SelectionChanged += (s, e) => ValidateFields();
+            ModTypeComboBox.SelectionChanged += ModTypeComboBox_SelectionChanged;
             MinecraftVersionComboBox.SelectionChanged += (s, e) => ValidateFields();
+        }
+
+        private void ModTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ModTypeComboBox.SelectedItem is ComboBoxItem selectedItem)
+            {
+                bool isResourcePack = selectedItem.Content.ToString() == "Resource Pack";
+                ModSpecificFields.Visibility = isResourcePack ? Visibility.Collapsed : Visibility.Visible;
+
+                // Update the ModIdBox label through binding
+                ValidateFields();
+            }
         }
 
         private void ValidateFields()
@@ -125,8 +130,6 @@ namespace Modrix.Views.Windows
                            ModTypeComboBox.SelectedItem != null &&
                            MinecraftVersionComboBox.SelectedItem != null;
         }
-
-
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
@@ -141,7 +144,6 @@ namespace Modrix.Views.Windows
             {
                 loadingWindow.Show();
                 await CreateModProjectAsync(loadingWindow);
-
 
                 if (Directory.Exists(ProjectData.Location))
                 {
@@ -165,9 +167,6 @@ namespace Modrix.Views.Windows
             catch (Exception ex)
             {
                 loadingWindow.Close();
-
-                
-
 
                 try
                 {
@@ -227,12 +226,6 @@ namespace Modrix.Views.Windows
                 throw new ArgumentException($"Unsupported mod type: {ProjectData.ModType}");
             }
         }
-
-
-
-
-
-
 
         private void ProjectNameBox_TextChanged(object sender, RoutedEventArgs e)
         {
