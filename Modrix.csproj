@@ -56,6 +56,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Resources\Cursors\Eraser.cur">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Cursors\ColorPicker.cur">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Cursors\Bucket.cur">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="ModElements\Fabric\" />
     <Folder Include="Templates\FabricMod\src\client\java\com\example\mixin\client\" />
     <Folder Include="Templates\FabricMod\src\main\java\com\example\mixin\" />

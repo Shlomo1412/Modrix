@@ -193,21 +193,21 @@
                             </Rectangle.Fill>
                         </Rectangle>
 
-                        <!-- Image -->
                         <Image
-                            x:Name="PixelCanvas"
-                            MouseDown="Image_MouseDown"
-                            MouseMove="Image_MouseMove"
-                            MouseUp="Image_MouseUp"
-                            RenderOptions.BitmapScalingMode="NearestNeighbor"
-                            Source="{Binding ViewModel.CurrentImage}"
-                            Width="{Binding ViewModel.ImageWidth}"
-                            Height="{Binding ViewModel.ImageHeight}"
-                            Stretch="None">
+                                x:Name="PixelCanvas"
+                                MouseDown="Image_MouseDown"
+                                MouseMove="Image_MouseMove"
+                                MouseUp="Image_MouseUp"
+                                RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                Source="{Binding ViewModel.CurrentImage}"
+                                Width="{Binding ViewModel.ImageWidth}"
+                                Height="{Binding ViewModel.ImageHeight}"
+                                Stretch="None"
+                                Cursor="{Binding ViewModel.CurrentCursor}">
                             <Image.LayoutTransform>
                                 <ScaleTransform
                                     ScaleX="{Binding ViewModel.ZoomLevel}"
-                                    ScaleY="{Binding ViewModel.ZoomLevel}" />
+            ScaleY="{Binding ViewModel.ZoomLevel}" />
                             </Image.LayoutTransform>
                         </Image>
                     </Grid>

@@ -61,8 +61,25 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private int _blueValue = 0;
 
+    [ObservableProperty]
+    private Cursor _currentCursor = Cursors.Pen; // Default to Pen
+
     private WriteableBitmap? _bitmap;
     private Color[,]? _pixelData;
+
+    private static readonly Cursor PencilCursor = Cursors.Pen;
+    private static readonly Cursor DefaultCursor = Cursors.Arrow;
+    private static Cursor? EraserCursor;
+    private static Cursor? PickerCursor;
+    private static Cursor? BucketCursor;
+
+    static TextureEditorViewModel()
+    {
+        // Load custom cursors from Resources/Cursors
+        try { EraserCursor = new Cursor("Resources/Cursors/Eraser.cur"); } catch { EraserCursor = Cursors.Cross; }
+        try { PickerCursor = new Cursor("Resources/Cursors/ColorPicker.cur"); } catch { PickerCursor = Cursors.IBeam; }
+        try { BucketCursor = new Cursor("Resources/Cursors/Bucket.cur"); } catch { BucketCursor = Cursors.Hand; }
+    }
 
     public TextureEditorViewModel()
     {
@@ -321,5 +338,27 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     partial void OnZoomLevelChanged(int value)
     {
         StatusText = $"Zoom: {value * 100}%";
+    }
+
+    partial void OnCurrentToolChanged(EditorTool value)
+    {
+        switch (value)
+        {
+            case EditorTool.Pencil:
+                CurrentCursor = PencilCursor;
+                break;
+            case EditorTool.Eraser:
+                CurrentCursor = EraserCursor ?? Cursors.Cross;
+                break;
+            case EditorTool.Bucket:
+                CurrentCursor = BucketCursor ?? Cursors.Hand;
+                break;
+            case EditorTool.Picker:
+                CurrentCursor = PickerCursor ?? Cursors.IBeam;
+                break;
+            default:
+                CurrentCursor = DefaultCursor;
+                break;
+        }
     }
 }
