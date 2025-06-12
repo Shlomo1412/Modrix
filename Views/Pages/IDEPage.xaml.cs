@@ -7,6 +7,8 @@ using Wpf.Ui.Abstractions.Controls;
 using System.ComponentModel;
 using Microsoft.Win32;
 using Wpf.Ui.Controls;
+using System.Windows.Media;
+using System.Threading.Tasks;
 
 namespace Modrix.Views.Pages
 {
@@ -14,6 +16,10 @@ namespace Modrix.Views.Pages
     {
         public IDEPageViewModel ViewModel { get; }
         private bool _updatingText;
+
+        // For drag-and-drop
+        private Point _dragStartPoint;
+        private FileTreeItem _draggedItem;
 
         public IDEPage(IDEPageViewModel viewModel)
         {
@@ -57,6 +63,10 @@ namespace Modrix.Views.Pages
             };
 
             FileTreeView.PreviewMouseRightButtonDown += FileTreeView_PreviewMouseRightButtonDown;
+            FileTreeView.PreviewMouseLeftButtonDown += FileTreeView_PreviewMouseLeftButtonDown;
+            FileTreeView.PreviewMouseMove += FileTreeView_PreviewMouseMove;
+            FileTreeView.DragOver += FileTreeView_DragOver;
+            FileTreeView.Drop += FileTreeView_Drop;
         }
 
         private void FileTreeView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -192,6 +202,85 @@ namespace Modrix.Views.Pages
         private void SaveCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = ViewModel.HasUnsavedChanges;
+        }
+
+        // Drag-and-drop handlers
+        private void FileTreeView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _dragStartPoint = e.GetPosition(null);
+            _draggedItem = GetTreeViewItemUnderMouse(e.OriginalSource);
+        }
+
+        private void FileTreeView_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed && _draggedItem != null)
+            {
+                Point currentPosition = e.GetPosition(null);
+                if (Math.Abs(currentPosition.X - _dragStartPoint.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(currentPosition.Y - _dragStartPoint.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    DragDrop.DoDragDrop(FileTreeView, _draggedItem, DragDropEffects.Move);
+                }
+            }
+        }
+
+        private void FileTreeView_DragOver(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(FileTreeItem)))
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
+            var target = GetTreeViewItemUnderMouse(e.OriginalSource);
+            if (target == null || !target.IsDirectory)
+            {
+                e.Effects = DragDropEffects.None;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.Move;
+            }
+            e.Handled = true;
+        }
+
+        private async void FileTreeView_Drop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(typeof(FileTreeItem)))
+                return;
+
+            var sourceItem = (FileTreeItem)e.Data.GetData(typeof(FileTreeItem));
+            var targetItem = GetTreeViewItemUnderMouse(e.OriginalSource);
+            if (sourceItem == null || targetItem == null || !targetItem.IsDirectory)
+                return;
+
+            // Prevent moving into itself or its own subdirectory
+            if (IsDescendantOrSelf(sourceItem.FullPath, targetItem.FullPath))
+                return;
+
+            await ViewModel.MoveItemAsync(sourceItem.FullPath, targetItem.FullPath);
+        }
+
+        private FileTreeItem GetTreeViewItemUnderMouse(object originalSource)
+        {
+            DependencyObject current = originalSource as DependencyObject;
+            while (current != null && !(current is System.Windows.Controls.TreeViewItem))
+            {
+                current = VisualTreeHelper.GetParent(current);
+            }
+            if (current is System.Windows.Controls.TreeViewItem tvi)
+            {
+                return tvi.DataContext as FileTreeItem;
+            }
+            return null;
+        }
+
+        private bool IsDescendantOrSelf(string sourcePath, string targetPath)
+        {
+            var normalizedSource = System.IO.Path.GetFullPath(sourcePath).TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar;
+            var normalizedTarget = System.IO.Path.GetFullPath(targetPath).TrimEnd(System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar;
+            return normalizedTarget.StartsWith(normalizedSource, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -212,6 +212,7 @@ namespace Modrix.ViewModels.Pages
             {
                 var isDirectory = Directory.Exists(path);
                 var message = $"Are you sure you want to delete this {(isDirectory ? "folder" : "file")}?";
+
                 var messageBox = new MessageBox
                 {
                     Title = "Confirm Delete",
@@ -245,7 +246,7 @@ namespace Modrix.ViewModels.Pages
             {
                 var isDirectory = Directory.Exists(path);
                 var oldName = Path.GetFileName(path);
-                
+
                 var dialog = new Views.Windows.RenameDialog(oldName, !isDirectory)
                 {
                     Owner = Application.Current.Windows.OfType<Window>().FirstOrDefault(x => x.IsActive)
@@ -289,6 +290,58 @@ namespace Modrix.ViewModels.Pages
             catch (Exception ex)
             {
                 ShowErrorAsync($"Error renaming item: {ex.Message}");
+            }
+        }
+
+        public async Task MoveItemAsync(string sourcePath, string targetDirectory)
+        {
+            try
+            {
+                var isDirectory = Directory.Exists(sourcePath);
+                var itemName = Path.GetFileName(sourcePath);
+                var newPath = Path.Combine(targetDirectory, itemName);
+
+                if (string.Equals(sourcePath, newPath, StringComparison.OrdinalIgnoreCase))
+                    return;
+
+                if (File.Exists(newPath) || Directory.Exists(newPath))
+                {
+                    await ShowWarningAsync($"An item named '{itemName}' already exists in the target folder.", "Item Exists");
+                    return;
+                }
+
+                var message = $"Are you sure you want to move this {(isDirectory ? "folder" : "file")} to '{targetDirectory}'?";
+                var messageBox = new MessageBox
+                {
+                    Title = "Confirm Move",
+                    Content = message,
+                    PrimaryButtonText = "Move",
+                    CloseButtonText = "Cancel"
+                };
+                var result = await messageBox.ShowDialogAsync();
+                if (result == MessageBoxResult.Primary)
+                {
+                    if (isDirectory)
+                    {
+                        Directory.Move(sourcePath, newPath);
+                    }
+                    else
+                    {
+                        // If this is the currently open file, close it first
+                        if (sourcePath == SelectedFilePath)
+                        {
+                            SelectedFilePath = null;
+                            SelectedFileName = null;
+                            SelectedFileContent = null;
+                        }
+                        File.Move(sourcePath, newPath);
+                    }
+                    RefreshFileTree();
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowErrorAsync($"Error moving item: {ex.Message}");
             }
         }
 

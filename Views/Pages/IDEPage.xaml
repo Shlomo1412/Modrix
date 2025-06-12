@@ -35,10 +35,15 @@
 
         <!-- File Tree -->
         <Grid Grid.Column="0" Background="{DynamicResource ControlAltFillColorSecondaryBrush}">
-            <TreeView x:Name="FileTreeView" 
-                      ItemsSource="{Binding ViewModel.FileTree}"
-                      Background="Transparent"
-                      BorderThickness="0">
+            <TreeView x:Name="FileTreeView"
+                    ItemsSource="{Binding ViewModel.FileTree}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    AllowDrop="True"
+                    PreviewMouseLeftButtonDown="FileTreeView_PreviewMouseLeftButtonDown"
+                    PreviewMouseMove="FileTreeView_PreviewMouseMove"
+                    Drop="FileTreeView_Drop"
+                    DragOver="FileTreeView_DragOver">
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                         <StackPanel Orientation="Horizontal">
