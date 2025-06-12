@@ -195,9 +195,20 @@
                                         </MultiDataTrigger.Conditions>
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </MultiDataTrigger>
-                                    <DataTrigger Binding="{Binding ViewModel.FilteredProjects.Count}" Value="0">
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ViewModel.AllProjects.Count}" Value="1" />
+                                            <Condition Binding="{Binding ViewModel.FilteredProjects.Count}" Value="0" />
+                                        </MultiDataTrigger.Conditions>
                                         <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
+                                    </MultiDataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding ViewModel.AllProjects.Count}" Value="2" />
+                                            <Condition Binding="{Binding ViewModel.FilteredProjects.Count}" Value="0" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </MultiDataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </TextBlock.Style>
