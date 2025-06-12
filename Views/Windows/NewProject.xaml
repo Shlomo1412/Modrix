@@ -7,10 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="New Minecraft Mod Project"
-    Width="500"
-    Height="462"
+    Width="580"
+    Height="620"
     ShowInTaskbar="False"
-    d:DesignWidth="500"
+    d:DesignWidth="580"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     ExtendsContentIntoTitleBar="True"
@@ -23,258 +23,281 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!-- Title Bar -->
         <ui:TitleBar
             Title="New Project"
             Grid.Row="0"
             Icon="{ui:SymbolIcon Add24}">
         </ui:TitleBar>
 
-        <Grid Grid.Row="1" Margin="0,0,0,10">
-            <ScrollViewer 
-                VerticalScrollBarVisibility="Auto" 
-                HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Margin="42,32,42,20">
-                    <!-- Project Name -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Project Name" />
-                    <ui:TextBox
-                        x:Name="ProjectNameBox"
-                        Margin="0,0,0,16"
-                        PlaceholderText="Project Name"
-                        Icon="{ui:SymbolIcon Edit24}"
-                        ToolTip="The display name of your mod"/>
+        <!-- Header -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="42,16,42,8" VerticalAlignment="Center">
+            <ui:SymbolIcon Symbol="Cube24" Width="40" Height="40" Margin="0,0,12,0"/>
+            <StackPanel>
+                <TextBlock Text="Create New Mod Project" FontSize="22" FontWeight="Bold"/>
+                <TextBlock Text="Configure your Minecraft mod project settings" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            </StackPanel>
+        </StackPanel>
 
-                    
-
-                    <!-- Mod/Pack ID -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
-                                        <Setter Property="Text" Value="Pack ID" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Forge Mod">
-                                        <Setter Property="Text" Value="Mod ID" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Fabric Mod">
-                                        <Setter Property="Text" Value="Mod ID" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <ui:TextBox
-                        x:Name="ModIdBox"
-                        Margin="0,0,0,16"
-                        PlaceholderText="lowercase_id"
-                        Icon="{ui:SymbolIcon Document24}"
-                        ToolTip="Unique identifier (lowercase, no spaces)"/>
-
-                    <!-- Project Type -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Project Type" />
-                    <ui:CardControl
-                        ToolTip="Choose your project type"
-                        Margin="0,0,0,16"
-                        Panel.ZIndex="1">
-                        <ui:CardControl.Content>
-                            <ComboBox
-                                x:Name="ModTypeComboBox"
-                                Width="371"
-                                MinWidth="200"
-                                SelectionChanged="ModTypeComboBox_SelectionChanged">
-                                <ComboBoxItem Content="Forge Mod" />
-                                <ComboBoxItem Content="Fabric Mod" />
-                                <ComboBoxItem Content="Resource Pack" />
-                            </ComboBox>
-                        </ui:CardControl.Content>
-                    </ui:CardControl>
-
-                    <!-- Mod-specific fields -->
-                    <StackPanel x:Name="ModSpecificFields">
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-
-                        <!-- Package -->
+        <!-- Content Area -->
+        <Border Grid.Row="2" 
+                Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                CornerRadius="12" 
+                Margin="42,8,42,16">
+            <Grid>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="24,20,24,20">
+                        <!-- Project Name -->
                         <TextBlock 
                             Margin="0,0,0,4"
-                            FontWeight="Medium" 
-                            Text="Package" />
+                            FontWeight="SemiBold" 
+                            Text="Project Name" />
                         <ui:TextBox
-                            x:Name="PackageBox"
+                            x:Name="ProjectNameBox"
                             Margin="0,0,0,16"
-                            PlaceholderText="net.modrix.mymod"
-                            Icon="{ui:SymbolIcon Box24}"
-                            ToolTip="Java package name for your mod"/>
+                            PlaceholderText="Project Name"
+                            Icon="{ui:SymbolIcon Edit24}"
+                            ToolTip="The display name of your mod"/>
 
-                        <!-- Minecraft Version -->
+                        <!-- Mod/Pack ID -->
                         <TextBlock 
                             Margin="0,0,0,4"
-                            FontWeight="Medium" 
-                            Text="Minecraft Version" />
+                            FontWeight="SemiBold">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
+                                            <Setter Property="Text" Value="Pack ID" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Forge Mod">
+                                            <Setter Property="Text" Value="Mod ID" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Fabric Mod">
+                                            <Setter Property="Text" Value="Mod ID" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <ui:TextBox
+                            x:Name="ModIdBox"
+                            Margin="0,0,0,16"
+                            PlaceholderText="lowercase_id"
+                            Icon="{ui:SymbolIcon Document24}"
+                            ToolTip="Unique identifier (lowercase, no spaces)"/>
+
+                        <!-- Project Type -->
+                        <TextBlock 
+                            Margin="0,0,0,4"
+                            FontWeight="SemiBold" 
+                            Text="Project Type" />
                         <ui:CardControl
-                            ToolTip="Select the Minecraft version for your mod"
+                            ToolTip="Choose your project type"
                             Margin="0,0,0,16">
                             <ui:CardControl.Content>
                                 <ComboBox
-                                    x:Name="MinecraftVersionComboBox"
-                                    Width="371"
-                                    MinWidth="200">
-                                    <ComboBoxItem Content="1.21.4" />
+                                    x:Name="ModTypeComboBox"
+                                    Width="Auto"
+                                    SelectionChanged="ModTypeComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Forge Mod" />
+                                    <ComboBoxItem Content="Fabric Mod" />
+                                    <ComboBoxItem Content="Resource Pack" />
                                 </ComboBox>
                             </ui:CardControl.Content>
                         </ui:CardControl>
 
-                        <!-- License -->
-                        <TextBlock 
-                            Margin="0,0,0,4"
-                            FontWeight="Medium" 
-                            Text="License (Optional)" />
-                        <ui:CardControl
-                            ToolTip="Choose a license for your mod"
-                            Margin="0,0,0,16">
-                        <ui:CardControl.Content>
-                            <ComboBox
-                                x:Name="LicenseComboBox"
-                                IsEditable="True"
-                                Width="371"
-                                MinWidth="200">
-                                <ComboBoxItem Content="MIT License" />
-                                <ComboBoxItem Content="GNU Lesser General Public License v3.0 (LGPL-3.0)" />
-                                <ComboBoxItem Content="GNU General Public License v3.0 (GPL-3.0)" />
-                                <ComboBoxItem Content="Apache License 2.0" />
-                                <ComboBoxItem Content="Mozilla Public License 2.0" />
-                                <ComboBoxItem Content="All Rights Reserved" />
-                                <ComboBoxItem Content="Custom License" />
-                            </ComboBox>
-                        </ui:CardControl.Content>
-                        </ui:CardControl>
+                        <!-- Mod-specific fields -->
+                        <StackPanel x:Name="ModSpecificFields">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
 
-                        <!-- Description -->
-                        <TextBlock 
-                            Margin="0,0,0,4"
-                            FontWeight="Medium" 
-                            Text="Description (Optional)" />
-                        <ui:TextBox
-                            x:Name="DescriptionBox"
-                            Margin="0,0,0,16"
-                            PlaceholderText="A brief description of your mod"
-                            Icon="{ui:SymbolIcon Comment24}"
-                            ToolTip="Describe what your mod does"
-                            TextWrapping="Wrap"
-                            AcceptsReturn="True"
-                            Height="80"
-                            VerticalContentAlignment="Top"/>
-
-                        <!-- Authors -->
-                        <TextBlock 
-                            Margin="0,0,0,4"
-                            FontWeight="Medium" 
-                            Text="Authors (Optional)" />
-                        <ui:TextBox
-                            x:Name="AuthorsBox"
-                            Margin="0,0,0,16"
-                            PlaceholderText="Comma-separated list of authors"
-                            Icon="{ui:SymbolIcon People24}"
-                            ToolTip="List the authors of the mod (comma-separated)"/>
-                    </StackPanel>
-
-                    <!-- Project Icon section -->
-                    <TextBlock 
-                        Margin="0,0,0,4"
-                        FontWeight="Medium" 
-                        Text="Project Icon (Optional)" />
-                    <Grid x:Name="IconSection" Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="48"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Initial Select Button (Visible when no icon selected) -->
-                        <ui:Button
-                            x:Name="SelectIconButton"
-                            Grid.Column="0"
-                            Width="48"
-                            Height="48"
-                            Icon="{ui:SymbolIcon Image24}"
-                            Appearance="Secondary"
-                            Click="SelectIconButton_Click"
-                            ToolTip="Select a PNG file for your mod's icon"/>
-
-                        <!-- Icon Preview (Hidden initially) -->
-                        <Image
-                            x:Name="IconPreview"
-                            Grid.Column="0"
-                            Width="48"
-                            Height="48"
-                            Visibility="Collapsed"
-                            RenderOptions.BitmapScalingMode="HighQuality"/>
-
-                        <!-- Control Buttons (Hidden initially) -->
-                        <StackPanel
-                            x:Name="IconControls"
-                            Grid.Column="1"
-                            Margin="8,0,0,0"
-                            Orientation="Horizontal"
-                            Visibility="Collapsed">
-
-                            <ui:Button
-                            x:Name="SwitchIconButton"
-                            Margin="0,0,8,0"
-                            Icon="{ui:SymbolIcon ArrowRepeatAll24}"
-                            Content="Switch Icon"
-                            Click="SwitchIconButton_Click"
-                            ToolTip="Change the selected icon"/>
-
-                            <ui:Button
-                            x:Name="RemoveIconButton"
-                            Icon="{ui:SymbolIcon Delete24}"
-                            Content="Remove Icon"
-                            Appearance="Danger"
-                            Click="RemoveIconButton_Click"
-                            ToolTip="Remove the selected icon"/>
-                        </StackPanel>
-                    </Grid>
-
-                    <Expander Header="Other" IsExpanded="False">
-                        <StackPanel>
-                            <CheckBox
-                                x:Name="IncludeReadmeCheckbox"
+                            <!-- Package -->
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Package" />
+                            <ui:TextBox
+                                x:Name="PackageBox"
                                 Margin="0,0,0,16"
-                                IsChecked="True"
-                                Content="Add README.md File"
-                                ToolTip="Include README.md file on the project template?"/>
+                                PlaceholderText="net.modrix.mymod"
+                                Icon="{ui:SymbolIcon Box24}"
+                                ToolTip="Java package name for your mod"/>
+
+                            <!-- Minecraft Version -->
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Minecraft Version" />
+                            <ui:CardControl
+                                ToolTip="Select the Minecraft version for your mod"
+                                Margin="0,0,0,16">
+                                <ui:CardControl.Content>
+                                    <ComboBox
+                                        x:Name="MinecraftVersionComboBox"
+                                        Width="Auto">
+                                        <ComboBoxItem Content="1.21.4" />
+                                    </ComboBox>
+                                </ui:CardControl.Content>
+                            </ui:CardControl>
+
+                            <!-- License -->
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="License (Optional)" />
+                            <ui:CardControl
+                                ToolTip="Choose a license for your mod"
+                                Margin="0,0,0,16">
+                                <ui:CardControl.Content>
+                                    <ComboBox
+                                        x:Name="LicenseComboBox"
+                                        IsEditable="True"
+                                        Width="Auto">
+                                        <ComboBoxItem Content="MIT License" />
+                                        <ComboBoxItem Content="GNU Lesser General Public License v3.0 (LGPL-3.0)" />
+                                        <ComboBoxItem Content="GNU General Public License v3.0 (GPL-3.0)" />
+                                        <ComboBoxItem Content="Apache License 2.0" />
+                                        <ComboBoxItem Content="Mozilla Public License 2.0" />
+                                        <ComboBoxItem Content="All Rights Reserved" />
+                                        <ComboBoxItem Content="Custom License" />
+                                    </ComboBox>
+                                </ui:CardControl.Content>
+                            </ui:CardControl>
+
+                            <!-- Description -->
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Description (Optional)" />
+                            <ui:TextBox
+                                x:Name="DescriptionBox"
+                                Margin="0,0,0,16"
+                                PlaceholderText="A brief description of your mod"
+                                Icon="{ui:SymbolIcon Comment24}"
+                                ToolTip="Describe what your mod does"
+                                TextWrapping="Wrap"
+                                AcceptsReturn="True"
+                                Height="80"
+                                VerticalContentAlignment="Top"/>
+
+                            <!-- Authors -->
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Authors (Optional)" />
+                            <ui:TextBox
+                                x:Name="AuthorsBox"
+                                Margin="0,0,0,16"
+                                PlaceholderText="Comma-separated list of authors"
+                                Icon="{ui:SymbolIcon People24}"
+                                ToolTip="List the authors of the mod (comma-separated)"/>
                         </StackPanel>
-                    </Expander>
-                </StackPanel>
-            </ScrollViewer>
-            <ui:DynamicScrollBar 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Stretch" />
-        </Grid>
+
+                        <!-- Project Icon section -->
+                        <TextBlock 
+                            Margin="0,0,0,4"
+                            FontWeight="SemiBold" 
+                            Text="Project Icon (Optional)" />
+                        <Grid x:Name="IconSection" Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Initial Select Button (Visible when no icon selected) -->
+                            <Border 
+                                Grid.Column="0"
+                                Width="60" 
+                                Height="60" 
+                                Background="{DynamicResource ControlFillColorTertiaryBrush}" 
+                                CornerRadius="8">
+                                <ui:Button
+                                    x:Name="SelectIconButton"
+                                    Width="60"
+                                    Height="60"
+                                    Icon="{ui:SymbolIcon Image24}"
+                                    Appearance="Transparent"
+                                    Click="SelectIconButton_Click"
+                                    ToolTip="Select a PNG file for your mod's icon"/>
+                            </Border>
+
+                            <!-- Icon Preview (Hidden initially) -->
+                            <Border 
+                                Grid.Column="0"
+                                Width="60" 
+                                Height="60" 
+                                Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                                CornerRadius="8"
+                                Visibility="Collapsed">
+                                <Image
+                                    x:Name="IconPreview"
+                                    Width="48"
+                                    Height="48"
+                                    Visibility="Collapsed"
+                                    RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
+
+                            <!-- Control Buttons (Hidden initially) -->
+                            <StackPanel
+                                x:Name="IconControls"
+                                Grid.Column="1"
+                                Margin="12,0,0,0"
+                                Orientation="Horizontal"
+                                Visibility="Collapsed">
+
+                                <ui:Button
+                                    x:Name="SwitchIconButton"
+                                    Margin="0,0,8,0"
+                                    Icon="{ui:SymbolIcon ArrowRepeatAll24}"
+                                    Content="Switch Icon"
+                                    Click="SwitchIconButton_Click"
+                                    ToolTip="Change the selected icon"/>
+
+                                <ui:Button
+                                    x:Name="RemoveIconButton"
+                                    Icon="{ui:SymbolIcon Delete24}"
+                                    Content="Remove Icon"
+                                    Appearance="Danger"
+                                    Click="RemoveIconButton_Click"
+                                    ToolTip="Remove the selected icon"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Advanced Options -->
+                        <ui:CardExpander Margin="0,8,0,0" Header="Advanced Options" CornerRadius="8">
+                            <StackPanel Margin="8,12,8,8">
+                                <CheckBox
+                                    x:Name="IncludeReadmeCheckbox"
+                                    Margin="0,0,0,8"
+                                    IsChecked="True"
+                                    Content="Add README.md File"
+                                    ToolTip="Include README.md file on the project template?"/>
+                            </StackPanel>
+                        </ui:CardExpander>
+                    </StackPanel>
+                </ScrollViewer>
+                <ui:DynamicScrollBar 
+                    HorizontalAlignment="Right" 
+                    VerticalAlignment="Stretch" />
+            </Grid>
+        </Border>
 
         <!-- Button Panel -->
         <Grid 
-            Grid.Row="2" 
+            Grid.Row="3" 
             Margin="42,0,42,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -288,13 +311,17 @@
                 Margin="0,0,8,0"
                 Appearance="Secondary"
                 Content="Cancel"
+                Height="36"
+                Width="100"
                 Icon="{ui:SymbolIcon Dismiss24}"
                 Click="CancelButton_Click"/>
 
             <ui:Button
                 Grid.Column="2"
                 Appearance="Primary"
-                Content="Create"
+                Content="Create Project"
+                Height="36"
+                Width="140"
                 Icon="{ui:SymbolIcon Add24}"
                 Click="CreateButton_Click"
                 IsEnabled="{Binding AreFieldsValid}"
