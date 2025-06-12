@@ -4,19 +4,54 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="Exporting Mod"
-    SizeToContent="WidthAndHeight"
+    Height="435"
+    Width="480"
     WindowStartupLocation="CenterOwner"
     ResizeMode="NoResize"
     WindowBackdropType="Mica"
     WindowCornerPreference="Round"
     ExtendsContentIntoTitleBar="True"
     Background="{DynamicResource ApplicationBackgroundBrush}"
-    Foreground="{DynamicResource TextFillColorPrimaryBrush}" Height="304">
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}">
 
-    <DockPanel Margin="24" Width="420">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <!-- Bottom Panel: CheckBox + Buttons -->
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" Margin="0,24,0,0" Height="80">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
+            <ui:SymbolIcon Symbol="ArrowUpload24" Width="40" Height="40" Margin="0,0,12,0"/>
+            <StackPanel>
+                <TextBlock Text="Export Your Mod" FontSize="22" FontWeight="Bold"/>
+                <TextBlock Text="Just a few steps before sharing your creation" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Content -->
+        <Border Grid.Row="1" CornerRadius="12" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="18" Margin="0,0,0,18">
+            <StackPanel>
+                <TextBlock Text="Terms of Use" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8"/>
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,12">
+                    Please read and accept the following before exporting your mod:
+                </TextBlock>
+                <StackPanel Margin="0,0,0,8">
+                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,8">
+                        <Run Text="&#8226;"/>
+                        <Run Text=" If you plan to publish this mod on any platform, you're encouraged to credit Modrix on the mod's page — unless that platform explicitly forbids mentioning external tools, in which case you must follow their policy."/>
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap">
+                        <Run Text="&#8226;"/>
+                        <Run Text=" If anyone directly asks whether you built this mod using a mod maker, you must answer truthfully. Do not mislead users."/>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Footer -->
+        <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Stretch">
             <CheckBox x:Name="ChkAccept"
                       Content="I accept the terms"
                       FontSize="13"
@@ -25,26 +60,21 @@
                       Margin="0,0,0,12"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <ui:Button x:Name="BtnExport"
-                           Content="Export"
+                           Content="Export Mod"
                            Appearance="Primary"
-                           Width="80"
+                           Width="120"
+                           Height="36"
                            Margin="0,0,8,0"
                            IsEnabled="False"
+                           Icon="{ui:SymbolIcon ArrowUpload24}"
                            Click="BtnExport_Click"/>
-                <ui:Button Content="Close"
-                           Width="80"
+                <ui:Button Content="Cancel"
+                           Width="100"
+                           Height="36"
                            Appearance="Secondary"
                            Icon="{ui:SymbolIcon Dismiss24}"
                            Click="BtnClose_Click"/>
             </StackPanel>
         </StackPanel>
-
-        <!-- Message -->
-        <TextBlock TextWrapping="Wrap" FontSize="14">
-            Please read and accept the following before exporting your mod:
-            1. If you plan to publish this mod on any platform, you’re encouraged to credit Modrix on the mod’s page — unless that platform explicitly forbids mentioning external tools, in which case you must follow their policy.
-            2. If anyone directly asks whether you built this mod using a mod maker, you must answer truthfully. Do not mislead users.
-        </TextBlock>
-
-    </DockPanel>
+    </Grid>
 </ui:FluentWindow>
