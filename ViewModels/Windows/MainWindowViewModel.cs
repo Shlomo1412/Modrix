@@ -3,6 +3,7 @@ using System.Windows;
 using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Modrix.Views.Windows;
 
 namespace Modrix.ViewModels.Windows
 {
@@ -12,11 +13,14 @@ namespace Modrix.ViewModels.Windows
         private string _applicationTitle = "Modrix";
 
         private IRelayCommand _newProjectCommand;
+        private IRelayCommand _showDiscordDialogCommand;
 
         public MainWindowViewModel()
         {
             _newProjectCommand = new RelayCommand(OpenNewProject);
+            _showDiscordDialogCommand = new RelayCommand(ShowDiscordDialog);
             InitializeMenuItems();
+            InitializeFooterMenuItems();
         }
 
         private void InitializeMenuItems()
@@ -48,28 +52,26 @@ namespace Modrix.ViewModels.Windows
         private ObservableCollection<object> _menuItems;
 
         [ObservableProperty]
-        private ObservableCollection<object> _footerMenuItems = new()
+        private ObservableCollection<object> _footerMenuItems;
+
+        private void InitializeFooterMenuItems()
         {
-            new NavigationViewItem()
+            FooterMenuItems = new ObservableCollection<object>
             {
-                Content = "Community",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
-                Command = new RelayCommand(() =>
+                new NavigationViewItem()
                 {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = "https://discord.gg/3M58rQC2",
-                        UseShellExecute = true
-                    });
-                })
-            },
-            new NavigationViewItem()
-            {
-                Content = "Settings",
-                Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
-                TargetPageType = typeof(Views.Pages.SettingsPage)
-            }
-        };
+                    Content = "Community",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
+                    Command = new RelayCommand(ShowDiscordDialog)
+                },
+                new NavigationViewItem()
+                {
+                    Content = "Settings",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
+                    TargetPageType = typeof(Views.Pages.SettingsPage)
+                }
+            };
+        }
 
         [ObservableProperty]
         private ObservableCollection<MenuItem> _trayMenuItems = new()
@@ -82,6 +84,16 @@ namespace Modrix.ViewModels.Windows
             var newProjectWindow = new Views.Windows.NewProject();
             newProjectWindow.Owner = Application.Current.MainWindow;
             newProjectWindow.ShowDialog();
+        }
+
+        private void ShowDiscordDialog()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new JoinDiscordDialog();
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.ShowDialog();
+            });
         }
     }
 }

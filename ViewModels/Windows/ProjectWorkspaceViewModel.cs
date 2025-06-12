@@ -2,6 +2,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Modrix.Models;
 using Wpf.Ui.Controls;
+using CommunityToolkit.Mvvm.Input;
+using Modrix.Views.Windows;
+using System.Windows;
 
 namespace Modrix.ViewModels.Windows
 {
@@ -22,6 +25,7 @@ namespace Modrix.ViewModels.Windows
         public ProjectWorkspaceViewModel()
         {
             InitializeMenuItems();
+            InitializeFooterMenuItems();
         }
 
         public void ReloadProject()
@@ -90,21 +94,17 @@ namespace Modrix.ViewModels.Windows
                     TargetPageType = typeof(Views.Pages.LanguageControlPage)
                 }
             };
+        }
 
+        private void InitializeFooterMenuItems()
+        {
             FooterMenuItems = new ObservableCollection<object>
             {
                 new NavigationViewItem()
                 {
                     Content = "Community",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
-                    Command = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
-                    {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = "https://discord.gg/3M58rQC2",
-                            UseShellExecute = true
-                        });
-                    })
+                    Command = new RelayCommand(ShowDiscordDialog)
                 },
                 new NavigationViewItem()
                 {
@@ -118,6 +118,16 @@ namespace Modrix.ViewModels.Windows
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 }
                 }
             };
+        }
+
+        private void ShowDiscordDialog()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new JoinDiscordDialog();
+                dialog.Owner = Application.Current.Windows.Count > 0 ? Application.Current.Windows[0] : null;
+                dialog.ShowDialog();
+            });
         }
     }
 }

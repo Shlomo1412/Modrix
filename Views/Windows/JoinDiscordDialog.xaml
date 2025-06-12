@@ -1,0 +1,44 @@
+<ui:FluentWindow x:Class="Modrix.Views.Windows.JoinDiscordDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="Join the Modrix Discord Community!"
+        Height="380"
+        Width="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
+            <ui:SymbolIcon Symbol="PeopleCommunity24" Width="40" Height="40" Margin="0,0,12,0"/>
+            <StackPanel>
+                <TextBlock Text="Join the Modrix Discord!" FontSize="22" FontWeight="Bold"/>
+                <TextBlock Text="Be part of our growing community" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            </StackPanel>
+        </StackPanel>
+        <Border Grid.Row="1" CornerRadius="12" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="18" Margin="0,0,0,18">
+            <StackPanel>
+                <TextBlock Text="Why join our Discord?" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8"/>
+                <StackPanel Margin="0,0,0,8">
+                    <TextBlock Text="• Support from the Modrix team and community." Margin="0,0,0,4"/>
+                    <TextBlock Text="• Chat with other modders and share your ideas." Margin="0,0,0,4"/>
+                    <TextBlock Text="• Show off your creations and get feedback." Margin="0,0,0,4"/>
+                    <TextBlock Text="• Stay up to date with the latest news and updates." Margin="0,0,0,4"/>
+                    <TextBlock Text="• Participate in events, contests, and more!"/>
+                </StackPanel>
+                <TextBlock Text="Whether you're a beginner or a pro, everyone is welcome!" FontStyle="Italic" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            </StackPanel>
+        </Border>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <ui:Button Content="Join Discord" Appearance="Primary" Width="140" Height="36" Margin="0,0,8,0" Icon="{ui:SymbolIcon Link24}" Click="JoinDiscord_Click"/>
+            <ui:Button Content="Maybe Later" Height="36" Icon="{ui:SymbolIcon Dismiss24}" Click="Close_Click"/>
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>
