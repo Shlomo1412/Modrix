@@ -17,7 +17,8 @@
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    PreviewMouseWheel="Page_PreviewMouseWheel">
 
     <Page.Resources>
         <converters:ToolToAppearanceConverter x:Key="ToolToAppearanceConverter" />

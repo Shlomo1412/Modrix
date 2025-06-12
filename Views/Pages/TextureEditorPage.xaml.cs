@@ -107,5 +107,24 @@ namespace Modrix.Views.Pages
 
             return FindParent<T>(parentObject);
         }
+
+        // Handle Ctrl+Scroll for zoom in/out
+        private void Page_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                if (e.Delta > 0)
+                {
+                    if (ViewModel.ZoomInCommand.CanExecute(null))
+                        ViewModel.ZoomInCommand.Execute(null);
+                }
+                else if (e.Delta < 0)
+                {
+                    if (ViewModel.ZoomOutCommand.CanExecute(null))
+                        ViewModel.ZoomOutCommand.Execute(null);
+                }
+                e.Handled = true;
+            }
+        }
     }
 }
