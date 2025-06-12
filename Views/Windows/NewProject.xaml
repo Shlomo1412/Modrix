@@ -103,6 +103,7 @@
                                 <ComboBox
                                     x:Name="ModTypeComboBox"
                                     Width="Auto"
+                                    MinWidth="390"
                                     SelectionChanged="ModTypeComboBox_SelectionChanged">
                                     <ComboBoxItem Content="Forge Mod" />
                                     <ComboBoxItem Content="Fabric Mod" />
@@ -146,7 +147,8 @@
                                 <ui:CardControl.Content>
                                     <ComboBox
                                         x:Name="MinecraftVersionComboBox"
-                                        Width="Auto">
+                                        Width="Auto"
+                                        MinWidth="390">
                                         <ComboBoxItem Content="1.21.4" />
                                     </ComboBox>
                                 </ui:CardControl.Content>
@@ -164,7 +166,8 @@
                                     <ComboBox
                                         x:Name="LicenseComboBox"
                                         IsEditable="True"
-                                        Width="Auto">
+                                        Width="Auto"
+                                        MinWidth="390">
                                         <ComboBoxItem Content="MIT License" />
                                         <ComboBoxItem Content="GNU Lesser General Public License v3.0 (LGPL-3.0)" />
                                         <ComboBoxItem Content="GNU General Public License v3.0 (GPL-3.0)" />
