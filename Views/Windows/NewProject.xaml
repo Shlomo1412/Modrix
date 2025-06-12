@@ -9,6 +9,7 @@
     Title="New Minecraft Mod Project"
     Width="500"
     Height="462"
+    ShowInTaskbar="False"
     d:DesignWidth="500"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
