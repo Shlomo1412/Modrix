@@ -6,68 +6,71 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="Rename"
-        Height="180"
-        Width="320"
+        Height="210"
+        Width="420"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        WindowCornerPreference="Round">
 
-	<Grid Margin="12">
+	<Grid Margin="18">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 
-		<!-- Title -->
-		<TextBlock
-            Text="Rename"
-            FontSize="16"
-            FontWeight="Bold"
-            HorizontalAlignment="Center"
-            Margin="0,0,0,16"/>
-
-		<!-- Main input area centered vertically -->
-		<StackPanel Grid.Row="1" VerticalAlignment="Center">
-			<TextBlock
-                Text="New name:"
-                Margin="0,0,0,8"/>
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="Auto"/>
-				</Grid.ColumnDefinitions>
-
-				<ui:TextBox
-                    x:Name="NameTextBox"
-                    Grid.Column="0"
-					PlaceholderText="New Name"
-					Icon="{ui:SymbolIcon Edit24}"/>
-
-				<TextBlock
-                    x:Name="ExtensionText"
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Margin="4,0,0,0"/>
-			</Grid>
+		<!-- Header -->
+		<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
+			<ui:SymbolIcon Symbol="Rename24" Width="40" Height="40" Margin="0,0,12,0"/>
+			<StackPanel>
+				<TextBlock Text="Rename Item" FontSize="22" FontWeight="Bold"/>
+				<TextBlock Text="Change the name of your selected item" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+			</StackPanel>
 		</StackPanel>
 
-		<!-- Buttons -->
-		<StackPanel
-            Grid.Row="2"
-            Orientation="Horizontal"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Margin="0,16,0,0">
-			<ui:Button
-                Appearance="Primary"
-                Content="Rename"
-				Icon="{ui:SymbolIcon Rename24}"
-                Margin="0,0,8,0"
-                Click="OkButton_Click"/>
-			<ui:Button
-                Content="Cancel"
-				Icon="{ui:SymbolIcon Dismiss24}"
-                Click="CancelButton_Click"/>
+		<!-- Content -->
+		<Border Grid.Row="1" CornerRadius="12" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="18" Margin="0,0,0,18">
+			<Grid VerticalAlignment="Center">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+
+				<TextBlock Text="New name:" Margin="0,0,0,8" FontWeight="SemiBold"/>
+				<Grid Grid.Row="1">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+
+					<ui:TextBox x:Name="NameTextBox"
+                               Grid.Column="0"
+                               PlaceholderText="New Name"
+                               Icon="{ui:SymbolIcon Edit24}"/>
+
+					<TextBlock x:Name="ExtensionText"
+                               Grid.Column="1"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               Margin="8,0,0,0"/>
+				</Grid>
+			</Grid>
+		</Border>
+
+		<!-- Footer -->
+		<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+			<ui:Button Appearance="Primary"
+                      Content="Rename"
+                      Icon="{ui:SymbolIcon Rename24}"
+                      Width="120"
+                      Height="36"
+                      Margin="0,0,8,0"
+                      Click="OkButton_Click"/>
+			<ui:Button Content="Cancel"
+                      Icon="{ui:SymbolIcon Dismiss24}"
+                      Width="100"
+                      Height="36"
+                      Click="CancelButton_Click"/>
 		</StackPanel>
 	</Grid>
 </ui:FluentWindow>

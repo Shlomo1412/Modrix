@@ -6,62 +6,62 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="Create New Folder"
-        Height="160"
-        Width="300"
+        Height="300"
+        Width="450"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        WindowCornerPreference="Round">
 
-	<Grid Margin="12">
+	<Grid Margin="18">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
-			<!-- Title -->
-			<RowDefinition Height="Auto"/>
-			<!-- Spacer -->
-			<RowDefinition Height="Auto"/>
-			<!-- Label -->
-			<RowDefinition Height="Auto"/>
-			<!-- TextBox -->
 			<RowDefinition Height="*"/>
-			<!-- Spacer -->
 			<RowDefinition Height="Auto"/>
-			<!-- Buttons -->
 		</Grid.RowDefinitions>
 
-		<TextBlock
-            Text="Create New Folder"
-            FontSize="16"
-            FontWeight="Bold"
-            Margin="0,0,0,24"/>
+		<!-- Header -->
+		<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
+			<ui:SymbolIcon Symbol="Folder24" Width="40" Height="40" Margin="0,0,12,0"/>
+			<StackPanel>
+				<TextBlock Text="Create New Folder" FontSize="22" FontWeight="Bold"/>
+				<TextBlock Text="Organize your project with folders" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+			</StackPanel>
+		</StackPanel>
 
-		<!-- Spacer row (Row 1) intentionally left empty -->
+		<!-- Content -->
+		<Border Grid.Row="1" CornerRadius="12" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="18" Margin="0,0,0,18">
+			<Grid VerticalAlignment="Center">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
 
-		<TextBlock
-            Grid.Row="2"
-            Text="Enter folder name:"
-            Margin="0,0,0,4"/>
+				<TextBlock Text="Enter folder name:"
+                           Grid.Row="0"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,8"/>
 
-		<ui:TextBox
-            x:Name="FolderNameTextBox"
-            Grid.Row="3"
-			Icon="{ui:SymbolIcon Edit24}"
-			PlaceholderText="Folder Name"
-            Margin="0,0,0,0"/>
+				<ui:TextBox x:Name="FolderNameTextBox"
+                           Grid.Row="1"
+                           Icon="{ui:SymbolIcon Edit24}"
+                           PlaceholderText="Folder Name"/>
+			</Grid>
+		</Border>
 
-		<StackPanel
-            Grid.Row="5"
-            Orientation="Horizontal"
-            HorizontalAlignment="Right"
-            Margin="0,12,0,0">
-			<ui:Button
-                Appearance="Primary"
-                Content="Create"
-                Margin="0,0,8,0"
-				Icon="{ui:SymbolIcon Add24}"
-                Click="OkButton_Click"/>
-			<ui:Button
-                Content="Cancel"
-                Click="CancelButton_Click"
-				Icon="{ui:SymbolIcon Dismiss24}"/>
+		<!-- Footer -->
+		<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+			<ui:Button Appearance="Primary"
+                      Content="Create"
+                      Icon="{ui:SymbolIcon Add24}"
+                      Width="120"
+                      Height="36"
+                      Margin="0,0,8,0"
+                      Click="OkButton_Click"/>
+			<ui:Button Content="Cancel"
+                      Icon="{ui:SymbolIcon Dismiss24}"
+                      Width="100"
+                      Height="36"
+                      Click="CancelButton_Click"/>
 		</StackPanel>
 	</Grid>
 </ui:FluentWindow>
