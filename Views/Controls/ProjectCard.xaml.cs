@@ -30,10 +30,8 @@ namespace Modrix.Views.Controls
             InitializeComponent();
 
             EditButton.Click += (s, e) => EditClicked?.Invoke(this, e);
-            OptionsButton.Click += OptionsButton_Click;
-            FlyoutDeleteButton.Click += FlyoutDeleteButton_Click;
-            FlyoutOpenFolderButton.Click += FlyoutOpenFolderButton_Click;
-            FlyoutOpenInIDEButton.Click += FlyoutOpenInIDEButton_Click;
+            
+            
         }
 
         private void OptionsButton_Click(object sender, RoutedEventArgs e)
