@@ -95,6 +95,19 @@ namespace Modrix.ViewModels.Windows
             {
                 new NavigationViewItem()
                 {
+                    Content = "Community",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
+                    Command = new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "https://discord.gg/3M58rQC2",
+                            UseShellExecute = true
+                        });
+                    })
+                },
+                new NavigationViewItem()
+                {
                     Content = "Console",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
                     TargetPageType = typeof(Views.Pages.ConsolePage)
