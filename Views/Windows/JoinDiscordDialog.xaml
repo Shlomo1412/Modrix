@@ -10,6 +10,7 @@
         Width="480"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
+    
     <Grid Margin="18">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -27,11 +28,11 @@
             <StackPanel>
                 <TextBlock Text="Why join our Discord?" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8"/>
                 <StackPanel Margin="0,0,0,8">
-                    <TextBlock Text="• Support from the Modrix team and community." Margin="0,0,0,4"/>
-                    <TextBlock Text="• Chat with other modders and share your ideas." Margin="0,0,0,4"/>
-                    <TextBlock Text="• Show off your creations and get feedback." Margin="0,0,0,4"/>
-                    <TextBlock Text="• Stay up to date with the latest news and updates." Margin="0,0,0,4"/>
-                    <TextBlock Text="• Participate in events, contests, and more!"/>
+                    <TextBlock Text="&#8226; Support from the Modrix team and community." Margin="0,0,0,4"/>
+                    <TextBlock Text="&#8226; Chat with other modders and share your ideas." Margin="0,0,0,4"/>
+                    <TextBlock Text="&#8226; Show off your creations and get feedback." Margin="0,0,0,4"/>
+                    <TextBlock Text="&#8226; Stay up to date with the latest news and updates." Margin="0,0,0,4"/>
+                    <TextBlock Text="&#8226; Participate in events, contests, and more!"/>
                 </StackPanel>
                 <TextBlock Text="Whether you're a beginner or a pro, everyone is welcome!" FontStyle="Italic" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
             </StackPanel>
