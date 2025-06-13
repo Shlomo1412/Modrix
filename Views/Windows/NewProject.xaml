@@ -39,7 +39,7 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="42,16,42,8" VerticalAlignment="Center">
-            <ui:SymbolIcon Symbol="Cube24" Width="40" Height="40" Margin="0,0,12,0"/>
+            <ui:Image Source="pack://application:,,,/Resources/Icons/WorkspaceIcon.png" Width="40" Height="40" Margin="0,0,12,0"/>
             <StackPanel>
                 <TextBlock Text="Create New Mod Project" FontSize="22" FontWeight="Bold"/>
                 <TextBlock Text="Configure your Minecraft mod project settings" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>

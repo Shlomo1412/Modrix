@@ -38,11 +38,9 @@
 
   <ItemGroup>
     <Resource Include="Resources\ModrixIcon.ico" />
+	<Resource Include="Resources\Icons\DisIcon.png" />
+	<Resource Include="Resources\Icons\WorkspaceIcon.png" />
   </ItemGroup>
-
-	<ItemGroup>
-		<Resource Include="Resources\Icons\DisIcon.png" />
-	</ItemGroup>
 
   <ItemGroup>
     <Content Include="Templates\FabricMod\**\*">
