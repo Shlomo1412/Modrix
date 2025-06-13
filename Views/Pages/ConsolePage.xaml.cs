@@ -321,14 +321,34 @@ namespace Modrix.Views.Pages
             return string.Empty;
         }
 
+        private string GetProcessInstanceName(int pid)
+        {
+            var process = Process.GetProcessById(pid);
+            var processName = process.ProcessName;
+            var category = new PerformanceCounterCategory("Process");
+            var instances = category.GetInstanceNames();
+            foreach (var instance in instances)
+            {
+                using (var counter = new PerformanceCounter("Process", "ID Process", instance, true))
+                {
+                    try
+                    {
+                        if ((int)counter.RawValue == pid)
+                            return instance;
+                    }
+                    catch { }
+                }
+            }
+            return processName; // fallback
+        }
+
         private void StartPerformanceMonitoring()
         {
-            // Stop any existing monitoring
             StopPerformanceMonitoring();
 
-            if (_minecraftProcess == null)
+            if (_minecraftProcess == null || _minecraftProcess.HasExited)
             {
-                AppendLine("[ERROR] Minecraft process not found for monitoring.", Brushes.Red);
+                AppendLine("[ERROR] Minecraft process not found or has exited.", Brushes.Red);
                 return;
             }
 
@@ -341,79 +361,103 @@ namespace Modrix.Views.Pages
                 {
                     _performanceHistory.Clear();
 
-                    // Process counter setup
-                    var cpuCounter = new PerformanceCounter("Process", "% Processor Time", _minecraftProcess.ProcessName);
-                    var ramCounter = new PerformanceCounter("Process", "Working Set", _minecraftProcess.ProcessName);
+                    // Get correct instance name for the process
+                    string instanceName = GetProcessInstanceName(_minecraftProcess.Id);
+                    AppendLine($"[INFO] Monitoring instance: {instanceName}", Brushes.LightGreen);
 
-                    // Get the first reading (this is needed to initialize the counter)
+                    // Initialize counters
+                    var cpuCounter = new PerformanceCounter("Process", "% Processor Time", instanceName, true);
+                    var ramCounter = new PerformanceCounter("Process", "Working Set", instanceName, true);
+
+                    // Initial dummy read
                     cpuCounter.NextValue();
                     ramCounter.NextValue();
 
-                    // Wait a second for the CPU counter to be valid
+                    // Ensure proper initialization
                     await Task.Delay(1000, token);
 
-                    while (!token.IsCancellationRequested && !_minecraftProcess.HasExited)
+                    while (!token.IsCancellationRequested)
                     {
                         try
                         {
+                            // Refresh process status
+                            _minecraftProcess.Refresh();
+
+                            if (_minecraftProcess.HasExited)
+                                break;
+
                             // Get current values
-                            var cpuUsage = cpuCounter.NextValue() / Environment.ProcessorCount;
-                            var ramUsage = ramCounter.NextValue() / (1024 * 1024); // Convert to MB
+                            float cpuUsage = cpuCounter.NextValue() / Environment.ProcessorCount;
+                            float ramUsage = ramCounter.NextValue() / (1024 * 1024); // Convert to MB
 
-                            var data = new PerformanceData
+                            // Add to history
+                            Dispatcher.Invoke(() =>
                             {
-                                Timestamp = DateTime.Now,
-                                CpuUsage = cpuUsage,
-                                MemoryUsageMB = ramUsage
-                            };
+                                _performanceHistory.Add(new PerformanceData
+                                {
+                                    Timestamp = DateTime.Now,
+                                    CpuUsage = cpuUsage,
+                                    MemoryUsageMB = ramUsage
+                                });
 
-                            // Add to history and keep only the last N points
-                            _performanceHistory.Add(data);
-                            if (_performanceHistory.Count > MaxHistoryPoints)
-                                _performanceHistory.RemoveAt(0);
+                                if (_performanceHistory.Count > MaxHistoryPoints)
+                                    _performanceHistory.RemoveAt(0);
 
-                            // Update UI
-                            Dispatcher.Invoke(() => UpdatePerformanceUI(data));
+                                UpdatePerformanceUI(_performanceHistory.Last());
+                            });
 
-                            // Wait for next reading
                             await Task.Delay(1000, token);
                         }
                         catch (Exception ex) when (ex is not OperationCanceledException)
                         {
+                            // Log error and attempt to reinitialize counters
                             Dispatcher.Invoke(() =>
-                            {
-                                AppendLine($"[ERROR] Performance monitoring error: {ex.Message}", Brushes.Red);
-                            });
-                            await Task.Delay(5000, token); // Wait longer after an error
+                                AppendLine($"[ERROR] Monitoring: {ex.Message}", Brushes.OrangeRed));
+
+                            await ReinitializeCounters();
+                            await Task.Delay(2000, token);
                         }
                     }
-                }
-                catch (OperationCanceledException)
-                {
-                    // Normal cancellation
                 }
                 catch (Exception ex)
                 {
                     Dispatcher.Invoke(() =>
-                    {
-                        AppendLine($"[ERROR] Performance monitoring failed: {ex.Message}", Brushes.Red);
-                    });
+                        AppendLine($"[ERROR] Monitoring failed: {ex.Message}", Brushes.Red));
                 }
                 finally
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        // Check if UI elements are initialized
-                        if (GameStatusText != null)
-                        {
-                            GameStatusText.Text = "Not Running";
-                        }
-                        
+                        GameStatusText.Text = "Not Running";
                         _isMinecraftRunning = false;
                         UpdateStatsPanelVisibility();
                     });
                 }
             }, token);
+        }
+
+        private async Task ReinitializeCounters()
+        {
+            try
+            {
+                if (_minecraftProcess == null || _minecraftProcess.HasExited)
+                    return;
+
+                string newInstanceName = GetProcessInstanceName(_minecraftProcess.Id);
+                AppendLine($"[INFO] Reinitializing counters for: {newInstanceName}", Brushes.Yellow);
+
+                var newCpuCounter = new PerformanceCounter("Process", "% Processor Time", newInstanceName, true);
+                var newRamCounter = new PerformanceCounter("Process", "Working Set", newInstanceName, true);
+
+                newCpuCounter.NextValue();
+                newRamCounter.NextValue();
+
+                await Task.Delay(500);
+            }
+            catch (Exception ex)
+            {
+                AppendLine($"[ERROR] Reinit failed: {ex.Message}", Brushes.OrangeRed);
+            }
         }
 
         private void StopPerformanceMonitoring()
