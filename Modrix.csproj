@@ -34,13 +34,6 @@
   <ItemGroup>
     <PackageReference Include="Scriban" Version="5.0.0" />
     <PackageReference Include="WPF-UI.Markdown" Version="4.0.2" />
-    <EmbeddedResource Include="Resources\Templates\Forge\**\*.scriban" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Resources\Templates\Forge\Wrapper\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
