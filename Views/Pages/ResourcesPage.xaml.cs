@@ -11,8 +11,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Modrix.Views.Windows;
+using Modrix.ViewModels.Pages;
 using Wpf.Ui.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
+using MenuItem = Wpf.Ui.Controls.MenuItem;
+using Button = Wpf.Ui.Controls.Button;
 
 namespace Modrix.Views.Pages
 {
@@ -48,23 +51,32 @@ namespace Modrix.Views.Pages
         private void UpdateEmptyStates()
         {
             // Textures
-            TexturesEmptyState.Visibility = TexturesList.Items.Count == 0 ?
-                Visibility.Visible : Visibility.Collapsed;
+            if (TexturesEmptyState != null && TexturesList != null)
+            {
+                TexturesEmptyState.Visibility = TexturesList.Items.Count == 0 ?
+                    Visibility.Visible : Visibility.Collapsed;
+            }
 
             // Models
-            ModelsEmptyState.Visibility = ModelsList.Items.Count == 0 ?
-                Visibility.Visible : Visibility.Collapsed;
+            if (ModelsEmptyState != null && ModelsList != null)
+            {
+                ModelsEmptyState.Visibility = ModelsList.Items.Count == 0 ?
+                    Visibility.Visible : Visibility.Collapsed;
+            }
 
             // Sounds
-            SoundsEmptyState.Visibility = SoundsList.Items.Count == 0 ?
-                Visibility.Visible : Visibility.Collapsed;
-
-            
-            
+            if (SoundsEmptyState != null && SoundsList != null)
+            {
+                SoundsEmptyState.Visibility = SoundsList.Items.Count == 0 ?
+                    Visibility.Visible : Visibility.Collapsed;
+            }
 
             // README
-            ReadmeEmptyState.Visibility = string.IsNullOrWhiteSpace(ReadmeEditor.Text) ?
-                Visibility.Visible : Visibility.Collapsed;
+            if (ReadmeEmptyState != null && ReadmeEditor != null)
+            {
+                ReadmeEmptyState.Visibility = string.IsNullOrWhiteSpace(ReadmeEditor.Text) ?
+                    Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -100,6 +112,122 @@ namespace Modrix.Views.Pages
             LoadReadme();
 
             UpdateEmptyStates();
+        }
+
+        // Texture tab buttons
+        private void AddTexture_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dialog = new NewTextureDialog
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    // Determine the texture directory path
+                    var texturesDir = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "textures");
+                    
+                    // Save the new texture
+                    if (dialog.SaveTexture(texturesDir))
+                    {
+                        // Reload textures to show the new one
+                        LoadTextures(texturesDir);
+                        
+                        // Optionally, open the new texture in the editor
+                        if (!string.IsNullOrEmpty(dialog.SavedFilePath) && File.Exists(dialog.SavedFilePath))
+                        {
+                            OpenTextureInEditor(dialog.SavedFilePath, dialog.TextureName);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error creating texture: {ex.Message}", "Error");
+            }
+        }
+
+        private void OpenTextureInEditor(string filePath, string fileName)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                {
+                    return;
+                }
+
+                // Check if a tab for this texture is already open
+                TabItem existingTab = null;
+                if (ResourcesTabs != null)
+                {
+                    foreach (var item in ResourcesTabs.Items)
+                    {
+                        if (item is TabItem tabItem && tabItem.Header is StackPanel headerPanel)
+                        {
+                            foreach (var child in headerPanel.Children)
+                            {
+                                if (child is System.Windows.Controls.TextBlock tb && tb.Text == $"Edit: {fileName}")
+                                {
+                                    existingTab = tabItem;
+                                    break;
+                                }
+                            }
+                        }
+                        if (existingTab != null) break;
+                    }
+                    
+                    if (existingTab != null)
+                    {
+                        // Tab already open, just select it
+                        ResourcesTabs.SelectedItem = existingTab;
+                        return;
+                    }
+                }
+                
+                // Create the editor page
+                var editorVm = new TextureEditorViewModel();
+                var editorPage = new TextureEditorPage(editorVm);
+                editorVm.SetPngPath(filePath);
+
+                // Create a Frame to host the page
+                var frame = new Frame();
+                frame.Navigate(editorPage);
+
+                // Create a new tab
+                var tab = new TabItem
+                {
+                    Header = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Children =
+                        {
+                            new SymbolIcon
+                            {
+                                Symbol = Wpf.Ui.Controls.SymbolRegular.ImageEdit24,
+                                Margin = new Thickness(0, 0, 4, 0)
+                            },
+                            new System.Windows.Controls.TextBlock
+                            {
+                                Text = $"Edit: {fileName}"
+                            }
+                        }
+                    },
+                    Content = frame
+                };
+
+                // Add and select the new tab
+                if (ResourcesTabs != null)
+                {
+                    ResourcesTabs.Items.Add(tab);
+                    ResourcesTabs.SelectedItem = tab;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error opening texture editor: {ex.Message}", "Error");
+            }
         }
 
         // Icon tab buttons
@@ -178,16 +306,25 @@ namespace Modrix.Views.Pages
 
         private void LoadReadme()
         {
-            if (File.Exists(_readmePath))
-                ReadmeEditor.Text = File.ReadAllText(_readmePath);
-            else
-                ReadmeEditor.Text = string.Empty;
+            if (ReadmeEditor != null)
+            {
+                if (File.Exists(_readmePath))
+                {
+                    ReadmeEditor.Text = File.ReadAllText(_readmePath);
+                }
+                else
+                {
+                    ReadmeEditor.Text = string.Empty;
+                }
+            }
 
             UpdateEmptyStates();
         }
 
         private void SaveReadme_Click(object sender, RoutedEventArgs e)
         {
+            if (ReadmeEditor == null) return;
+            
             try
             {
                 File.WriteAllText(_readmePath, ReadmeEditor.Text);
@@ -209,7 +346,7 @@ namespace Modrix.Views.Pages
 
         private void LoadTextures(string dir)
         {
-            if (!Directory.Exists(dir)) return;
+            if (!Directory.Exists(dir) || TexturesList == null) return;
 
             var list = new List<ImageContainer>();
             foreach (var file in Directory.GetFiles(dir, "*.png", SearchOption.AllDirectories))
@@ -237,17 +374,41 @@ namespace Modrix.Views.Pages
         }
 
         private void OpenTexturesFolder_Click(object sender, RoutedEventArgs e)
-            => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "textures"));
+        {
+            string texturePath = Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "textures");
+            // Create the directory if it doesn't exist
+            if (!Directory.Exists(texturePath))
+            {
+                Directory.CreateDirectory(texturePath);
+            }
+            Process.Start("explorer.exe", texturePath);
+        }
 
         private void OpenModelsFolder_Click(object sender, RoutedEventArgs e)
-            => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "models"));
+        {
+            string modelPath = Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "models");
+            // Create the directory if it doesn't exist
+            if (!Directory.Exists(modelPath))
+            {
+                Directory.CreateDirectory(modelPath);
+            }
+            Process.Start("explorer.exe", modelPath);
+        }
 
         private void OpenSoundsFolder_Click(object sender, RoutedEventArgs e)
-            => Process.Start("explorer.exe", Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "sounds"));
+        {
+            string soundPath = Path.Combine(_projectPath, "src\\main\\resources\\assets", _modId, "sounds");
+            // Create the directory if it doesn't exist
+            if (!Directory.Exists(soundPath))
+            {
+                Directory.CreateDirectory(soundPath);
+            }
+            Process.Start("explorer.exe", soundPath);
+        }
 
         private void LoadModels(string dir)
         {
-            if (!Directory.Exists(dir)) return;
+            if (!Directory.Exists(dir) || ModelsList == null) return;
 
             var list = Directory.GetFiles(dir, "*.json", SearchOption.AllDirectories)
                                 .Select(f => new ModelFile
@@ -263,7 +424,7 @@ namespace Modrix.Views.Pages
 
         private void LoadSounds(string dir)
         {
-            if (!Directory.Exists(dir)) return;
+            if (!Directory.Exists(dir) || SoundsList == null) return;
 
             var list = Directory.GetFiles(dir, "*.ogg", SearchOption.AllDirectories)
                                 .Select(f => new SoundFile
@@ -279,6 +440,8 @@ namespace Modrix.Views.Pages
 
         private void LoadIcon(string path)
         {
+            if (IconImage == null || EmptyIconText == null) return;
+            
             if (File.Exists(path))
             {
                 var bmp = new BitmapImage();
@@ -345,7 +508,7 @@ namespace Modrix.Views.Pages
 
         private void PlaySound_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Wpf.Ui.Controls.Button btn && btn.Tag is string path && File.Exists(path))
+            if (sender is Button btn && btn.Tag is string path && File.Exists(path))
             {
                 try
                 {
@@ -375,19 +538,19 @@ namespace Modrix.Views.Pages
             {
                 var contextMenu = new ContextMenu();
 
-                var editItem = new Wpf.Ui.Controls.MenuItem
+                var editItem = new MenuItem
                 {
                     Header = "Edit...",
                     Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Edit24)
                 };
 
-                var openItem = new Wpf.Ui.Controls.MenuItem
+                var openItem = new MenuItem
                 {
                     Header = "Open in External Editor",
                     Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Open28)
                 };
 
-                var deleteItem = new Wpf.Ui.Controls.MenuItem
+                var deleteItem = new MenuItem
                 {
                     Header = "Delete",
                     Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Delete24)
@@ -396,66 +559,7 @@ namespace Modrix.Views.Pages
                 editItem.Click += (s, args) =>
                 {
                     var filePath = Path.Combine(_projectPath, "src", "main", "resources", "assets", _modId, "textures", img.FileName);
-                    if (File.Exists(filePath))
-                    {
-                        // Check if a tab for this texture is already open
-                        TabItem existingTab = null;
-                        foreach (var item in ResourcesTabs.Items)
-                        {
-                            if (item is TabItem tabItem && tabItem.Header is StackPanel headerPanel)
-                            {
-                                foreach (var child in headerPanel.Children)
-                                {
-                                    if (child is System.Windows.Controls.TextBlock tb && tb.Text == $"Edit: {img.FileName}")
-                                    {
-                                        existingTab = tabItem;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (existingTab != null) break;
-                        }
-                        if (existingTab != null)
-                        {
-                            // Tab already open, just select it
-                            ResourcesTabs.SelectedItem = existingTab;
-                            return;
-                        }
-                        // Create the editor page
-                        var editorVm = new ViewModels.Pages.TextureEditorViewModel();
-                        var editorPage = new TextureEditorPage(editorVm);
-                        editorVm.SetPngPath(filePath);
-
-                        // Create a Frame to host the page
-                        var frame = new Frame();
-                        frame.Navigate(editorPage);
-
-                        // Create a new tab
-                        var tab = new TabItem
-                        {
-                            Header = new StackPanel
-                            {
-                                Orientation = Orientation.Horizontal,
-                                Children =
-                                {
-                                    new Wpf.Ui.Controls.SymbolIcon
-                                    {
-                                        Symbol = Wpf.Ui.Controls.SymbolRegular.ImageEdit24,
-                                        Margin = new Thickness(0, 0, 4, 0)
-                                    },
-                                    new System.Windows.Controls.TextBlock
-                                    {
-                                        Text = $"Edit: {img.FileName}"
-                                    }
-                                }
-                            },
-                            Content = frame
-                        };
-
-                        // Add and select the new tab
-                        ResourcesTabs.Items.Add(tab);
-                        ResourcesTabs.SelectedItem = tab;
-                    }
+                    OpenTextureInEditor(filePath, img.FileName);
                 };
 
                 openItem.Click += (s, args) =>
@@ -524,6 +628,8 @@ namespace Modrix.Views.Pages
                                         "src", "main", "resources", "assets", _modId, "icon.png");
                 try
                 {
+                    // Create the directory if it doesn't exist
+                    Directory.CreateDirectory(Path.GetDirectoryName(dest));
                     File.Copy(dlg.FileName, dest, true);
                     LoadIcon(dest);
                 }

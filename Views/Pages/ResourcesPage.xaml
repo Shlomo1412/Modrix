@@ -91,7 +91,16 @@
                 </TabItem.Header>
                 <DockPanel LastChildFill="True" Margin="8">
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportTextures_Click" Height="40" Appearance="Primary"/>
+                        <ui:Button ToolTip="Add New Texture" 
+                                  Icon="{ui:SymbolIcon Add24}" 
+                                  Click="AddTexture_Click" 
+                                  Height="40" 
+                                  Appearance="Primary"/>
+                        <ui:Button ToolTip="Import" 
+                                  Icon="{ui:SymbolIcon ArrowDownload24}" 
+                                  Click="ImportTextures_Click" 
+                                  Height="40" 
+                                  Margin="8,0,0,0"/>
                         <ui:Button ToolTip="Open Folder"
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Height="40"
@@ -123,7 +132,7 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <ui:TextBlock x:Name="TexturesEmptyState"
-                                Text="No textures found. Click Import to add some."
+                                Text="No textures found. Click 'Add New Texture' to create one or 'Import' to add existing textures."
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Margin="20"
