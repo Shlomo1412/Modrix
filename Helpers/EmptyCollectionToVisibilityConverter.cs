@@ -1,19 +1,22 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
-public class EmptyCollectionToVisibilityConverter : IValueConverter
+namespace Modrix.Helpers
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public class EmptyCollectionToVisibilityConverter : IValueConverter
     {
-        if (value is int count)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            if (value is int count)
+                return count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            return Visibility.Collapsed;
         }
-        return Visibility.Collapsed;
-    }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

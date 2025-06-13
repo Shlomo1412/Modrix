@@ -35,9 +35,9 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
-                    Content = "Data",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.DataHistogram24 },
-                    TargetPageType = typeof(Views.Pages.DataPage)
+                    Content = "News",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.News24 },
+                    TargetPageType = typeof(Views.Pages.NewsPage)
                 },
                 new NavigationViewItem()
                 {

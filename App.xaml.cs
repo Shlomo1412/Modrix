@@ -84,6 +84,9 @@ namespace Modrix
                 services.AddSingleton<IDEPageViewModel>();
                 services.AddSingleton<IDEPage>();
 
+                //NewsPage
+                services.AddSingleton<NewsPage>();
+
                 //Content dialog
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
 

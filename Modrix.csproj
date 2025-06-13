@@ -40,6 +40,7 @@
     <Resource Include="Resources\ModrixIcon.ico" />
 	<Resource Include="Resources\Icons\DisIcon.png" />
 	<Resource Include="Resources\Icons\WorkspaceIcon.png" />
+	<Resource Include="Resources\Icons\ModrixGitHub.png" />
   </ItemGroup>
 
   <ItemGroup>
