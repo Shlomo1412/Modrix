@@ -18,7 +18,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
-            <ui:SymbolIcon Symbol="PeopleCommunity24" Width="40" Height="40" Margin="0,0,12,0"/>
+            <ui:Image Source="pack://application:,,,/Resources/Icons/DisIcon.png" Width="40" Height="40" Margin="0,0,12,0"/>
             <StackPanel>
                 <TextBlock Text="Join the Modrix Discord!" FontSize="22" FontWeight="Bold"/>
                 <TextBlock Text="Be part of our growing community" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>

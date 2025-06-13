@@ -40,6 +40,10 @@
     <Resource Include="Resources\ModrixIcon.ico" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Resource Include="Resources\Icons\DisIcon.png" />
+	</ItemGroup>
+
   <ItemGroup>
     <Content Include="Templates\FabricMod\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
