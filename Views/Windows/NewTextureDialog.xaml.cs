@@ -11,6 +11,10 @@ namespace Modrix.Views.Windows
 {
     public partial class NewTextureDialog : FluentWindow
     {
+        // Constants for window heights
+        private const double TRANSPARENT_HEIGHT = 420;
+        private const double SOLID_COLOR_HEIGHT = 510;
+
         public string TextureName { get; private set; } = string.Empty;
         public int TextureWidth { get; private set; } = 16;
         public int TextureHeight { get; private set; } = 16;
@@ -28,6 +32,9 @@ namespace Modrix.Views.Windows
             {
                 BackgroundColorPicker.SelectedColor = Colors.White;
             }
+
+            // Set initial window height for transparent background (default selection)
+            Height = TRANSPARENT_HEIGHT;
         }
 
         private void BackgroundTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -38,11 +45,34 @@ namespace Modrix.Views.Windows
             if (BackgroundTypeComboBox.SelectedIndex == 1) // Solid Color
             {
                 ColorPickerPanel.Visibility = Visibility.Visible;
+
+                // Animate the height change
+                AnimateHeightChange(SOLID_COLOR_HEIGHT);
             }
             else // Transparent
             {
                 ColorPickerPanel.Visibility = Visibility.Collapsed;
+
+                // Animate the height change
+                AnimateHeightChange(TRANSPARENT_HEIGHT);
             }
+        }
+
+        private void AnimateHeightChange(double targetHeight)
+        {
+            // Create animation for smooth transition
+            var animation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                To = targetHeight,
+                Duration = TimeSpan.FromMilliseconds(250),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase
+                {
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut
+                }
+            };
+
+            // Start the animation
+            this.BeginAnimation(HeightProperty, animation);
         }
 
         private void CreateButton_Click(object sender, RoutedEventArgs e)
