@@ -8,338 +8,360 @@
       mc:Ignorable="d"
       Title="ResourcesPage">
 
-    <Grid Margin="16">
-        <TabControl x:Name="ResourcesTabs"
-            HorizontalAlignment="Stretch"
-            HorizontalContentAlignment="Stretch"
-            Margin="0"
-            TabStripPlacement="Top"
-            IsTabStop="False">
-            <TabControl.Resources>
-                <Style TargetType="TabItem">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Setter Property="Padding" Value="12,4"/>
-                    <Setter Property="Margin" Value="0,0,2,0"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="TabItem">
-                                <Border x:Name="Bd"
-                                        Background="{TemplateBinding Background}"
-                                        CornerRadius="6,6,0,0"
-                                        Padding="{TemplateBinding Padding}">
-                                    <ContentPresenter
-                                        ContentSource="Header"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </TabControl.Resources>
-            <TabControl.Template>
-                <ControlTemplate TargetType="TabControl">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+    <Page.Resources>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.10"/>
+    </Page.Resources>
 
-
-                        <ScrollViewer 
-                                x:Name="HeaderScroll" 
-                                Grid.Row="0"
-                                HorizontalScrollBarVisibility="Hidden"
-                                VerticalScrollBarVisibility="Disabled"
-                                Focusable="False">
-                            <TabPanel 
-                                IsItemsHost="True" 
-                                Background="Transparent"
-                                Margin="0 0 0 16"/>
-                        </ScrollViewer>
-
-                        <ContentPresenter 
-                            Grid.Row="1" 
-                            ContentSource="SelectedContent"/>
-                    </Grid>
-
-                    <ControlTemplate.Triggers>
-
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter 
-                                TargetName="HeaderScroll" 
-                                Property="HorizontalScrollBarVisibility" 
-                                Value="Auto"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </TabControl.Template>
-            <!-- Textures -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Image20" />
-                        <TextBlock Text="Textures" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <DockPanel LastChildFill="True" Margin="8">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Add New Texture" 
-                                  Icon="{ui:SymbolIcon Add24}" 
-                                  Click="AddTexture_Click" 
-                                  Height="40" 
-                                  Appearance="Primary"/>
-                        <ui:Button ToolTip="Import" 
-                                  Icon="{ui:SymbolIcon ArrowDownload24}" 
-                                  Click="ImportTextures_Click" 
-                                  Height="40" 
-                                  Margin="8,0,0,0"/>
-                        <ui:Button ToolTip="Open Folder"
-                                   Icon="{ui:SymbolIcon FolderOpen24}"
-                                   Height="40"
-                                   Margin="8,0,0,0"
-                                   Click="OpenTexturesFolder_Click"/>
-                        <ui:TextBox PlaceholderText="Search textures..."
-                                    Width="200"
-                                    Margin="8,0,0,0"/>
-                    </StackPanel>
-                    <ScrollViewer>
-                        <Grid>
-                            <ItemsControl x:Name="TexturesList" PreviewMouseRightButtonDown="TexturesList_PreviewMouseRightButtonDown">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="5">
-                                            <Image Source="{Binding Image}"
-                                                   Width="64" Height="64"
-                                                   ToolTip="{Binding FileName}"/>
-                                            <TextBlock Text="{Binding FileName}"
-                                                       HorizontalAlignment="Center"
-                                                       FontSize="10"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <ui:TextBlock x:Name="TexturesEmptyState"
-                                Text="No textures found. Click 'Add New Texture' to create one or 'Import' to add existing textures."
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Margin="20"
-                                FontStyle="Italic"
-                                Visibility="Collapsed"/>
-                        </Grid>
-                    </ScrollViewer>
-                </DockPanel>
-            </TabItem>
-
-            <!-- Models -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Cube20" />
-                        <TextBlock Text="Models" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <DockPanel LastChildFill="True" Margin="8">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportModels_Click" Height="40" Appearance="Primary"/>
-                        <ui:Button ToolTip="Open Folder"
-                                   Icon="{ui:SymbolIcon FolderOpen24}"
-                                   Height="40"
-                                   Margin="8,0,0,0"
-                                   Click="OpenModelsFolder_Click"/>
-                        <ui:TextBox PlaceholderText="Search models..."
-                                    Width="200"
-                                    Margin="8,0,0,0"/>
-                    </StackPanel>
-                    <ScrollViewer>
-                        <Grid>
-                            <ListBox x:Name="ModelsList" Margin="5">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding FileName}" Margin="4"/>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            <ui:TextBlock x:Name="ModelsEmptyState"
-                                Text="No models found. Click Import to add some."
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Margin="20"
-                                FontStyle="Italic"
-                                Visibility="Collapsed"/>
-                        </Grid>
-                    </ScrollViewer>
-                </DockPanel>
-            </TabItem>
-
-            <!-- Sounds -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Speaker220" />
-                        <TextBlock Text="Sounds" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <DockPanel LastChildFill="True" Margin="8">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
-                        <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportSounds_Click" Height="40" Appearance="Primary"/>
-                        <ui:Button ToolTip="Open Folder"
-                                   Icon="{ui:SymbolIcon FolderOpen24}"
-                                   Height="40"
-                                   Margin="8,0,0,0"
-                                   Click="OpenSoundsFolder_Click"/>
-                        <ui:TextBox PlaceholderText="Search sounds..."
-                                    Width="200"
-                                    Margin="8,0,0,0"/>
-                    </StackPanel>
-                    <StackPanel Margin="10">
-                        <Grid>
-                            <ListBox x:Name="SoundsList" Margin="5">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding FileName}"
-                                                       VerticalAlignment="Center"
-                                                       Width="200"/>
-                                            <ui:Button Content="▶"
-                                                       Tag="{Binding FullPath}"
-                                                       Click="PlaySound_Click"
-                                                       Width="32"
-                                                       Height="24"
-                                                       Margin="5,0"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            <ui:TextBlock x:Name="SoundsEmptyState"
-                                Text="No sounds found. Click Import to add some."
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Margin="20"
-                                FontStyle="Italic"
-                                Visibility="Collapsed"/>
-                        </Grid>
-                    </StackPanel>
-                </DockPanel>
-            </TabItem>
-
-            <!-- Icon Tab -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="ImageShadow20" />
-                        <TextBlock Text="Icon" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <StackPanel HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Margin="20">
-                    <Border BorderBrush="Transparent"
-                            BorderThickness="1"
-                            Width="128" Height="128">
-                        <Image x:Name="IconImage"
-                            Stretch="Uniform" />
-                    </Border>
-                    <TextBlock x:Name="EmptyIconText"
-                        Text="No icon set."
-                        Foreground="Gray"
-                        Margin="8"
-                        Visibility="Collapsed"
-                        HorizontalAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center"
-                        Margin="8">
-                        <ui:Button ToolTip="Change Icon"
-                            Click="ChangeIcon_Click"
-                            Appearance="Primary"
-                            Icon="{ui:SymbolIcon ArrowRepeatAll24}"
-                            Margin="4"/>
-                        <ui:Button ToolTip="Remove Icon"
-                            Icon="{ui:SymbolIcon Delete24}"
-                            Appearance="Danger"
-                            Click="RemoveIcon_Click"
-                            Margin="4"/>
-                        <ui:Button ToolTip="Refresh"
-                            Icon="{ui:SymbolIcon ArrowClockwise24}"
-                            Click="RefreshIcon_Click"
-                            Margin="4"/>
-                        <ui:Button ToolTip="Open Folder"
-                            Icon="{ui:SymbolIcon FolderOpen24}"
-                            Click="OpenIconFolder_Click"
-                            Margin="4"/>
+    <Grid Margin="0,0,0,0">
+        <StackPanel>
+            <!-- Page Header -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+                <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
+                    <ui:Image Source="pack://application:,,,/Resources/Icons/ResourcesIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Resources" FontSize="28" FontWeight="Bold"/>
+                        <TextBlock Text="Manage your mod's textures, models, sounds, and more" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
-            </TabItem>
+            </Border>
 
-            <!-- README Tab -->
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Document20" />
-                        <TextBlock Text="README" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
+            <!-- Main Content -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="18" Margin="32,0,32,32" Effect="{StaticResource CardShadow}">
+                <TabControl x:Name="ResourcesTabs"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    Margin="0"
+                    TabStripPlacement="Top"
+                    IsTabStop="False">
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <Setter Property="Padding" Value="12,4"/>
+                            <Setter Property="Margin" Value="0,0,2,0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <Border x:Name="Bd"
+                                                Background="{TemplateBinding Background}"
+                                                CornerRadius="6,6,0,0"
+                                                Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter
+                                                ContentSource="Header"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
+                    <TabControl.Template>
+                        <ControlTemplate TargetType="TabControl">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <ScrollViewer 
+                                        x:Name="HeaderScroll" 
+                                        Grid.Row="0"
+                                        HorizontalScrollBarVisibility="Hidden"
+                                        VerticalScrollBarVisibility="Disabled"
+                                        Focusable="False">
+                                    <TabPanel 
+                                        IsItemsHost="True" 
+                                        Background="Transparent"
+                                        Margin="0 0 0 16"/>
+                                </ScrollViewer>
+                                <ContentPresenter 
+                                    Grid.Row="1" 
+                                    ContentSource="SelectedContent"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter 
+                                        TargetName="HeaderScroll" 
+                                        Property="HorizontalScrollBarVisibility" 
+                                        Value="Auto"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </TabControl.Template>
 
-                <DockPanel>
-                    <!-- Button panel at bottom -->
-                    <StackPanel DockPanel.Dock="Bottom" 
-                            Orientation="Horizontal" 
-                            HorizontalAlignment="Right"
-                            Margin="0,8,0,0">
-                        <ui:Button
-                            Content="Save README"
-                            Icon="{ui:SymbolIcon Save24}"
-                            Click="SaveReadme_Click"
-                            Appearance="Primary"
-                            Margin="0,0,8,0"/>
+                    <!-- Textures -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Image20" />
+                                <TextBlock Text="Textures" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <DockPanel LastChildFill="True" Margin="8">
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+                                <ui:Button ToolTip="Add New Texture" 
+                                          Icon="{ui:SymbolIcon Add24}" 
+                                          Click="AddTexture_Click" 
+                                          Height="40" 
+                                          Appearance="Primary"/>
+                                <ui:Button ToolTip="Import" 
+                                          Icon="{ui:SymbolIcon ArrowDownload24}" 
+                                          Click="ImportTextures_Click" 
+                                          Height="40" 
+                                          Margin="8,0,0,0"/>
+                                <ui:Button ToolTip="Open Folder"
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Height="40"
+                                           Margin="8,0,0,0"
+                                           Click="OpenTexturesFolder_Click"/>
+                                <ui:TextBox PlaceholderText="Search textures..."
+                                            Width="200"
+                                            Margin="8,0,0,0"/>
+                            </StackPanel>
+                            <ScrollViewer>
+                                <Grid>
+                                    <ItemsControl x:Name="TexturesList" PreviewMouseRightButtonDown="TexturesList_PreviewMouseRightButtonDown">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="5">
+                                                    <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="8">
+                                                        <Image Source="{Binding Image}"
+                                                               Width="64" Height="64"
+                                                               ToolTip="{Binding FileName}"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding FileName}"
+                                                               HorizontalAlignment="Center"
+                                                               FontSize="10"
+                                                               Margin="0,4,0,0"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <ui:TextBlock x:Name="TexturesEmptyState"
+                                        Text="No textures found. Click 'Add New Texture' to create one or 'Import' to add existing textures."
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Margin="20"
+                                        FontStyle="Italic"
+                                        Visibility="Collapsed"/>
+                                </Grid>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </TabItem>
 
-                        <ui:Button
-                            Content="Open Containing Folder"
-                            Icon="{ui:SymbolIcon FolderOpen24}"
-                            Click="OpenReadmeFolder_Click"
-                            Margin="0,0,8,0"/>
+                    <!-- Models -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Cube20" />
+                                <TextBlock Text="Models" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <DockPanel LastChildFill="True" Margin="8">
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+                                <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportModels_Click" Height="40" Appearance="Primary"/>
+                                <ui:Button ToolTip="Open Folder"
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Height="40"
+                                           Margin="8,0,0,0"
+                                           Click="OpenModelsFolder_Click"/>
+                                <ui:TextBox PlaceholderText="Search models..."
+                                            Width="200"
+                                            Margin="8,0,0,0"/>
+                            </StackPanel>
+                            <ScrollViewer>
+                                <Grid>
+                                    <ListBox x:Name="ModelsList" Margin="5">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="8" Margin="0,0,0,4">
+                                                    <TextBlock Text="{Binding FileName}" Margin="4"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <ui:TextBlock x:Name="ModelsEmptyState"
+                                        Text="No models found. Click Import to add some."
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Margin="20"
+                                        FontStyle="Italic"
+                                        Visibility="Collapsed"/>
+                                </Grid>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </TabItem>
 
-                        <ui:Button
-                            Content="Open in Editor"
-                            Icon="{ui:SymbolIcon Document24}"
-                            Click="OpenReadmeInEditor_Click"/>
-                    </StackPanel>
+                    <!-- Sounds -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Speaker220" />
+                                <TextBlock Text="Sounds" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <DockPanel LastChildFill="True" Margin="8">
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
+                                <ui:Button ToolTip="Import" Icon="{ui:SymbolIcon ArrowDownload24}" Click="ImportSounds_Click" Height="40" Appearance="Primary"/>
+                                <ui:Button ToolTip="Open Folder"
+                                           Icon="{ui:SymbolIcon FolderOpen24}"
+                                           Height="40"
+                                           Margin="8,0,0,0"
+                                           Click="OpenSoundsFolder_Click"/>
+                                <ui:TextBox PlaceholderText="Search sounds..."
+                                            Width="200"
+                                            Margin="8,0,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="10">
+                                <Grid>
+                                    <ListBox x:Name="SoundsList" Margin="5">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="8" Margin="0,0,0,4">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding FileName}"
+                                                                   VerticalAlignment="Center"
+                                                                   Width="200"/>
+                                                        <ui:Button Content="▶"
+                                                                   Tag="{Binding FullPath}"
+                                                                   Click="PlaySound_Click"
+                                                                   Width="32"
+                                                                   Height="24"
+                                                                   Margin="5,0"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <ui:TextBlock x:Name="SoundsEmptyState"
+                                        Text="No sounds found. Click Import to add some."
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Margin="20"
+                                        FontStyle="Italic"
+                                        Visibility="Collapsed"/>
+                                </Grid>
+                            </StackPanel>
+                        </DockPanel>
+                    </TabItem>
 
-                    <Grid>
-                        <ui:TextBox
-                            x:Name="ReadmeEditor"
-                            AcceptsReturn="True"
-                            AcceptsTab="True"
-                            VerticalScrollBarVisibility="Auto"
-                            HorizontalScrollBarVisibility="Auto"
-                            FontFamily="Consolas"
-                            FontSize="14"/>
-                        <ui:TextBlock x:Name="ReadmeEmptyState"
-                            Text="No README.md file exists. Create one by typing in the editor and clicking Save."
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Margin="20"
-                            FontStyle="Italic"
-                            TextWrapping="Wrap"
-                            TextAlignment="Center"
-                            MaxWidth="400"
-                            Visibility="Collapsed"/>
-                    </Grid>
-                </DockPanel>
-            </TabItem>
+                    <!-- Icon Tab -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="ImageShadow20" />
+                                <TextBlock Text="Icon" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="20">
+                            <Border BorderBrush="Transparent"
+                                    BorderThickness="1"
+                                    Width="128" Height="128"
+                                    Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="12">
+                                <Image x:Name="IconImage"
+                                    Stretch="Uniform" />
+                            </Border>
+                            <TextBlock x:Name="EmptyIconText"
+                                Text="No icon set."
+                                Foreground="Gray"
+                                Margin="8"
+                                Visibility="Collapsed"
+                                HorizontalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="8">
+                                <ui:Button ToolTip="Change Icon"
+                                    Click="ChangeIcon_Click"
+                                    Appearance="Primary"
+                                    Icon="{ui:SymbolIcon ArrowRepeatAll24}"
+                                    Margin="4"/>
+                                <ui:Button ToolTip="Remove Icon"
+                                    Icon="{ui:SymbolIcon Delete24}"
+                                    Appearance="Danger"
+                                    Click="RemoveIcon_Click"
+                                    Margin="4"/>
+                                <ui:Button ToolTip="Refresh"
+                                    Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                    Click="RefreshIcon_Click"
+                                    Margin="4"/>
+                                <ui:Button ToolTip="Open Folder"
+                                    Icon="{ui:SymbolIcon FolderOpen24}"
+                                    Click="OpenIconFolder_Click"
+                                    Margin="4"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </TabItem>
 
-        </TabControl>
+                    <!-- README Tab -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Document20" />
+                                <TextBlock Text="README" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <DockPanel>
+                            <!-- Button panel at bottom -->
+                            <StackPanel DockPanel.Dock="Bottom" 
+                                    Orientation="Horizontal" 
+                                    HorizontalAlignment="Right"
+                                    Margin="0,8,0,0">
+                                <ui:Button
+                                    Content="Save README"
+                                    Icon="{ui:SymbolIcon Save24}"
+                                    Click="SaveReadme_Click"
+                                    Appearance="Primary"
+                                    Margin="0,0,8,0"/>
+
+                                <ui:Button
+                                    Content="Open Containing Folder"
+                                    Icon="{ui:SymbolIcon FolderOpen24}"
+                                    Click="OpenReadmeFolder_Click"
+                                    Margin="0,0,8,0"/>
+
+                                <ui:Button
+                                    Content="Open in Editor"
+                                    Icon="{ui:SymbolIcon Document24}"
+                                    Click="OpenReadmeInEditor_Click"/>
+                            </StackPanel>
+                            <Grid>
+                                <ui:TextBox
+                                    x:Name="ReadmeEditor"
+                                    AcceptsReturn="True"
+                                    AcceptsTab="True"
+                                    VerticalScrollBarVisibility="Auto"
+                                    HorizontalScrollBarVisibility="Auto"
+                                    FontFamily="Consolas"
+                                    FontSize="14"/>
+                                <ui:TextBlock x:Name="ReadmeEmptyState"
+                                    Text="No README.md file exists. Create one by typing in the editor and clicking Save."
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="20"
+                                    FontStyle="Italic"
+                                    TextWrapping="Wrap"
+                                    TextAlignment="Center"
+                                    MaxWidth="400"
+                                    Visibility="Collapsed"/>
+                            </Grid>
+                        </DockPanel>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </StackPanel>
     </Grid>
 </Page>
