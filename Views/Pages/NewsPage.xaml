@@ -16,69 +16,104 @@
 
     <Page.Resources>
         <helpers:EmptyCollectionToVisibilityConverter x:Key="EmptyCollectionToVisibilityConverter"/>
+        <!-- Optional: Add a drop shadow effect for cards -->
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.15"/>
     </Page.Resources>
 
     <Grid>
         <!-- No Internet State -->
-        <Grid x:Name="NoInternetGrid" Visibility="Collapsed">
-            <ui:Image Source="pack://application:,,,/Resources/Icons/NoWifiIcon.png"
-                      Width="160"
-                      Height="160"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"/>
+        <Grid x:Name="NoInternetGrid" Visibility="Collapsed" Background="Transparent">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ui:Image Source="pack://application:,,,/Resources/Icons/NoWifiIcon.png"
+                          Width="120"
+                          Height="120"
+                          HorizontalAlignment="Center"/>
+                <TextBlock Text="No Internet Connection"
+                           FontSize="20"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0"/>
+                <TextBlock Text="Please check your network and try again."
+                           FontSize="14"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
         </Grid>
 
-        <!-- Normal News Content -->
+        <!-- Main Content -->
         <ScrollViewer x:Name="ContentScrollViewer" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="32,24,32,24">
-                <!-- Latest Commits Section -->
-                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="0,0,0,16">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,16">
-                            <ui:Image Source="pack://application:,,,/Resources/Icons/ModrixGitHub.png" Width="32" Height="32"/>
-                            <TextBlock Text="Latest Commits" FontSize="22" FontWeight="SemiBold" Margin="12,0,0,0" VerticalAlignment="Center"/>
+            <StackPanel Margin="0,0,0,24">
+                <!-- Page Header -->
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
+                        <ui:Image Source="pack://application:,,,/Resources/Icons/NewsIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
+                        <StackPanel>
+                            <TextBlock Text="Modrix News" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="Latest updates and development activity" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <ItemsControl ItemsSource="{Binding LatestCommits}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="16" Margin="0,0,0,12">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Orientation="Vertical" Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Message}" FontWeight="Bold" FontSize="15" TextWrapping="Wrap" />
-                                                <TextBlock Text="{Binding Author}" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
-                                            </StackPanel>
-                                            <ui:Button Grid.Column="1"
-                                                Icon="{ui:SymbolIcon Open24}"
-                                                ToolTip="Open on GitHub"
-                                                Width="40"
-                                                Height="40"
-                                                Command="{Binding DataContext.OpenCommitCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                                CommandParameter="{Binding Url}"
-                                                Appearance="Secondary"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Right"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Text="No recent commits found."
-                                   FontStyle="Italic"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                   Visibility="{Binding LatestCommits.Count, Converter={StaticResource EmptyCollectionToVisibilityConverter}}"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,16,0,0"/>
                     </StackPanel>
                 </Border>
+
+                <StackPanel Margin="32,0,32,0">
+                    <!-- Latest Commits Section -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,12,0,8">
+                        <ui:Image Source="pack://application:,,,/Resources/Icons/ModrixGitHub.png"
+                                  Width="28"
+                                  Height="28"
+                                  Margin="0,0,8,0"/>
+                        <TextBlock Text="Latest Commits" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="0,0,0,16">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding LatestCommits}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                                CornerRadius="10"
+                                                Padding="18"
+                                                Margin="0,0,0,14"
+                                                Effect="{StaticResource CardShadow}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Vertical" Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Message}" FontWeight="Bold" FontSize="15" TextWrapping="Wrap" />
+                                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                        <ui:SymbolIcon Symbol="Person24" Width="18" Height="18" Margin="0,0,4,0"/>
+                                                        <TextBlock Text="{Binding Author}" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <ui:Button Grid.Column="1"
+                                                    Icon="{ui:SymbolIcon Open24}"
+                                                    ToolTip="Open on GitHub"
+                                                    Width="40"
+                                                    Height="40"
+                                                    Command="{Binding DataContext.OpenCommitCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                    CommandParameter="{Binding Url}"
+                                                    Appearance="Secondary"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalAlignment="Right"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="No recent commits found."
+                                       FontStyle="Italic"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Visibility="{Binding LatestCommits.Count, Converter={StaticResource EmptyCollectionToVisibilityConverter}}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,16,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>
