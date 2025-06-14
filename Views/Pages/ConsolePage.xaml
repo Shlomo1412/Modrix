@@ -7,145 +7,171 @@
       mc:Ignorable="d"
       Title="ConsolePage">
 
-    <DockPanel LastChildFill="True">
-        <!-- Toolbar fixed at top -->
-        <StackPanel DockPanel.Dock="Top"
-                Orientation="Horizontal"
-                HorizontalAlignment="Right"
-                Margin="8,4,8,4">
-            <CheckBox x:Name="ChkLineIndex"
-                   Content="Show Line Index"
-                   Margin="0,0,8,0"
-                   VerticalAlignment="Center"
-                   Checked="ChkLineIndex_Changed"
-                   Unchecked="ChkLineIndex_Changed"/>
-            <CheckBox x:Name="ChkAutoScroll"
-                   Content="Auto Scroll"
-                   IsChecked="True"
-                   Margin="0,0,16,0"
-                   VerticalAlignment="Center"
-                   Checked="ChkAutoScroll_Changed"
-                   Unchecked="ChkAutoScroll_Changed"/>
-            <CheckBox x:Name="ChkShowStats"
-                   Content="Show Runtime Stats"
-                   IsChecked="True"
-                   Margin="0,0,16,0"
-                   VerticalAlignment="Center"
-                   Checked="ChkShowStats_Changed"
-                   Unchecked="ChkShowStats_Changed"/>
-            <ui:Button Appearance="Secondary"
-                 Icon="{ui:SymbolIcon Copy24}"
-                 ToolTip="Copy All"
-                 Margin="0,0,8,0"
-                 Click="CopyButton_Click"/>
-            <ui:Button Appearance="Secondary"
-                 Icon="{ui:SymbolIcon Share24}"
-                 ToolTip="Share Log"
-                 Margin="0,0,8,0"
-                 Click="ShareButton_Click"/>
-            <ui:Button Appearance="Secondary"
-                 Icon="{ui:SymbolIcon Delete24}"
-                 ToolTip="Clear Console"
-                 Click="ClearButton_Click"/>
-        </StackPanel>
+    <Page.Resources>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.10"/>
+    </Page.Resources>
 
-        <!-- Main Content Area -->
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="ConsoleColumn" Width="*"/>
-                <ColumnDefinition x:Name="StatsColumn" Width="0"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- GridSplitter for resizing the two panels -->
-            <GridSplitter x:Name="ConsoleSplitter" 
-                      Grid.Column="0"
-                      HorizontalAlignment="Right" 
-                      Width="5"
-                      Background="#333333"
-                      Visibility="Collapsed"/>
-
-            <!-- Console Output fills first column -->
-            <RichTextBox x:Name="ConsoleOutput"
-                     Grid.Column="0"
-                     IsReadOnly="True"
-                     Background="Black"
-                     Foreground="White"
-                     FontFamily="Consolas"
-                     FontSize="14"
-                     VerticalScrollBarVisibility="Auto"
-                     Margin="8"/>
-
-            <!-- Runtime Stats Panel -->
-            <DockPanel x:Name="StatsPanel" 
-                   Grid.Column="1"
-                   LastChildFill="True"
-                   Visibility="Collapsed">
-                <TextBlock DockPanel.Dock="Top" 
-                       Text="Minecraft Runtime Stats" 
-                       FontWeight="Bold"
-                       FontSize="16"
-                       Margin="8,8,8,4"/>
-                <StackPanel DockPanel.Dock="Top" 
-                        Orientation="Horizontal" 
-                        Margin="8,0,8,8">
-                    <TextBlock Text="Status: " FontWeight="Bold"/>
-                    <TextBlock x:Name="GameStatusText" Text="Not Running"/>
-                </StackPanel>
-
-                <!-- CPU Usage -->
-                <StackPanel DockPanel.Dock="Top" Margin="8,4">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="CPU:" VerticalAlignment="Center"/>
-                        <ProgressBar Grid.Column="1" x:Name="CpuProgressBar" 
-                                    Value="0" Maximum="100" 
-                                    Margin="8,0" Height="20"/>
-                        <TextBlock Grid.Column="2" x:Name="CpuUsageText" Text="0%" 
-                               VerticalAlignment="Center"/>
-                    </Grid>
-                </StackPanel>
-
-                <!-- Memory Usage -->
-                <StackPanel DockPanel.Dock="Top" Margin="8,4">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="RAM:" VerticalAlignment="Center"/>
-                        <ProgressBar Grid.Column="1" x:Name="MemoryProgressBar" 
-                                    Value="0" Maximum="100" 
-                                    Margin="8,0" Height="20"/>
-                        <TextBlock Grid.Column="2" x:Name="MemoryUsageText" Text="0 MB" 
-                               VerticalAlignment="Center"/>
-                    </Grid>
-                </StackPanel>
-
-                <!-- Chart placeholder for historical data -->
-                <Border DockPanel.Dock="Top" 
-                    Background="#111111" 
-                    BorderBrush="#333333" 
-                    BorderThickness="1" 
-                    Margin="8,8,8,0">
-                    <Canvas x:Name="PerformanceChart" 
-                        Height="200" 
-                        Margin="4"/>
-                </Border>
-
-                <!-- Additional stats -->
-                <ScrollViewer DockPanel.Dock="Top" 
-                          VerticalScrollBarVisibility="Auto" 
-                          Margin="8">
-                    <StackPanel x:Name="AdditionalStatsPanel">
-                        <!-- Will be populated with additional stats -->
+    <Grid>
+        <StackPanel>
+            <!-- Page Header -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+                <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
+                    <ui:Image Source="pack://application:,,,/Resources/Icons/ConsoleIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Console" FontSize="28" FontWeight="Bold"/>
+                        <TextBlock Text="View build output and runtime logs" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                </ScrollViewer>
-            </DockPanel>
-        </Grid>
-    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Main Content Card -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="0" Margin="32,0,32,32" Effect="{StaticResource CardShadow}">
+                <DockPanel LastChildFill="True">
+                    <!-- Toolbar fixed at top -->
+                    <StackPanel DockPanel.Dock="Top"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                Margin="12,12,12,8">
+                        <CheckBox x:Name="ChkLineIndex"
+                                  Content="Show Line Index"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Center"
+                                  Checked="ChkLineIndex_Changed"
+                                  Unchecked="ChkLineIndex_Changed"/>
+                        <CheckBox x:Name="ChkAutoScroll"
+                                  Content="Auto Scroll"
+                                  IsChecked="True"
+                                  Margin="0,0,16,0"
+                                  VerticalAlignment="Center"
+                                  Checked="ChkAutoScroll_Changed"
+                                  Unchecked="ChkAutoScroll_Changed"/>
+                        <CheckBox x:Name="ChkShowStats"
+                                  Content="Show Runtime Stats"
+                                  IsChecked="True"
+                                  Margin="0,0,16,0"
+                                  VerticalAlignment="Center"
+                                  Checked="ChkShowStats_Changed"
+                                  Unchecked="ChkShowStats_Changed"/>
+                        <ui:Button Appearance="Secondary"
+                                   Icon="{ui:SymbolIcon Copy24}"
+                                   ToolTip="Copy All"
+                                   Margin="0,0,8,0"
+                                   Click="CopyButton_Click"/>
+                        <ui:Button Appearance="Secondary"
+                                   Icon="{ui:SymbolIcon Share24}"
+                                   ToolTip="Share Log"
+                                   Margin="0,0,8,0"
+                                   Click="ShareButton_Click"/>
+                        <ui:Button Appearance="Secondary"
+                                   Icon="{ui:SymbolIcon Delete24}"
+                                   ToolTip="Clear Console"
+                                   Click="ClearButton_Click"/>
+                    </StackPanel>
+
+                    <!-- Main Content Area -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="ConsoleColumn" Width="*"/>
+                            <ColumnDefinition x:Name="StatsColumn" Width="0"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- GridSplitter for resizing the two panels -->
+                        <GridSplitter x:Name="ConsoleSplitter" 
+                                      Grid.Column="0"
+                                      HorizontalAlignment="Right" 
+                                      Width="5"
+                                      Background="#333333"
+                                      Visibility="Collapsed"/>
+
+                        <!-- Console Output fills first column -->
+                        <Border Grid.Column="0" Background="Black" CornerRadius="8" Margin="8,8,8,8">
+                            <RichTextBox x:Name="ConsoleOutput"
+                                         IsReadOnly="True"
+                                         Background="Transparent"
+                                         Foreground="White"
+                                         FontFamily="Consolas"
+                                         FontSize="14"
+                                         VerticalScrollBarVisibility="Auto"
+                                         Margin="8"/>
+                        </Border>
+
+                        <!-- Runtime Stats Panel -->
+                        <DockPanel x:Name="StatsPanel" 
+                                   Grid.Column="1"
+                                   LastChildFill="True"
+                                   Visibility="Collapsed"
+                                   Margin="8,8,8,8"
+                                   Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <TextBlock DockPanel.Dock="Top" 
+                                       Text="Minecraft Runtime Stats" 
+                                       FontWeight="Bold"
+                                       FontSize="16"
+                                       Margin="8,8,8,4"/>
+                            <StackPanel DockPanel.Dock="Top" 
+                                        Orientation="Horizontal" 
+                                        Margin="8,0,8,8">
+                                <TextBlock Text="Status: " FontWeight="Bold"/>
+                                <TextBlock x:Name="GameStatusText" Text="Not Running"/>
+                            </StackPanel>
+
+                            <!-- CPU Usage -->
+                            <StackPanel DockPanel.Dock="Top" Margin="8,4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="CPU:" VerticalAlignment="Center"/>
+                                    <ProgressBar Grid.Column="1" x:Name="CpuProgressBar" 
+                                                 Value="0" Maximum="100" 
+                                                 Margin="8,0" Height="20"/>
+                                    <TextBlock Grid.Column="2" x:Name="CpuUsageText" Text="0%" 
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Memory Usage -->
+                            <StackPanel DockPanel.Dock="Top" Margin="8,4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="RAM:" VerticalAlignment="Center"/>
+                                    <ProgressBar Grid.Column="1" x:Name="MemoryProgressBar" 
+                                                 Value="0" Maximum="100" 
+                                                 Margin="8,0" Height="20"/>
+                                    <TextBlock Grid.Column="2" x:Name="MemoryUsageText" Text="0 MB" 
+                                               VerticalAlignment="Center"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Chart placeholder for historical data -->
+                            <Border DockPanel.Dock="Top" 
+                                    Background="#111111" 
+                                    BorderBrush="#333333" 
+                                    BorderThickness="1" 
+                                    Margin="8,8,8,0"
+                                    CornerRadius="6">
+                                <Canvas x:Name="PerformanceChart" 
+                                        Height="200" 
+                                        Margin="4"/>
+                            </Border>
+
+                            <!-- Additional stats -->
+                            <ScrollViewer DockPanel.Dock="Top" 
+                                          VerticalScrollBarVisibility="Auto" 
+                                          Margin="8">
+                                <StackPanel x:Name="AdditionalStatsPanel">
+                                    <!-- Will be populated with additional stats -->
+                                </StackPanel>
+                            </ScrollViewer>
+                        </DockPanel>
+                    </Grid>
+                </DockPanel>
+            </Border>
+        </StackPanel>
+    </Grid>
 </Page>
