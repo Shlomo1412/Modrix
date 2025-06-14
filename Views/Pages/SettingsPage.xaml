@@ -13,12 +13,13 @@
     xmlns:vm="clr-namespace:Modrix.ViewModels.Pages"
     Title="SettingsPage"
     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel, IsDesignTimeCreatable=False}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
+
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
@@ -31,364 +32,199 @@
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel>
-            <!-- Personalization Section -->
-            <Expander Margin="24,24,24,0" IsExpanded="True">
-                <Expander.Header>
-                    <TextBlock 
-                        FontSize="20"
-                        FontWeight="Medium"
-                        Text="Personalization" />
-                </Expander.Header>
-                <StackPanel>
-                    <!-- Theme selection controls -->
-                    <TextBlock Margin="0,12,0,0" Text="Theme" />
-                    <RadioButton
-                        Margin="0,12,0,0"
-                        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                        CommandParameter="theme_light"
-                        Content="Light"
-                        GroupName="themeSelect"
-                        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
-                    <RadioButton
-                        Margin="0,8,0,0"
-                        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                        CommandParameter="theme_dark"
-                        Content="Dark"
-                        GroupName="themeSelect"
-                        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
-                    <RadioButton
-                        Margin="0,8,0,0"
-                        Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                        CommandParameter="theme_highcontrast"
-                        Content="High Contrast"
-                        GroupName="themeSelect"
-                        IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
+        <StackPanel Margin="0,0,0,32">
+            <!-- Page Header -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+                <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
+                    <ui:Image Source="pack://application:,,,/Resources/Icons/SettingsIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Settings" FontSize="28" FontWeight="Bold"/>
+                        <TextBlock Text="Personalize your Modrix experience" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                    </StackPanel>
                 </StackPanel>
-            </Expander>
+            </Border>
+
+            <!-- Personalization Section -->
+            <ui:Card Margin="32,0,32,18" Padding="24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="Color24" Width="28" Height="28" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="Personalization"/>
+                    </StackPanel>
+                    <TextBlock Margin="0,8,0,0" Text="Theme" FontWeight="Medium"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <RadioButton
+                            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                            CommandParameter="theme_light"
+                            Content="Light"
+                            GroupName="themeSelect"
+                            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
+                        <RadioButton
+                            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                            CommandParameter="theme_dark"
+                            Content="Dark"
+                            GroupName="themeSelect"
+                            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+                        <RadioButton
+                            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                            CommandParameter="theme_highcontrast"
+                            Content="High Contrast"
+                            GroupName="themeSelect"
+                            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
 
             <!-- Workspace Section -->
-            <Expander Margin="24,24,24,0" IsExpanded="False">
-                <Expander.Header>
-                    <TextBlock 
-                        FontSize="20"
-                        FontWeight="Medium"
-                        Text="Workspace" />
-                </Expander.Header>
+            <ui:Card Margin="32,0,32,18" Padding="24">
                 <StackPanel>
-                    <!-- IDE Settings -->
-                    <TextBlock Margin="0,12,0,8" FontWeight="SemiBold" Text="IDE Settings" />
-                    
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="Desktop24" Width="28" Height="28" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="Workspace"/>
+                    </StackPanel>
+                    <TextBlock Margin="0,8,0,8" FontWeight="SemiBold" Text="IDE Settings" />
+
                     <!-- Editor Settings -->
-                    <ui:Card Margin="0,8,0,0">
-                        <StackPanel>
-                            <TextBlock FontWeight="Medium" Text="Editor" Margin="0,0,0,8"/>
-                            
-                            <ui:ToggleSwitch
-                                Content="Auto Save"
-                                IsChecked="{Binding ViewModel.IdeSettings.AutoSave}"/>
-                            
-                            <DockPanel Margin="0,8,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
-                                <TextBlock Text="Auto Save Interval (seconds):" VerticalAlignment="Center"/>
-                                <ui:NumberBox
-                                    Margin="8,0,0,0"
-                                    Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}"
-                                    Minimum="5"
-                                    Maximum="300"
-                                    Width="80"/>
-                            </DockPanel>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Word Wrap"
-                                IsChecked="{Binding ViewModel.IdeSettings.WordWrap}"/>
-
-                            <DockPanel Margin="0,8,0,0">
-                                <TextBlock Text="Tab Size:" VerticalAlignment="Center"/>
-                                <ui:NumberBox
-                                    Margin="8,0,0,0"
-                                    Value="{Binding ViewModel.IdeSettings.TabSize}"
-                                    Minimum="1"
-                                    Maximum="8"
-                                    Width="80"/>
-                            </DockPanel>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Use Spaces for Tabs"
-                                IsChecked="{Binding ViewModel.IdeSettings.UseSpacesForTabs}"/>
-
-                            <DockPanel Margin="0,8,0,0">
-                                <TextBlock Text="Line Endings:" VerticalAlignment="Center"/>
-                                <ComboBox
-                                    Margin="8,0,0,0"
-                                    ItemsSource="{Binding Source={StaticResource LineEndingTypes}}"
-                                    SelectedItem="{Binding ViewModel.IdeSettings.LineEndings}"
-                                    Width="120"/>
-                            </DockPanel>
-
-                            <DockPanel Margin="0,8,0,0">
-                                <TextBlock Text="Font Size:" VerticalAlignment="Center"/>
-                                <ui:NumberBox
-                                    Margin="8,0,0,0"
-                                    Value="{Binding ViewModel.IdeSettings.FontSize}"
-                                    Minimum="8"
-                                    Maximum="32"
-                                    Width="80"/>
-                            </DockPanel>
-
-                            <DockPanel Margin="0,8,0,0">
-                                <TextBlock Text="Font Family:" VerticalAlignment="Center"/>
-                                <ComboBox
-                                    Margin="8,0,0,0"
-                                    ItemsSource="{Binding ViewModel.MonospaceFonts}"
-                                    SelectedItem="{Binding ViewModel.IdeSettings.FontFamily}"
-                                    Width="200"/>
-                            </DockPanel>
-                        </StackPanel>
-                    </ui:Card>
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock FontWeight="Medium" Text="Editor" Margin="0,0,0,8"/>
+                        <ui:ToggleSwitch Content="Auto Save" IsChecked="{Binding ViewModel.IdeSettings.AutoSave}"/>
+                        <DockPanel Margin="0,8,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
+                            <TextBlock Text="Auto Save Interval (seconds):" VerticalAlignment="Center"/>
+                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}" Minimum="5" Maximum="300" Width="80"/>
+                        </DockPanel>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Word Wrap" IsChecked="{Binding ViewModel.IdeSettings.WordWrap}"/>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock Text="Tab Size:" VerticalAlignment="Center"/>
+                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.TabSize}" Minimum="1" Maximum="8" Width="80"/>
+                        </DockPanel>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Use Spaces for Tabs" IsChecked="{Binding ViewModel.IdeSettings.UseSpacesForTabs}"/>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock Text="Line Endings:" VerticalAlignment="Center"/>
+                            <ComboBox Margin="8,0,0,0" ItemsSource="{Binding Source={StaticResource LineEndingTypes}}" SelectedItem="{Binding ViewModel.IdeSettings.LineEndings}" Width="120"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock Text="Font Size:" VerticalAlignment="Center"/>
+                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.FontSize}" Minimum="8" Maximum="32" Width="80"/>
+                        </DockPanel>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock Text="Font Family:" VerticalAlignment="Center"/>
+                            <ComboBox Margin="8,0,0,0" ItemsSource="{Binding ViewModel.MonospaceFonts}" SelectedItem="{Binding ViewModel.IdeSettings.FontFamily}" Width="200"/>
+                        </DockPanel>
+                    </StackPanel>
 
                     <!-- Visual Settings -->
-                    <ui:Card Margin="0,16,0,0">
-                        <StackPanel>
-                            <TextBlock FontWeight="Medium" Text="Visual" Margin="0,0,0,8"/>
-                            
-                            <ui:ToggleSwitch
-                                Content="Show Line Numbers"
-                                IsChecked="{Binding ViewModel.IdeSettings.ShowLineNumbers}"/>
-                            
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Show Whitespace Characters"
-                                IsChecked="{Binding ViewModel.IdeSettings.ShowWhitespace}"/>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Show Line Endings"
-                                IsChecked="{Binding ViewModel.IdeSettings.ShowLineEndings}"/>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Show Minimap"
-                                IsChecked="{Binding ViewModel.IdeSettings.ShowMinimap}"/>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Show Indent Guides"
-                                IsChecked="{Binding ViewModel.IdeSettings.ShowIndentGuides}"/>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Highlight Current Line"
-                                IsChecked="{Binding ViewModel.IdeSettings.HighlightCurrentLine}"/>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Highlight Matching Brackets"
-                                IsChecked="{Binding ViewModel.IdeSettings.HighlightMatchingBrackets}"/>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Enable Code Folding"
-                                IsChecked="{Binding ViewModel.IdeSettings.EnableCodeFolding}"/>
-                        </StackPanel>
-                    </ui:Card>
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock FontWeight="Medium" Text="Visual" Margin="0,0,0,8"/>
+                        <ui:ToggleSwitch Content="Show Line Numbers" IsChecked="{Binding ViewModel.IdeSettings.ShowLineNumbers}"/>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Whitespace Characters" IsChecked="{Binding ViewModel.IdeSettings.ShowWhitespace}"/>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Line Endings" IsChecked="{Binding ViewModel.IdeSettings.ShowLineEndings}"/>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Minimap" IsChecked="{Binding ViewModel.IdeSettings.ShowMinimap}"/>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Indent Guides" IsChecked="{Binding ViewModel.IdeSettings.ShowIndentGuides}"/>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Highlight Current Line" IsChecked="{Binding ViewModel.IdeSettings.HighlightCurrentLine}"/>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Highlight Matching Brackets" IsChecked="{Binding ViewModel.IdeSettings.HighlightMatchingBrackets}"/>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Enable Code Folding" IsChecked="{Binding ViewModel.IdeSettings.EnableCodeFolding}"/>
+                    </StackPanel>
 
                     <!-- File Settings -->
-                    <ui:Card Margin="0,16,0,0">
-                        <StackPanel>
-                            <TextBlock FontWeight="Medium" Text="File Handling" Margin="0,0,0,8"/>
-                            
-                            <DockPanel>
-                                <TextBlock Text="Default Encoding:" VerticalAlignment="Center"/>
-                                <ComboBox
-                                    Margin="8,0,0,0"
-                                    ItemsSource="{Binding ViewModel.EncodingOptions}"
-                                    SelectedItem="{Binding ViewModel.IdeSettings.DefaultEncoding}"
-                                    Width="120"/>
-                            </DockPanel>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Auto-reload when Changed Externally"
-                                IsChecked="{Binding ViewModel.IdeSettings.AutoReloadExternalChanges}"/>
-
-                            <ui:ToggleSwitch
-                                Margin="0,8,0,0"
-                                Content="Create Backup Files Before Saving"
-                                IsChecked="{Binding ViewModel.IdeSettings.CreateBackupFiles}"/>
-
-                            <DockPanel Margin="0,8,0,0">
-                                <TextBlock Text="Max File Size (MB):" VerticalAlignment="Center"/>
-                                <ui:NumberBox
-                                    Margin="8,0,0,0"
-                                    Value="{Binding ViewModel.IdeSettings.MaxFileSize, Converter={StaticResource BytesToMegabytesConverter}}"
-                                    Minimum="1"
-                                    Maximum="100"
-                                    Width="80"/>
-                            </DockPanel>
-                        </StackPanel>
-                    </ui:Card>
+                    <StackPanel>
+                        <TextBlock FontWeight="Medium" Text="File Handling" Margin="0,0,0,8"/>
+                        <DockPanel>
+                            <TextBlock Text="Default Encoding:" VerticalAlignment="Center"/>
+                            <ComboBox Margin="8,0,0,0" ItemsSource="{Binding ViewModel.EncodingOptions}" SelectedItem="{Binding ViewModel.IdeSettings.DefaultEncoding}" Width="120"/>
+                        </DockPanel>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Auto-reload when Changed Externally" IsChecked="{Binding ViewModel.IdeSettings.AutoReloadExternalChanges}"/>
+                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Create Backup Files Before Saving" IsChecked="{Binding ViewModel.IdeSettings.CreateBackupFiles}"/>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock Text="Max File Size (MB):" VerticalAlignment="Center"/>
+                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.MaxFileSize, Converter={StaticResource BytesToMegabytesConverter}}" Minimum="1" Maximum="100" Width="80"/>
+                        </DockPanel>
+                    </StackPanel>
                 </StackPanel>
-            </Expander>
+            </ui:Card>
 
             <!-- Installation Section -->
-            <Expander Margin="24,24,24,0">
-                <Expander.Header>
-                    <TextBlock 
-                        FontSize="20"
-                        FontWeight="Medium"
-                        Text="Installation" />
-                </Expander.Header>
+            <ui:Card Margin="32,0,32,18" Padding="24">
                 <StackPanel>
-                    <ui:Button
-                        Margin="0,12,0,0"
-                        Appearance="Primary"
-                        Icon="{ui:SymbolIcon ArrowReset24}"
-                        Content="Reinstall" />
-                    <ui:Button
-                        Margin="0,8,0,0"
-                        Appearance="Danger"
-                        Icon="{ui:SymbolIcon Delete24}"
-                        Content="Uninstall" />
-                    <ui:ToggleSwitch
-                        Margin="0,12,0,0"
-                        Content="Keep Projects" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="ArrowDownload24" Width="28" Height="28" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="Installation"/>
+                    </StackPanel>
+                    <ui:Button Margin="0,12,0,0" Appearance="Primary" Icon="{ui:SymbolIcon ArrowReset24}" Content="Reinstall" />
+                    <ui:Button Margin="0,8,0,0" Appearance="Danger" Icon="{ui:SymbolIcon Delete24}" Content="Uninstall" />
+                    <ui:ToggleSwitch Margin="0,12,0,0" Content="Keep Projects" />
 
                     <!-- Java JDKs Section -->
-                    <Grid Margin="0,24,0,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock 
-                                Text="Java JDKs" 
-                                FontWeight="Medium"
-                                VerticalAlignment="Center"/>
-
-                            <ui:Button
-                                Margin="12,0,0,0"
-                                Appearance="Secondary"
-                                Icon="{ui:SymbolIcon ArrowClockwise24}"
-                                Command="{Binding ViewModel.RefreshJdksCommand}"
-                                ToolTip="Refresh JDK list"
-                                VerticalAlignment="Center"/>
-
-                            <ui:Button
-                                Margin="12,0,0,0"
-                                Appearance="Primary"
-                                Icon="{ui:SymbolIcon ArrowDownload24}"
-                                Command="{Binding ViewModel.DownloadJdkCommand}"
-                                ToolTip="Download and install a JDK"
-                                VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <!-- JDK Installation Progress -->
-                        <StackPanel Grid.Row="1"
-                                Margin="0,12,0,0"
-                                Visibility="{Binding ViewModel.IsInstallingJdk, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Text="{Binding ViewModel.InstallationStatus}" 
-                                Margin="0,0,0,8"
-                                HorizontalAlignment="Center"/>
-                            <ProgressBar
-                                Value="{Binding ViewModel.InstallationProgress}"
-                                Minimum="0"
-                                Maximum="100"
-                                Height="8"/>
-                        </StackPanel>
-
-                        <ItemsControl 
-                            Grid.Row="2"
-                            ItemsSource="{Binding ViewModel.InstalledJdks}"
-                            Margin="0,12,0,0">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border 
-                                        Margin="0,0,0,8"
-                                        Padding="12"
-                                        CornerRadius="6"
-                                        Background="{DynamicResource ControlFillColorDefaultBrush}">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <StackPanel>
-                                                <TextBlock 
-                                                    Text="{Binding Path}"
-                                                    FontWeight="SemiBold"/>
-                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                                    <TextBlock Text="Version: " Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                                    <TextBlock Text="{Binding Version}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                                    <TextBlock Text=" • " Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                                    <TextBlock Text="{Binding Source}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <Border Margin="0,24,0,0" Padding="18" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Code24" Width="22" Height="22" Margin="0,0,6,0"/>
+                                <TextBlock Text="Java JDKs" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <ui:Button Margin="12,0,0,0" Appearance="Secondary" Icon="{ui:SymbolIcon ArrowClockwise24}" Command="{Binding ViewModel.RefreshJdksCommand}" ToolTip="Refresh JDK list" VerticalAlignment="Center"/>
+                                <ui:Button Margin="12,0,0,0" Appearance="Primary" Icon="{ui:SymbolIcon ArrowDownload24}" Command="{Binding ViewModel.DownloadJdkCommand}" ToolTip="Download and install a JDK" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <!-- JDK Installation Progress -->
+                            <StackPanel Margin="0,12,0,0" Visibility="{Binding ViewModel.IsInstallingJdk, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{Binding ViewModel.InstallationStatus}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
+                                <ProgressBar Value="{Binding ViewModel.InstallationProgress}" Minimum="0" Maximum="100" Height="8"/>
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding ViewModel.InstalledJdks}" Margin="0,12,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,8" Padding="12" CornerRadius="6" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Path}" FontWeight="SemiBold"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                        <TextBlock Text="Version: " Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                        <TextBlock Text="{Binding Version}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                        <TextBlock Text=" • " Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                        <TextBlock Text="{Binding Source}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    </StackPanel>
                                                 </StackPanel>
-                                            </StackPanel>
-
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                                <ui:Button
-                                                    Command="{Binding DataContext.ViewModel.OpenJdkFolderCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                                    CommandParameter="{Binding}"
-                                                    Margin="0,0,8,0"
-                                                    Appearance="Secondary"
-                                                    Icon="{ui:SymbolIcon FolderOpen24}"
-                                                    ToolTip="Open JDK folder"/>
-
-                                                <ui:Button
-                                                    Command="{Binding DataContext.ViewModel.RemoveJdkCommand, RelativeSource={RelativeSource AncestorType=Page}}"
-                                                    CommandParameter="{Binding}"
-                                                    Appearance="Danger"
-                                                    Icon="{ui:SymbolIcon Delete24}"
-                                                    ToolTip="Remove JDK"
-                                                    Visibility="{Binding IsRemovable, Converter={StaticResource BoolToVisibility}}"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
-                        <TextBlock 
-                            Grid.Row="1"
-                            Text="No JDKs detected"
-                            Margin="0,12,0,0"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ViewModel.InstalledJdks.Count}" Value="0">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Grid>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                                    <ui:Button Command="{Binding DataContext.ViewModel.OpenJdkFolderCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}" Margin="0,0,8,0" Appearance="Secondary" Icon="{ui:SymbolIcon FolderOpen24}" ToolTip="Open JDK folder"/>
+                                                    <ui:Button Command="{Binding DataContext.ViewModel.RemoveJdkCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}" Appearance="Danger" Icon="{ui:SymbolIcon Delete24}" ToolTip="Remove JDK" Visibility="{Binding IsRemovable, Converter={StaticResource BoolToVisibility}}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="No JDKs detected" Margin="0,12,0,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ViewModel.InstalledJdks.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-            </Expander>
+            </ui:Card>
 
-            <Expander Margin="24,24,24,0" IsExpanded="False">
-                <Expander.Header>
-                    <TextBlock 
-                        FontSize="20"
-                        FontWeight="Medium"
-                        Text="About" />
-                </Expander.Header>
+            <!-- About Section -->
+            <ui:Card Margin="32,0,32,0" Padding="24">
                 <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="Info24" Width="28" Height="28" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="About"/>
+                    </StackPanel>
                     <TextBlock Margin="0,12,0,0" Text="Version: 1.0.0" />
                     <TextBlock Margin="0,8,0,0" Text="Build Date: 2023-10-01" />
                     <TextBlock Margin="0,8,0,0" Text="License: MIT" />
                     <TextBlock Margin="0,8,0,0" Text="© 2025 Modrix Team" />
                 </StackPanel>
-            </Expander>
+            </ui:Card>
         </StackPanel>
     </ScrollViewer>
 </Page>
