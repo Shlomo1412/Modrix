@@ -41,6 +41,7 @@
 	<Resource Include="Resources\Icons\DisIcon.png" />
 	<Resource Include="Resources\Icons\WorkspaceIcon.png" />
 	<Resource Include="Resources\Icons\ModrixGitHub.png" />
+	<Resource Include="Resources\Icons\NoWifiIcon.png" />
   </ItemGroup>
 
   <ItemGroup>
