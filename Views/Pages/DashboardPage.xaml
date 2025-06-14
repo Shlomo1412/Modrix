@@ -8,212 +8,229 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="DashboardPage"
-    d:DataContext="{d:DesignInstance local:DashboardPage,
-                                     IsDesignTimeCreatable=False}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DataContext="{d:DesignInstance local:DashboardPage, IsDesignTimeCreatable=False}"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.10"/>
+    </Page.Resources>
+
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="24">
-                <!-- Header with Search and Filters -->
-                <Grid Margin="0,0,0,16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,0,32">
+                <!-- Page Header -->
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+                    <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
+                        <ui:Image Source="pack://application:,,,/Resources/Icons/HomeIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
+                        <StackPanel>
+                            <TextBlock Text="Dashboard" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="Manage your projects and get started quickly" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
-                    <TextBlock
-                        Grid.Column="0"
-                        Text="Your Projects"
-                        FontSize="24"
-                        FontWeight="Medium"
-                        VerticalAlignment="Center"
-                        Margin="0,0,12,0"/>
+                <!-- Filters and Actions -->
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="32,0,32,18">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <!-- Refresh Button -->
-                    <ui:Button
-                        Grid.Column="1"
-                        Appearance="Secondary"
-                        Icon="{ui:SymbolIcon ArrowClockwise24}"
-                        Command="{Binding ViewModel.RefreshProjectsCommand}"
-                        Width="36"
-                        Height="36"
-                        VerticalAlignment="Center"
-                        Margin="0,0,6,0"
-                        ToolTip="Refresh Projects List"/>
+                        <TextBlock
+                            Grid.Column="0"
+                            Text="Projects"
+                            FontSize="22"
+                            FontWeight="SemiBold"
+                            VerticalAlignment="Center"
+                            Margin="0,0,12,0"/>
 
-                    <!-- Open Folder Button -->
-                    <ui:Button
-                        Grid.Column="2"
-                        Appearance="Secondary"
-                        Icon="{ui:SymbolIcon Folder24}"
-                        Command="{Binding ViewModel.OpenProjectsFolderCommand}"
-                        Width="36"
-                        Height="36"
-                        VerticalAlignment="Center"
-                        Margin="0,0,6,0"
-                        ToolTip="Open Projects Folder"/>
+                        <!-- Refresh Button -->
+                        <ui:Button
+                            Grid.Column="1"
+                            Appearance="Secondary"
+                            Icon="{ui:SymbolIcon ArrowClockwise24}"
+                            Command="{Binding ViewModel.RefreshProjectsCommand}"
+                            Width="36"
+                            Height="36"
+                            VerticalAlignment="Center"
+                            Margin="0,0,6,0"
+                            ToolTip="Refresh Projects List"/>
 
-                    <!-- Add Project Button -->
-                    <ui:Button
-                        Grid.Column="3"
-                        Appearance="Primary"
-                        Icon="{ui:SymbolIcon Add24}"
-                        Command="{Binding ViewModel.CreateNewProjectCommand}"
-                        Width="36"
-                        Height="36"
-                        VerticalAlignment="Center"
-                        Margin="0,0,12,0"
-                        ToolTip="Create New Project"/>
+                        <!-- Open Folder Button -->
+                        <ui:Button
+                            Grid.Column="2"
+                            Appearance="Secondary"
+                            Icon="{ui:SymbolIcon Folder24}"
+                            Command="{Binding ViewModel.OpenProjectsFolderCommand}"
+                            Width="36"
+                            Height="36"
+                            VerticalAlignment="Center"
+                            Margin="0,0,6,0"
+                            ToolTip="Open Projects Folder"/>
 
-                    <!-- Search Bar -->
-                    <ui:TextBox
-                        Grid.Column="4"
-                        PlaceholderText="Search..."
-                        Text="{Binding ViewModel.SearchText, UpdateSourceTrigger=PropertyChanged}"
-                        Width="Auto"
-                        VerticalAlignment="Center">
-                        <ui:TextBox.Icon>
-                            <ui:SymbolIcon Symbol="Search24" />
-                        </ui:TextBox.Icon>
-                    </ui:TextBox>
+                        <!-- Add Project Button -->
+                        <ui:Button
+                            Grid.Column="3"
+                            Appearance="Primary"
+                            Icon="{ui:SymbolIcon Add24}"
+                            Command="{Binding ViewModel.CreateNewProjectCommand}"
+                            Width="36"
+                            Height="36"
+                            VerticalAlignment="Center"
+                            Margin="0,0,12,0"
+                            ToolTip="Create New Project"/>
 
-                    <!-- Game Version Filter -->
-                    <ComboBox
-                        Grid.Column="5"
-                        ItemsSource="{Binding ViewModel.GameVersions}"
-                        SelectedItem="{Binding ViewModel.SelectedGameVersion}"
-                        Margin="12,0,12,0"
-                        Width="90"
-                        VerticalAlignment="Center"
-                        ToolTip="Filter by Minecraft version">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        <!-- Search Bar -->
+                        <ui:TextBox
+                            Grid.Column="4"
+                            PlaceholderText="Search..."
+                            Text="{Binding ViewModel.SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            Width="Auto"
+                            VerticalAlignment="Center"
+                            Margin="0,0,12,0">
+                            <ui:TextBox.Icon>
+                                <ui:SymbolIcon Symbol="Search24" />
+                            </ui:TextBox.Icon>
+                        </ui:TextBox>
 
-                    <!-- Mod Loader Filter -->
-                    <ComboBox
-                        Grid.Column="6"
-                        ItemsSource="{Binding ViewModel.ModLoaders}"
-                        SelectedItem="{Binding ViewModel.SelectedModLoader}"
-                        Margin="0,0,0,0"
-                        Width="93"
-                        VerticalAlignment="Center"
-                        ToolTip="Filter by mod loader">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </Grid>
+                        <!-- Game Version Filter -->
+                        <ComboBox
+                            Grid.Column="5"
+                            ItemsSource="{Binding ViewModel.GameVersions}"
+                            SelectedItem="{Binding ViewModel.SelectedGameVersion}"
+                            Margin="0,0,12,0"
+                            Width="110"
+                            VerticalAlignment="Center"
+                            ToolTip="Filter by Minecraft version">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <!-- Mod Loader Filter -->
+                        <ComboBox
+                            Grid.Column="6"
+                            ItemsSource="{Binding ViewModel.ModLoaders}"
+                            SelectedItem="{Binding ViewModel.SelectedModLoader}"
+                            Width="110"
+                            VerticalAlignment="Center"
+                            ToolTip="Filter by mod loader">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                </Border>
 
                 <!-- Projects List -->
-                <ItemsControl ItemsSource="{Binding ViewModel.FilteredProjects}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel 
-                                Orientation="Horizontal" 
-                                HorizontalAlignment="Left"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <controls:ProjectCard 
-                                ProjectData="{Binding}" 
-                                Margin="6,0,6,12"
-                                EditClicked="ProjectCard_EditClicked"
-                                DeleteClicked="ProjectCard_DeleteClicked"
-                                OpenFolderClicked="ProjectCard_OpenFolderClicked"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="32,0,32,0">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding ViewModel.FilteredProjects}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="8,8,8,16" Padding="0" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="10" Effect="{StaticResource CardShadow}">
+                                        <controls:ProjectCard 
+                            ProjectData="{Binding}" 
+                            Margin="0"
+                            EditClicked="ProjectCard_EditClicked"
+                            DeleteClicked="ProjectCard_DeleteClicked"
+                            OpenFolderClicked="ProjectCard_OpenFolderClicked"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
-                <!-- Empty state messages -->
-                <StackPanel>
-                    <!-- No projects at all -->
-                    <TextBlock HorizontalAlignment="Center"
-                               Margin="0,32,0,0"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ViewModel.AllProjects.Count}" Value="0">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-
-                        <Run Text="No projects yet. Click the " />
-
-                        <InlineUIContainer>
-                            <ui:Button
-                                Width="24"
-                                Height="24"
-                                Padding="0"
-                                Appearance="Primary"
-                                Icon="{ui:SymbolIcon Add16}"
-                                Command="{Binding ViewModel.CreateNewProjectCommand}"
-                                ToolTip="Create New Project">
-                                <ui:Button.RenderTransform>
-                                    <TranslateTransform Y="6"/>
-                                </ui:Button.RenderTransform>
-                            </ui:Button>
-                        </InlineUIContainer>
-
-                        <Run Text=" button to create one." />
-                    </TextBlock>
-
-                    <!-- Filtered no results -->
-                    <TextBlock 
-                        Text="No projects match your search or filters."
-                        HorizontalAlignment="Center"
-                        Margin="0,32,0,0"
-                        Foreground="{DynamicResource TextFillColorSecondaryBrush}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding ViewModel.AllProjects.Count}" Value="0" />
-                                        </MultiDataTrigger.Conditions>
+                        <!-- Empty state messages -->
+                        <StackPanel>
+                            <!-- No projects at all -->
+                            <TextBlock HorizontalAlignment="Center"
+                       Margin="0,32,0,0"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed"/>
-                                    </MultiDataTrigger>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding ViewModel.AllProjects.Count}" Value="1" />
-                                            <Condition Binding="{Binding ViewModel.FilteredProjects.Count}" Value="0" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </MultiDataTrigger>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding ViewModel.AllProjects.Count}" Value="2" />
-                                            <Condition Binding="{Binding ViewModel.FilteredProjects.Count}" Value="0" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </StackPanel>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ViewModel.AllProjects.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                <Run Text="No projects yet. Click the " />
+                <InlineUIContainer>
+                    <ui:Button
+                        Width="24"
+                        Height="24"
+                        Padding="0"
+                        Appearance="Primary"
+                        Icon="{ui:SymbolIcon Add16}"
+                        Command="{Binding ViewModel.CreateNewProjectCommand}"
+                        ToolTip="Create New Project">
+                        <ui:Button.RenderTransform>
+                            <TranslateTransform Y="6"/>
+                        </ui:Button.RenderTransform>
+                    </ui:Button>
+                </InlineUIContainer>
+                <Run Text=" button to create one." />
+                            </TextBlock>
+
+                            <!-- Filtered no results -->
+                            <TextBlock 
+                Text="No projects match your search or filters."
+                HorizontalAlignment="Center"
+                Margin="0,32,0,0"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding ViewModel.AllProjects.Count}" Value="0" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding ViewModel.AllProjects.Count}" Value="1" />
+                                                    <Condition Binding="{Binding ViewModel.FilteredProjects.Count}" Value="0" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding ViewModel.AllProjects.Count}" Value="2" />
+                                                    <Condition Binding="{Binding ViewModel.FilteredProjects.Count}" Value="0" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
     </Grid>
