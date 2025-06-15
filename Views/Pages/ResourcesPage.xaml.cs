@@ -160,17 +160,19 @@ namespace Modrix.Views.Pages
 
                 // Check if a tab for this texture is already open
                 TabItem existingTab = null;
+                StackPanel foundHeaderPanel = null;
                 if (ResourcesTabs != null)
                 {
                     foreach (var item in ResourcesTabs.Items)
                     {
-                        if (item is TabItem tabItem && tabItem.Header is StackPanel headerPanel)
+                        if (item is TabItem tabItem && tabItem.Header is StackPanel headerPanel1)
                         {
-                            foreach (var child in headerPanel.Children)
+                            foreach (var child in headerPanel1.Children)
                             {
                                 if (child is System.Windows.Controls.TextBlock tb && tb.Text == $"Edit: {fileName}")
                                 {
                                     existingTab = tabItem;
+                                    foundHeaderPanel = headerPanel1;
                                     break;
                                 }
                             }
@@ -195,26 +197,50 @@ namespace Modrix.Views.Pages
                 var frame = new Frame();
                 frame.Navigate(editorPage);
 
+                // Create a close button
+                var closeButton = new Button
+                {
+                    Content = "✕",
+                    Width = 22,
+                    Height = 22,
+                    Margin = new Thickness(4, 0, 0, 0),
+                    Padding = new Thickness(0),
+                    Background = Brushes.Transparent,
+                    BorderBrush = Brushes.Transparent,
+                    Cursor = Cursors.Hand,
+                    ToolTip = "Close"
+                };
+
+                // Create the header with icon, text, and close button
+                var headerPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Children =
+                    {
+                        new SymbolIcon
+                        {
+                            Symbol = Wpf.Ui.Controls.SymbolRegular.ImageEdit24,
+                            Margin = new Thickness(0, 0, 4, 0)
+                        },
+                        new System.Windows.Controls.TextBlock
+                        {
+                            Text = $"Edit: {fileName}"
+                        },
+                        closeButton
+                    }
+                };
+
                 // Create a new tab
                 var tab = new TabItem
                 {
-                    Header = new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal,
-                        Children =
-                        {
-                            new SymbolIcon
-                            {
-                                Symbol = Wpf.Ui.Controls.SymbolRegular.ImageEdit24,
-                                Margin = new Thickness(0, 0, 4, 0)
-                            },
-                            new System.Windows.Controls.TextBlock
-                            {
-                                Text = $"Edit: {fileName}"
-                            }
-                        }
-                    },
+                    Header = headerPanel,
                     Content = frame
+                };
+
+                // Close button event
+                closeButton.Click += (s, e) =>
+                {
+                    ResourcesTabs.Items.Remove(tab);
                 };
 
                 // Add and select the new tab
