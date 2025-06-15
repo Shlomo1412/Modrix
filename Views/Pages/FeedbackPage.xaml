@@ -104,6 +104,24 @@
                         Click="OpenGitHubIssueButton_Click"/>
                 </StackPanel>
             </Border>
+
+
+            <!-- Explore Source Code Section -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="32,0,32,18" Effect="{StaticResource CardShadow}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="Code24" Width="24" Height="24" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="Explore Source Code" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Modrix is open source! Check out the code, contribute, or just explore how it works." Margin="0,4,0,16"/>
+                    <ui:Button
+                        Content="View on GitHub"
+                        Icon="{ui:SymbolIcon Open24}"
+                        Appearance="Primary"
+                        Width="160"
+                        Click="ExploreSourceCode_Click"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

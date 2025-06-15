@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Modrix.Services;
+using Modrix.Views.Windows;
 
 namespace Modrix.Views.Pages
 {
@@ -26,6 +27,15 @@ namespace Modrix.Views.Pages
             set { _isLoadingChecklist = value; OnPropertyChanged(); }
         }
 
+        private void ExploreSourceCode_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new ExploreSourceCodeDialog();
+                dialog.Owner = Application.Current.Windows.Count > 0 ? Application.Current.Windows[0] : null;
+                dialog.ShowDialog();
+            });
+        }
         public string RoadmapContent
         {
             get => _roadmapContent;

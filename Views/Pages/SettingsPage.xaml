@@ -221,8 +221,14 @@
                     </StackPanel>
                     <TextBlock Margin="0,12,0,0" Text="Version: 1.0.0" />
                     <TextBlock Margin="0,8,0,0" Text="Build Date: 2023-10-01" />
-                    <TextBlock Margin="0,8,0,0" Text="License: MIT" />
+                    <TextBlock Margin="0,8,0,0" Text="License: All rights reserved" />
                     <TextBlock Margin="0,8,0,0" Text="© 2025 Modrix Team" />
+                    <ui:Button
+                        Content="Explore Source Code"
+                        Icon="{ui:SymbolIcon Open24}"
+                        Appearance="Primary"
+                        Margin="0,16,0,0"
+                        Click="ExploreSourceCode_Click"/>
                 </StackPanel>
             </ui:Card>
         </StackPanel>
