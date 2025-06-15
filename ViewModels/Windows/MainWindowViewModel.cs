@@ -36,6 +36,13 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
+                    Content = "Community",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
+                    Command = new RelayCommand(ShowDiscordDialog),
+                    ToolTip = "Join our community on Discord"
+                },
+                new NavigationViewItem()
+                {
                     Content = "News",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.News24 },
                     TargetPageType = typeof(Views.Pages.NewsPage),
@@ -61,13 +68,6 @@ namespace Modrix.ViewModels.Windows
         {
             FooterMenuItems = new ObservableCollection<object>
             {
-                new NavigationViewItem()
-                {
-                    Content = "Community",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
-                    Command = new RelayCommand(ShowDiscordDialog),
-                    ToolTip = "Join our community on Discord"
-                },
                 new NavigationViewItem()
                 {
                     Content = "Feedback",
