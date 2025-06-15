@@ -72,6 +72,12 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
+                    Content = "Donate",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 },
+                    Command = new RelayCommand(ShowDonateDialog)
+                },
+                new NavigationViewItem()
+                {
                     Content = "Settings",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
                     TargetPageType = typeof(Views.Pages.SettingsPage)
@@ -98,6 +104,16 @@ namespace Modrix.ViewModels.Windows
             {
                 var dialog = new JoinDiscordDialog();
                 dialog.Owner = Application.Current.MainWindow;
+                dialog.ShowDialog();
+            });
+        }
+
+        private void ShowDonateDialog()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new DonateDialog();
+                dialog.Owner = Application.Current.Windows.Count > 0 ? Application.Current.Windows[0] : null;
                 dialog.ShowDialog();
             });
         }

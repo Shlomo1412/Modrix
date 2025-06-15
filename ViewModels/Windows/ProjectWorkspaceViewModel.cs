@@ -121,7 +121,8 @@ namespace Modrix.ViewModels.Windows
                 new NavigationViewItem()
                 {
                     Content = "Donate",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 }
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 },
+                    Command = new RelayCommand(ShowDonateDialog)
                 }
             };
         }
@@ -131,6 +132,16 @@ namespace Modrix.ViewModels.Windows
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var dialog = new JoinDiscordDialog();
+                dialog.Owner = Application.Current.Windows.Count > 0 ? Application.Current.Windows[0] : null;
+                dialog.ShowDialog();
+            });
+        }
+
+        private void ShowDonateDialog()
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var dialog = new DonateDialog();
                 dialog.Owner = Application.Current.Windows.Count > 0 ? Application.Current.Windows[0] : null;
                 dialog.ShowDialog();
             });
