@@ -160,6 +160,16 @@
                     <ui:Button Margin="4,0,0,0" Command="{Binding ViewModel.ZoomOutCommand}" ToolTip="Zoom Out">
                         <ui:SymbolIcon Symbol="ZoomOut24" />
                     </ui:Button>
+                    <ui:Button Margin="4,0,0,0"
+                        Command="{Binding ViewModel.UndoCommand}"
+                        ToolTip="Undo (Ctrl+Z)"
+                        Height="30"
+                        Icon="{ui:SymbolIcon ArrowUndo24}" />
+                    <ui:Button Margin="4,0,0,0"
+                        Command="{Binding ViewModel.RedoCommand}"
+                        ToolTip="Redo (Ctrl+Y)"
+                        Height="30"
+                        Icon="{ui:SymbolIcon ArrowRedo24}" />
                 </StackPanel>
             </Grid>
         </Border>
