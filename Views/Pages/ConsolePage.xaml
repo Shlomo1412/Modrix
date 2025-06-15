@@ -91,6 +91,7 @@
                                          Foreground="White"
                                          FontFamily="Consolas"
                                          FontSize="14"
+                                         Height="500"
                                          VerticalScrollBarVisibility="Auto"
                                          Margin="8"/>
                         </Border>
