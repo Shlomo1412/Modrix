@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -180,7 +181,21 @@ namespace Modrix
         /// </summary>
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
+            // Show a user-friendly error dialog for unhandled exceptions
+            try
+            {
+                var dialog = new Views.Windows.WentWrongDialog(e.Exception.ToString())
+                {
+                    Owner = Application.Current.Windows.Count > 0 ? Application.Current.Windows[0] : null
+                };
+                dialog.ShowDialog();
+            }
+            catch
+            {
+                // If dialog fails, fallback to MessageBox
+                MessageBox.Show($"An unhandled exception occurred:\n\n{e.Exception}", "Something Went Wrong", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            e.Handled = true;
         }
     }
 }
