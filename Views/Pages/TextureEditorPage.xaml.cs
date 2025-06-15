@@ -37,6 +37,7 @@ namespace Modrix.Views.Pages
     {
         public TextureEditorViewModel ViewModel { get; }
         private Point _lastProcessedPoint;
+        private bool _pencilDragInProgress = false;
 
         public TextureEditorPage(TextureEditorViewModel viewModel)
         {
@@ -132,6 +133,15 @@ namespace Modrix.Views.Pages
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 var pixelCoords = GetPixelCoordinates(e.GetPosition(PixelCanvas));
+                // If pencil tool, start drag and push undo state ONCE
+                if (ViewModel.CurrentTool == EditorTool.Pencil)
+                {
+                    if (!_pencilDragInProgress)
+                    {
+                        ViewModel.PushUndoState();
+                        _pencilDragInProgress = true;
+                    }
+                }
                 ProcessPixelAction(pixelCoords);
                 ViewModel.IsDrawing = true;
             }
@@ -144,6 +154,7 @@ namespace Modrix.Views.Pages
 
             if (e.LeftButton == MouseButtonState.Pressed && ViewModel.IsDrawing)
             {
+                // If pencil tool, only push undo state at drag start (handled in MouseDown)
                 ProcessPixelAction(pixelCoords);
             }
         }
@@ -151,6 +162,10 @@ namespace Modrix.Views.Pages
         private void Image_MouseUp(object sender, MouseButtonEventArgs e)
         {
             ViewModel.IsDrawing = false;
+            if (_pencilDragInProgress)
+            {
+                _pencilDragInProgress = false;
+            }
         }
 
         private (int x, int y) GetPixelCoordinates(Point mousePosition)

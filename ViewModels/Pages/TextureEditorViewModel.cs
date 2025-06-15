@@ -196,7 +196,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         return clone;
     }
 
-    private void PushUndoState()
+    public void PushUndoState()
     {
         if (_pixelData != null)
         {
@@ -216,8 +216,8 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 
         try
         {
-            // Push current state to undo stack BEFORE modification, unless it's a picker action
-            if (CurrentTool != EditorTool.Picker)
+            // For Pencil tool, do NOT push undo state here (handled in code-behind for drag)
+            if (CurrentTool != EditorTool.Picker && CurrentTool != EditorTool.Pencil)
             {
                 PushUndoState();
             }
