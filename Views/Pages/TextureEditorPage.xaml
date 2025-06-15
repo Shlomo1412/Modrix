@@ -12,8 +12,8 @@
     Title="Texture Editor"
     x:Name="TextureEditorPageRoot"
     d:DataContext="{d:DesignInstance Type=local:TextureEditorPage, IsDesignTimeCreatable=False}"
-    d:DesignHeight="500"
-    d:DesignWidth="600"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
     ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
     ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -22,13 +22,10 @@
 
     <Page.Resources>
         <converters:ToolToAppearanceConverter x:Key="ToolToAppearanceConverter" />
-        
-        <!-- Local multiply converter -->
         <local:ZoomMultiplierConverter x:Key="MultiplyByZoomConverter"/>
-
     </Page.Resources>
 
-    <Grid Margin="8">
+    <Grid Margin="0,0,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -36,143 +33,77 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0">
-                <TextBlock
-                    FontSize="18"
-                    FontWeight="Medium"
-                    Text="{Binding ViewModel.FileName}" />
-                <TextBlock
-                    Margin="0,2,0,0"
-                    FontSize="12"
-                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                    TextWrapping="Wrap">
-                    <Run Text="{Binding ViewModel.ImageWidth, Mode=OneWay}" />
-                    <Run Text=" x " />
-                    <Run Text="{Binding ViewModel.ImageHeight, Mode=OneWay}" />
-                    <Run Text=" pixels" />
-                </TextBlock>
-            </StackPanel>
-
-            <StackPanel
-                Grid.Column="1"
-                Margin="8,0,0,0"
-                Orientation="Horizontal">
-                <ui:Button
-                    Margin="0,0,8,0"
-                    Appearance="Primary"
-                    Command="{Binding ViewModel.SaveCommand}"
-                    Icon="{ui:SymbolIcon Save24}">
-                </ui:Button>
-            </StackPanel>
-        </Grid>
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="0,0,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+            <Grid Margin="32,24,32,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock FontSize="22" FontWeight="Bold" Text="{Binding ViewModel.FileName}" />
+                    <TextBlock Margin="0,2,0,0" FontSize="13" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap">
+                        <Run Text="{Binding ViewModel.ImageWidth, Mode=OneWay}" />
+                        <Run Text=" x " />
+                        <Run Text="{Binding ViewModel.ImageHeight, Mode=OneWay}" />
+                        <Run Text=" pixels" />
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
+                    <ui:Button Appearance="Primary" Command="{Binding ViewModel.SaveCommand}" Icon="{ui:SymbolIcon Save24}" Height="40" Width="40" />
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <!-- Main Content -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Margin="32,0,32,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Toolbar -->
-            <Border
-                Grid.Column="0"
-                Margin="0,0,8,0"
-                Padding="6"
-                Background="{DynamicResource ControlFillColorDefaultBrush}"
-                CornerRadius="6">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock
-                        Margin="2"
-                        FontWeight="Medium"
-                        Text="Tools" />
-
-                    <ui:Button
-                        Margin="2"
-                        Command="{Binding ViewModel.SelectPencilCommand}"
-                        ToolTip="Pencil (P)"
-                        Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Pencil}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Edit24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-
-                    <ui:Button
-                        Margin="2"
-                        Command="{Binding ViewModel.SelectEraserCommand}"
-                        ToolTip="Eraser (E)"
-                        Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Eraser}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Eraser24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-
-                    <ui:Button
-                        Margin="2"
-                        Command="{Binding ViewModel.SelectBucketCommand}"
-                        ToolTip="Bucket Fill (B)"
-                        Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Bucket}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="PaintBrush24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-
-                    <ui:Button
-                        Margin="2"
-                        Command="{Binding ViewModel.SelectPickerCommand}"
-                        ToolTip="Color Picker (I)"
-                        Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Picker}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Eyedropper24" />
-                        </ui:Button.Icon>
-                    </ui:Button>
-
-                    <Separator Margin="4" />
-
-                    <TextBlock
-                        Margin="2"
-                        FontWeight="Medium"
-                        Text="Color" />
-
-                    <colorpicker:PortableColorPicker
-                        Width="120"
-                        Height="100"
-                        SelectedColor="{Binding ViewModel.SelectedColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-
+            <!-- Toolbar Card -->
+            <Border Grid.Column="0" Margin="0,0,18,0" Padding="16" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Effect="{DynamicResource CardShadow}">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8" Text="Tools" />
+                    <StackPanel Orientation="Vertical" Margin="0,0,0,12">
+                        <ui:Button Margin="2" Command="{Binding ViewModel.SelectPencilCommand}" ToolTip="Pencil (P)" Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Pencil}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Edit24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.SelectEraserCommand}" ToolTip="Eraser (E)" Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Eraser}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Eraser24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.SelectBucketCommand}" ToolTip="Bucket Fill (B)" Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Bucket}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="PaintBrush24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.SelectPickerCommand}" ToolTip="Color Picker (I)" Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Picker}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Eyedropper24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                    </StackPanel>
+                    <Separator Margin="4,0"/>
+                    <TextBlock FontWeight="SemiBold" FontSize="16" Margin="0,8,0,8" Text="Color" />
+                    <colorpicker:PortableColorPicker Width="120" Height="100" SelectedColor="{Binding ViewModel.SelectedColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
             </Border>
 
-            <!-- Image Canvas -->
-            <Border
-                Grid.Column="1"
-                Padding="2"
-                Background="{DynamicResource ControlFillColorDefaultBrush}"
-                CornerRadius="6">
-                <ScrollViewer
-                    HorizontalScrollBarVisibility="Auto"
-                    VerticalScrollBarVisibility="Auto"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+            <!-- Canvas Card -->
+            <Border Grid.Column="1" Padding="12" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Effect="{DynamicResource CardShadow}">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Grid>
                         <!-- Checkerboard Background -->
-                        <Rectangle 
-                            Width="{Binding ViewModel.ImageWidth}"
-                            Height="{Binding ViewModel.ImageHeight}">
+                        <Rectangle Width="{Binding ViewModel.ImageWidth}" Height="{Binding ViewModel.ImageHeight}">
                             <Rectangle.LayoutTransform>
-                                <ScaleTransform 
-                                    ScaleX="{Binding ViewModel.ZoomLevel, ElementName=TextureEditorPageRoot}"
-                                    ScaleY="{Binding ViewModel.ZoomLevel, ElementName=TextureEditorPageRoot}"/>
+                                <ScaleTransform ScaleX="{Binding ViewModel.ZoomLevel, ElementName=TextureEditorPageRoot}" ScaleY="{Binding ViewModel.ZoomLevel, ElementName=TextureEditorPageRoot}"/>
                             </Rectangle.LayoutTransform>
                             <Rectangle.Fill>
-                                <DrawingBrush
-                                    TileMode="Tile"
-                                    Viewport="0,0,16,16"
-                                    ViewportUnits="Absolute">
+                                <DrawingBrush TileMode="Tile" Viewport="0,0,16,16" ViewportUnits="Absolute">
                                     <DrawingBrush.Drawing>
                                         <DrawingGroup>
                                             <GeometryDrawing Brush="#FFF5F5F5">
@@ -193,22 +124,19 @@
                                 </DrawingBrush>
                             </Rectangle.Fill>
                         </Rectangle>
-
                         <Image
-                                x:Name="PixelCanvas"
-                                MouseDown="Image_MouseDown"
-                                MouseMove="Image_MouseMove"
-                                MouseUp="Image_MouseUp"
-                                RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                Source="{Binding ViewModel.CurrentImage}"
-                                Width="{Binding ViewModel.ImageWidth}"
-                                Height="{Binding ViewModel.ImageHeight}"
-                                Stretch="None"
-                                Cursor="{Binding ViewModel.CurrentCursor}">
+                            x:Name="PixelCanvas"
+                            MouseDown="Image_MouseDown"
+                            MouseMove="Image_MouseMove"
+                            MouseUp="Image_MouseUp"
+                            RenderOptions.BitmapScalingMode="NearestNeighbor"
+                            Source="{Binding ViewModel.CurrentImage}"
+                            Width="{Binding ViewModel.ImageWidth}"
+                            Height="{Binding ViewModel.ImageHeight}"
+                            Stretch="None"
+                            Cursor="{Binding ViewModel.CurrentCursor}">
                             <Image.LayoutTransform>
-                                <ScaleTransform
-                                    ScaleX="{Binding ViewModel.ZoomLevel}"
-            ScaleY="{Binding ViewModel.ZoomLevel}" />
+                                <ScaleTransform ScaleX="{Binding ViewModel.ZoomLevel}" ScaleY="{Binding ViewModel.ZoomLevel}" />
                             </Image.LayoutTransform>
                         </Image>
                     </Grid>
@@ -216,39 +144,24 @@
             </Border>
         </Grid>
 
-        <!-- Footer -->
-        <ui:Card
-            Grid.Row="2"
-            Margin="0,8,0,0"
-            Padding="6">
+        <!-- Footer Card -->
+        <Border Grid.Row="2" Margin="32,18,32,0" Padding="10" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Effect="{DynamicResource CardShadow}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{Binding ViewModel.StatusText}" />
-
-                <StackPanel
-                    Grid.Column="2"
-                    Orientation="Horizontal">
-                    <ui:Button
-                        Margin="4,0,0,0"
-                        Command="{Binding ViewModel.ZoomInCommand}"
-                        ToolTip="Zoom In">
+                <TextBlock VerticalAlignment="Center" Text="{Binding ViewModel.StatusText}" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <ui:Button Margin="4,0,0,0" Command="{Binding ViewModel.ZoomInCommand}" ToolTip="Zoom In">
                         <ui:SymbolIcon Symbol="ZoomIn24" />
                     </ui:Button>
-                    <ui:Button
-                        Margin="4,0,0,0"
-                        Command="{Binding ViewModel.ZoomOutCommand}"
-                        ToolTip="Zoom Out">
+                    <ui:Button Margin="4,0,0,0" Command="{Binding ViewModel.ZoomOutCommand}" ToolTip="Zoom Out">
                         <ui:SymbolIcon Symbol="ZoomOut24" />
                     </ui:Button>
                 </StackPanel>
             </Grid>
-        </ui:Card>
+        </Border>
     </Grid>
 </Page>

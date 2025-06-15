@@ -15,7 +15,7 @@
     <Grid Margin="0,0,0,0">
         <StackPanel>
             <!-- Page Header -->
-            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+            <!--<Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
                 <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
                     <ui:Image Source="pack://application:,,,/Resources/Icons/ResourcesIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
                     <StackPanel>
@@ -23,7 +23,7 @@
                         <TextBlock Text="Manage your mod's textures, models, sounds, and more" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
-            </Border>
+            </Border>-->
 
             <!-- Main Content -->
             <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="18" Margin="32,0,32,32" Effect="{StaticResource CardShadow}">
