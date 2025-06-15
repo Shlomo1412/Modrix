@@ -47,6 +47,8 @@
 	<Resource Include="Resources\Icons\HomeIcon.png" />
 	<Resource Include="Resources\Icons\ResourcesIcon.png" />
 	<Resource Include="Resources\Icons\ConsoleIcon.png" />
+	<Resource Include="Resources\Icons\FeedbackIcon.png" />
+	<Resource Include="Resources\Icons\DonateIcon.png" />
   </ItemGroup>
 
   <ItemGroup>

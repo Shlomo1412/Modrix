@@ -36,17 +36,17 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
-                    Content = "Community",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
-                    Command = new RelayCommand(ShowDiscordDialog),
-                    ToolTip = "Join our community on Discord"
-                },
-                new NavigationViewItem()
-                {
                     Content = "News",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.News24 },
                     TargetPageType = typeof(Views.Pages.NewsPage),
                     ToolTip = "View the latest news and updates"
+                },
+                new NavigationViewItem()
+                {
+                    Content = "Community",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
+                    Command = new RelayCommand(ShowDiscordDialog),
+                    ToolTip = "Join our community on Discord"
                 },
                 new NavigationViewItem()
                 {
@@ -70,17 +70,17 @@ namespace Modrix.ViewModels.Windows
             {
                 new NavigationViewItem()
                 {
-                    Content = "Feedback",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.PersonFeedback24 },
-                    TargetPageType = typeof(Views.Pages.FeedbackPage),
-                    ToolTip = "Send us your feedback"
-                },
-                new NavigationViewItem()
-                {
                     Content = "Donate",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 },
                     Command = new RelayCommand(ShowDonateDialog),
                     ToolTip = "Support us with a donation"
+                },
+                new NavigationViewItem()
+                {
+                    Content = "Feedback",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PersonFeedback24 },
+                    TargetPageType = typeof(Views.Pages.FeedbackPage),
+                    ToolTip = "Send us your feedback"
                 },
                 new NavigationViewItem()
                 {
