@@ -114,6 +114,12 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
+                    Content = "Feedback",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PersonFeedback24 },
+                    TargetPageType = typeof(Views.Pages.FeedbackPage)
+                },
+                new NavigationViewItem()
+                {
                     Content = "Donate",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 }
                 }
