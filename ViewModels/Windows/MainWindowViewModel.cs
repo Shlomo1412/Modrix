@@ -31,19 +31,22 @@ namespace Modrix.ViewModels.Windows
                 {
                     Content = "Home",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Home24 },
-                    TargetPageType = typeof(Views.Pages.DashboardPage)
+                    TargetPageType = typeof(Views.Pages.DashboardPage),
+                    ToolTip = "Go to the home dashboard"
                 },
                 new NavigationViewItem()
                 {
                     Content = "News",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.News24 },
-                    TargetPageType = typeof(Views.Pages.NewsPage)
+                    TargetPageType = typeof(Views.Pages.NewsPage),
+                    ToolTip = "View the latest news and updates"
                 },
                 new NavigationViewItem()
                 {
                     Content = "New Project",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Add24 },
-                    Command = _newProjectCommand
+                    Command = _newProjectCommand,
+                    ToolTip = "Create a new project"
                 }
             };
         }
@@ -62,25 +65,29 @@ namespace Modrix.ViewModels.Windows
                 {
                     Content = "Community",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
-                    Command = new RelayCommand(ShowDiscordDialog)
+                    Command = new RelayCommand(ShowDiscordDialog),
+                    ToolTip = "Join our community on Discord"
                 },
                 new NavigationViewItem()
                 {
                     Content = "Feedback",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PersonFeedback24 },
-                    TargetPageType = typeof(Views.Pages.FeedbackPage)
+                    TargetPageType = typeof(Views.Pages.FeedbackPage),
+                    ToolTip = "Send us your feedback"
                 },
                 new NavigationViewItem()
                 {
                     Content = "Donate",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 },
-                    Command = new RelayCommand(ShowDonateDialog)
+                    Command = new RelayCommand(ShowDonateDialog),
+                    ToolTip = "Support us with a donation"
                 },
                 new NavigationViewItem()
                 {
                     Content = "Settings",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
-                    TargetPageType = typeof(Views.Pages.SettingsPage)
+                    TargetPageType = typeof(Views.Pages.SettingsPage),
+                    ToolTip = "Adjust application settings"
                 }
             };
         }

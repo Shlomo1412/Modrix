@@ -73,25 +73,29 @@ namespace Modrix.ViewModels.Windows
                 {
                     Content = "Workspace",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Apps16 },
-                    TargetPageType = typeof(Views.Pages.WorkspacePage)
+                    TargetPageType = typeof(Views.Pages.WorkspacePage),
+                    ToolTip = "View project workspace overview"
                 },
                 new NavigationViewItem()
                 {
                     Content = "IDE",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Code24 },
-                    TargetPageType = typeof(Views.Pages.IDEPage)
+                    TargetPageType = typeof(Views.Pages.IDEPage),
+                    ToolTip = "Open the integrated development environment"
                 },
                 new NavigationViewItem()
                 {
                     Content = "Resources",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.DesignIdeas16 },
-                    TargetPageType = typeof(Views.Pages.ResourcesPage)
+                    TargetPageType = typeof(Views.Pages.ResourcesPage),
+                    ToolTip = "Manage project resources"
                 },
                 new NavigationViewItem()
                 {
                     Content = "Language Control",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.LocalLanguage16 },
-                    TargetPageType = typeof(Views.Pages.LanguageControlPage)
+                    TargetPageType = typeof(Views.Pages.LanguageControlPage),
+                    ToolTip = "Edit language and localization files"
                 }
             };
         }
@@ -104,25 +108,29 @@ namespace Modrix.ViewModels.Windows
                 {
                     Content = "Community",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
-                    Command = new RelayCommand(ShowDiscordDialog)
+                    Command = new RelayCommand(ShowDiscordDialog),
+                    ToolTip = "Join our community on Discord"
                 },
                 new NavigationViewItem()
                 {
                     Content = "Console",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
-                    TargetPageType = typeof(Views.Pages.ConsolePage)
+                    TargetPageType = typeof(Views.Pages.ConsolePage),
+                    ToolTip = "Open the project console"
                 },
                 new NavigationViewItem()
                 {
                     Content = "Feedback",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PersonFeedback24 },
-                    TargetPageType = typeof(Views.Pages.FeedbackPage)
+                    TargetPageType = typeof(Views.Pages.FeedbackPage),
+                    ToolTip = "Send us your feedback"
                 },
                 new NavigationViewItem()
                 {
                     Content = "Donate",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 },
-                    Command = new RelayCommand(ShowDonateDialog)
+                    Command = new RelayCommand(ShowDonateDialog),
+                    ToolTip = "Support us with a donation"
                 }
             };
         }
