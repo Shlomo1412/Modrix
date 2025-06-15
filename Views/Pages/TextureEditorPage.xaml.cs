@@ -43,6 +43,70 @@ namespace Modrix.Views.Pages
             ViewModel = viewModel;
             InitializeComponent();
             DataContext = this; // Keep this as 'this' since we're binding to ViewModel property
+            
+            // Set up keyboard event handling
+            this.Focusable = true;
+            this.PreviewKeyDown += TextureEditorPage_PreviewKeyDown;
+        }
+
+        private void TextureEditorPage_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Handle keyboard shortcuts
+            switch (e.Key)
+            {
+                case Key.P: // Pencil
+                    if (ViewModel.SelectPencilCommand.CanExecute(null))
+                        ViewModel.SelectPencilCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                    
+                case Key.E: // Eraser
+                    if (ViewModel.SelectEraserCommand.CanExecute(null))
+                        ViewModel.SelectEraserCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                    
+                case Key.B: // Bucket Fill
+                    if (ViewModel.SelectBucketCommand.CanExecute(null))
+                        ViewModel.SelectBucketCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                    
+                case Key.I: // Color Picker
+                    if (ViewModel.SelectPickerCommand.CanExecute(null))
+                        ViewModel.SelectPickerCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                    
+                case Key.G: // Toggle Grid
+                    if (ViewModel.ToggleGridCommand.CanExecute(null))
+                        ViewModel.ToggleGridCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                    
+                case Key.OemPlus: // Zoom In (also works with '+' key)
+                case Key.Add:
+                    if (ViewModel.ZoomInCommand.CanExecute(null))
+                        ViewModel.ZoomInCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                    
+                case Key.OemMinus: // Zoom Out (also works with '-' key)
+                case Key.Subtract:
+                    if (ViewModel.ZoomOutCommand.CanExecute(null))
+                        ViewModel.ZoomOutCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+
+                case Key.S: // Save (Ctrl+S)
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        if (ViewModel.SaveCommand.CanExecute(null))
+                            ViewModel.SaveCommand.Execute(null);
+                        e.Handled = true;
+                    }
+                    break;
+            }
         }
 
         private void Image_MouseDown(object sender, MouseButtonEventArgs e)

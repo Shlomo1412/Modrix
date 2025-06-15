@@ -64,6 +64,15 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private Cursor _currentCursor = Cursors.Pen; // Default to Pen
 
+    [ObservableProperty]
+    private bool _showGrid = false; // New property for grid visibility
+
+    [ObservableProperty]
+    private int _hoverX = -1; // New property for hover position
+
+    [ObservableProperty]
+    private int _hoverY = -1; // New property for hover position
+
     private WriteableBitmap? _bitmap;
     private Color[,]? _pixelData;
 
@@ -90,6 +99,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         SelectPickerCommand = new RelayCommand(() => CurrentTool = EditorTool.Picker);
         ZoomInCommand = new RelayCommand(ZoomIn);
         ZoomOutCommand = new RelayCommand(ZoomOut);
+        ToggleGridCommand = new RelayCommand(() => ShowGrid = !ShowGrid);
     }
 
     public IAsyncRelayCommand SaveCommand { get; }
@@ -99,6 +109,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     public ICommand SelectPickerCommand { get; }
     public ICommand ZoomInCommand { get; }
     public ICommand ZoomOutCommand { get; }
+    public ICommand ToggleGridCommand { get; }
 
     public void SetPngPath(string path)
     {
@@ -271,6 +282,18 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     public void UpdateCursorPosition(int x, int y)
     {
         StatusText = $"X: {x / ZoomLevel}, Y: {y / ZoomLevel}";
+        
+        // Update hover position
+        if (x >= 0 && x < ImageWidth && y >= 0 && y < ImageHeight)
+        {
+            HoverX = x;
+            HoverY = y;
+        }
+        else
+        {
+            HoverX = -1;
+            HoverY = -1;
+        }
     }
 
     private void ZoomIn()
