@@ -78,13 +78,6 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
-                    Content = "IDE",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.Code24 },
-                    TargetPageType = typeof(Views.Pages.IDEPage),
-                    ToolTip = "Open the integrated development environment"
-                },
-                new NavigationViewItem()
-                {
                     Content = "Resources",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.DesignIdeas16 },
                     TargetPageType = typeof(Views.Pages.ResourcesPage),
@@ -96,6 +89,20 @@ namespace Modrix.ViewModels.Windows
                     Icon = new SymbolIcon { Symbol = SymbolRegular.LocalLanguage16 },
                     TargetPageType = typeof(Views.Pages.LanguageControlPage),
                     ToolTip = "Edit language and localization files"
+                },
+                new NavigationViewItem()
+                {
+                    Content = "Console",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
+                    TargetPageType = typeof(Views.Pages.ConsolePage),
+                    ToolTip = "Open the project console"
+                },
+                new NavigationViewItem()
+                {
+                    Content = "IDE",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Code24 },
+                    TargetPageType = typeof(Views.Pages.IDEPage),
+                    ToolTip = "Open the integrated development environment"
                 }
             };
         }
@@ -110,13 +117,6 @@ namespace Modrix.ViewModels.Windows
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
                     Command = new RelayCommand(ShowDiscordDialog),
                     ToolTip = "Join our community on Discord"
-                },
-                new NavigationViewItem()
-                {
-                    Content = "Console",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.WindowConsole20 },
-                    TargetPageType = typeof(Views.Pages.ConsolePage),
-                    ToolTip = "Open the project console"
                 },
                 new NavigationViewItem()
                 {
