@@ -89,7 +89,7 @@
                     </StackPanel>
                     <Separator Margin="4,0"/>
                     <TextBlock FontWeight="SemiBold" FontSize="16" Margin="0,8,0,8" Text="Color" />
-                    <colorpicker:PortableColorPicker Width="120" Height="100" SelectedColor="{Binding ViewModel.SelectedColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <colorpicker:PortableColorPicker Width="40" Height="40" SelectedColor="{Binding ViewModel.SelectedColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
             </Border>
 
