@@ -1,0 +1,106 @@
+<Page
+    x:Class="Modrix.Views.Pages.FeedbackPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:helpers="clr-namespace:Modrix.Helpers"
+    Title="FeedbackPage"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.10"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,0,32">
+            <!-- Page Header -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+                <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="PersonFeedback24" Width="40" Height="40" Margin="0,0,16,0"/>
+                    <StackPanel>
+                        <TextBlock Text="Feedback" FontSize="28" FontWeight="Bold"/>
+                        <TextBlock Text="Help us improve Modrix with your feedback" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Rating Section -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="32,0,32,18" Effect="{StaticResource CardShadow}">
+                <StackPanel>
+                    <TextBlock FontSize="20" FontWeight="SemiBold" Text="Rate Modrix" Margin="0,0,0,12"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,0">
+                        <ui:RatingControl x:Name="RatingControl" Value="0"/>
+                    </StackPanel>
+                    <TextBlock Text="(Rating is currently non-functional)" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- What We Are Planning Section -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="32,0,32,18" Effect="{StaticResource CardShadow}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="Calendar24" Width="24" Height="24" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="What We Are Planning" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Check out our roadmap and upcoming features:" Margin="0,4,0,16"/>
+                    <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="16" Margin="0,0,0,8">
+                        <Grid>
+                            <ui:ProgressRing IsIndeterminate="True" Visibility="{Binding IsLoadingChecklist, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="400"
+                                          Visibility="{Binding IsLoadingChecklist, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <TextBlock 
+                                    x:Name="RoadmapMarkdown"
+                                    Background="Transparent" 
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding RoadmapContent}"
+                                    TextWrapping="Wrap"/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <ui:Button
+                            x:Name="RefreshRoadmapButton"
+                            Content="Refresh"
+                            Icon="{ui:SymbolIcon ArrowClockwise24}"
+                            Appearance="Secondary"
+                            Margin="0,0,8,0"
+                            Click="RefreshRoadmapButton_Click"/>
+                        <ui:Button
+                            x:Name="ViewOnGitHubButton"
+                            Content="View Full Roadmap on GitHub"
+                            Icon="{ui:SymbolIcon Open24}"
+                            Appearance="Primary"
+                            Click="ViewOnGitHubButton_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Open GitHub Issue Section -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="32,0,32,18" Effect="{StaticResource CardShadow}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <ui:SymbolIcon Symbol="Bug24" Width="24" Height="24" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="Report an Issue" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Found a bug or have a feature request? Open an issue on GitHub." Margin="0,4,0,16" TextWrapping="Wrap"/>
+                    <ui:Button
+                        x:Name="OpenGitHubIssueButton"
+                        Content="Open Issue on GitHub"
+                        Icon="{ui:SymbolIcon PeopleAdd24}"
+                        Appearance="Secondary"
+                        HorizontalAlignment="Left"
+                        Click="OpenGitHubIssueButton_Click"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

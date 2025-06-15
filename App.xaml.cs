@@ -87,6 +87,9 @@ namespace Modrix
                 //NewsPage
                 services.AddSingleton<NewsPage>();
 
+                //FeedbackPage
+                services.AddSingleton<FeedbackPage>();
+
                 //Content dialog
                 services.AddSingleton<IContentDialogService, ContentDialogService>();
 

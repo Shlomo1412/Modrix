@@ -66,6 +66,12 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
+                    Content = "Feedback",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.PersonFeedback24 },
+                    TargetPageType = typeof(Views.Pages.FeedbackPage)
+                },
+                new NavigationViewItem()
+                {
                     Content = "Settings",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
                     TargetPageType = typeof(Views.Pages.SettingsPage)
