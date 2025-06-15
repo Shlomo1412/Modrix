@@ -45,10 +45,10 @@
 	<Resource Include="Resources\Icons\NewsIcon.png" />
 	<Resource Include="Resources\Icons\SettingsIcon.png" />
 	<Resource Include="Resources\Icons\HomeIcon.png" />
-	<Resource Include="Resources\Icons\ResourcesIcon.png" />
 	<Resource Include="Resources\Icons\ConsoleIcon.png" />
 	<Resource Include="Resources\Icons\FeedbackIcon.png" />
 	<Resource Include="Resources\Icons\DonateIcon.png" />
+	<Resource Include="Resources\Icons\SourceCodeIcon.png" />
   </ItemGroup>
 
   <ItemGroup>

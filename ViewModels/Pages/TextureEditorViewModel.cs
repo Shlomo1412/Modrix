@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -76,6 +77,9 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     private WriteableBitmap? _bitmap;
     private Color[,]? _pixelData;
 
+    private Stack<Color[,]> _undoStack = new();
+    private Stack<Color[,]> _redoStack = new();
+
     private static readonly Cursor PencilCursor = Cursors.Pen;
     private static readonly Cursor DefaultCursor = Cursors.Arrow;
     private static Cursor? EraserCursor;
@@ -100,6 +104,8 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         ZoomInCommand = new RelayCommand(ZoomIn);
         ZoomOutCommand = new RelayCommand(ZoomOut);
         ToggleGridCommand = new RelayCommand(() => ShowGrid = !ShowGrid);
+        UndoCommand = new RelayCommand(Undo, CanUndo);
+        RedoCommand = new RelayCommand(Redo, CanRedo);
     }
 
     public IAsyncRelayCommand SaveCommand { get; }
@@ -110,6 +116,8 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     public ICommand ZoomInCommand { get; }
     public ICommand ZoomOutCommand { get; }
     public ICommand ToggleGridCommand { get; }
+    public IRelayCommand UndoCommand { get; }
+    public IRelayCommand RedoCommand { get; }
 
     public void SetPngPath(string path)
     {
@@ -143,6 +151,11 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         _bitmap = new WriteableBitmap(image);
         CurrentImage = _bitmap;
         UpdatePixelData();
+
+        _undoStack.Clear();
+        _redoStack.Clear();
+        UndoCommand.NotifyCanExecuteChanged();
+        RedoCommand.NotifyCanExecuteChanged();
     }
 
     private void UpdatePixelData()
@@ -173,6 +186,28 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         }
     }
 
+    private Color[,]? ClonePixelData(Color[,]? source)
+    {
+        if (source == null) return null;
+        int width = source.GetLength(0);
+        int height = source.GetLength(1);
+        var clone = new Color[width, height];
+        Array.Copy(source, clone, source.Length);
+        return clone;
+    }
+
+    private void PushUndoState()
+    {
+        if (_pixelData != null)
+        {
+            _undoStack.Push(ClonePixelData(_pixelData)!);
+            _redoStack.Clear(); // Clear redo stack on new action
+            UndoCommand.NotifyCanExecuteChanged();
+            RedoCommand.NotifyCanExecuteChanged();
+            HasUnsavedChanges = true; // Any action that can be undone is an unsaved change
+        }
+    }
+
     public void HandlePixelAction(int x, int y)
     {
         if (_bitmap == null || _pixelData == null ||
@@ -181,6 +216,12 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 
         try
         {
+            // Push current state to undo stack BEFORE modification, unless it's a picker action
+            if (CurrentTool != EditorTool.Picker)
+            {
+                PushUndoState();
+            }
+
             switch (CurrentTool)
             {
                 case EditorTool.Pencil:
@@ -204,10 +245,14 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
                     {
                         FloodFill(x, y, targetColor, SelectedColor);
                     }
+                    else // If target color is same as selected, no action, so pop the pushed undo state
+                    {
+                        if (_undoStack.Count > 0) _undoStack.Pop();
+                        UndoCommand.NotifyCanExecuteChanged();
+                    }
                     break;
             }
-
-            HasUnsavedChanges = true;
+            // HasUnsavedChanges is now set in PushUndoState
         }
         catch (Exception ex)
         {
@@ -218,21 +263,22 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     private void SetPixel(int x, int y, Color color)
     {
         if (_bitmap == null || _pixelData == null) return;
+        if (_pixelData[x, y] == color) return; // No change if color is the same
 
         try
         {
             // Create a color array with BGRA format (which is what WriteableBitmap expects)
             var colorData = new byte[] { color.B, color.G, color.R, color.A };
-            
+
             // Lock the bitmap for writing
             _bitmap.Lock();
-            
+
             try
             {
                 // Write the pixel
                 Int32Rect rect = new Int32Rect(x, y, 1, 1);
                 _bitmap.WritePixels(rect, colorData, 4, 0);
-                
+
                 // Update our pixel data cache
                 _pixelData[x, y] = color;
             }
@@ -251,38 +297,47 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     private void FloodFill(int x, int y, Color targetColor, Color replacementColor)
     {
         if (targetColor == replacementColor) return;
-        if (_pixelData == null) return;
+        if (_pixelData == null || _bitmap == null) return;
 
         var queue = new Queue<Point>();
         queue.Enqueue(new Point(x, y));
-        var visited = new bool[ImageWidth, ImageHeight];
 
-        while (queue.Count > 0)
+        _bitmap.Lock();
+        try
         {
-            var point = queue.Dequeue();
-            int px = (int)point.X;
-            int py = (int)point.Y;
+            while (queue.Count > 0)
+            {
+                var point = queue.Dequeue();
+                int px = (int)point.X;
+                int py = (int)point.Y;
 
-            if (px < 0 || px >= ImageWidth || py < 0 || py >= ImageHeight || visited[px, py])
-                continue;
+                if (px < 0 || px >= ImageWidth || py < 0 || py >= ImageHeight)
+                    continue;
 
-            if (_pixelData[px, py] != targetColor)
-                continue;
+                if (_pixelData[px, py] != targetColor)
+                    continue;
 
-            SetPixel(px, py, replacementColor);
-            visited[px, py] = true;
+                _pixelData[px, py] = replacementColor;
+                var colorData = new byte[] { replacementColor.B, replacementColor.G, replacementColor.R, replacementColor.A };
+                Int32Rect rect = new Int32Rect(px, py, 1, 1);
+                _bitmap.WritePixels(rect, colorData, 4, 0);
 
-            queue.Enqueue(new Point(px - 1, py));
-            queue.Enqueue(new Point(px + 1, py));
-            queue.Enqueue(new Point(px, py - 1));
-            queue.Enqueue(new Point(px, py + 1));
+                queue.Enqueue(new Point(px - 1, py));
+                queue.Enqueue(new Point(px + 1, py));
+                queue.Enqueue(new Point(px, py - 1));
+                queue.Enqueue(new Point(px, py + 1));
+            }
+        }
+        finally
+        {
+            _bitmap.Unlock();
         }
     }
 
     public void UpdateCursorPosition(int x, int y)
     {
         StatusText = $"X: {x / ZoomLevel}, Y: {y / ZoomLevel}";
-        
+
         // Update hover position
         if (x >= 0 && x < ImageWidth && y >= 0 && y < ImageHeight)
         {
@@ -328,6 +383,69 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         {
             StatusText = $"Save error: {ex.Message}";
         }
+    }
+
+    private bool CanUndo() => _undoStack.Any();
+
+    private void Undo()
+    {
+        if (_undoStack.Any() && _pixelData != null)
+        {
+            var previousState = _undoStack.Pop();
+            _redoStack.Push(ClonePixelData(_pixelData)!);
+
+            ApplyPixelData(previousState);
+
+            UndoCommand.NotifyCanExecuteChanged();
+            RedoCommand.NotifyCanExecuteChanged();
+            HasUnsavedChanges = _undoStack.Any();
+            StatusText = "Undo performed";
+        }
+    }
+
+    private bool CanRedo() => _redoStack.Any();
+
+    private void Redo()
+    {
+        if (_redoStack.Any() && _pixelData != null)
+        {
+            var nextState = _redoStack.Pop();
+            _undoStack.Push(ClonePixelData(_pixelData)!);
+
+            ApplyPixelData(nextState);
+
+            UndoCommand.NotifyCanExecuteChanged();
+            RedoCommand.NotifyCanExecuteChanged();
+            HasUnsavedChanges = true;
+            StatusText = "Redo performed";
+        }
+    }
+
+    private void ApplyPixelData(Color[,] newPixelData)
+    {
+        if (_bitmap == null || newPixelData == null) return;
+
+        _pixelData = newPixelData;
+
+        _bitmap.Lock();
+        try
+        {
+            for (int y = 0; y < ImageHeight; y++)
+            {
+                for (int x = 0; x < ImageWidth; x++)
+                {
+                    var color = _pixelData[x, y];
+                    var colorData = new byte[] { color.B, color.G, color.R, color.A };
+                    Int32Rect rect = new Int32Rect(x, y, 1, 1);
+                    _bitmap.WritePixels(rect, colorData, 4, 0);
+                }
+            }
+        }
+        finally
+        {
+            _bitmap.Unlock();
+        }
+        OnPropertyChanged(nameof(CurrentImage));
     }
 
     partial void OnSelectedColorChanged(Color value)

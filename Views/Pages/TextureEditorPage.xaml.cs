@@ -106,6 +106,24 @@ namespace Modrix.Views.Pages
                         e.Handled = true;
                     }
                     break;
+
+                case Key.Z: // Undo (Ctrl+Z)
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        if (ViewModel.UndoCommand.CanExecute(null))
+                            ViewModel.UndoCommand.Execute(null);
+                        e.Handled = true;
+                    }
+                    break;
+
+                case Key.Y: // Redo (Ctrl+Y)
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        if (ViewModel.RedoCommand.CanExecute(null))
+                            ViewModel.RedoCommand.Execute(null);
+                        e.Handled = true;
+                    }
+                    break;
             }
         }
 

@@ -49,7 +49,7 @@
                     </TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
-                    <ui:Button Appearance="Primary" Command="{Binding ViewModel.SaveCommand}" Icon="{ui:SymbolIcon Save24}" Height="40" Width="40" />
+                    <ui:Button Appearance="Primary" Command="{Binding ViewModel.SaveCommand}" Icon="{ui:SymbolIcon Save24}" Height="40" Width="40" ToolTip="Save Image" />
                 </StackPanel>
             </Grid>
         </Border>
