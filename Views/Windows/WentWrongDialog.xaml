@@ -14,7 +14,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
-            <ui:SymbolIcon Symbol="ErrorCircle24" Width="40" Height="40" Margin="0,0,12,0"/>
+            <ui:Image Source="pack://application:,,,/Resources/Icons/WarningIcon.png" Width="40" Height="40" Margin="0,0,12,0"/>
             <StackPanel>
                 <TextBlock Text="Oops! Something went wrong" FontSize="22" FontWeight="Bold"/>
                 <TextBlock Text="An unexpected error has occurred." FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
