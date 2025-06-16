@@ -81,8 +81,13 @@ namespace Modrix
                 // Console Page
                 services.AddSingleton<ConsolePage>();
 
-                // IDE Page
-                services.AddSingleton<IDEPageViewModel>();
+                // IDE Page - inject shared IdeSettings from SettingsViewModel
+                services.AddSingleton<IDEPageViewModel>(sp =>
+                {
+                    var settingsVm = sp.GetRequiredService<SettingsViewModel>();
+                    var workspaceVm = sp.GetRequiredService<ProjectWorkspaceViewModel>();
+                    return new IDEPageViewModel(workspaceVm, settingsVm.IdeSettings);
+                });
                 services.AddSingleton<IDEPage>();
 
                 //NewsPage

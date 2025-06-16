@@ -37,9 +37,12 @@ namespace Modrix.ViewModels.Pages
         [ObservableProperty]
         private bool _hasUnsavedChanges;
 
-        public IDEPageViewModel(ProjectWorkspaceViewModel workspaceViewModel)
+        public IdeSettings IdeSettings { get; }
+
+        public IDEPageViewModel(ProjectWorkspaceViewModel workspaceViewModel, IdeSettings ideSettings)
         {
             _workspaceViewModel = workspaceViewModel;
+            IdeSettings = ideSettings;
             SaveCommand = new RelayCommand(SaveFile, () => HasUnsavedChanges);
             LoadFileTree();
         }

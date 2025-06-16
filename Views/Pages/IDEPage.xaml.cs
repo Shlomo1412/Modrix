@@ -34,6 +34,33 @@ namespace Modrix.Views.Pages
             {
                 notifyViewModel.PropertyChanged += ViewModel_PropertyChanged;
             }
+
+            // Subscribe to IdeSettings changes
+            if (ViewModel.IdeSettings is INotifyPropertyChanged notifyIdeSettings)
+            {
+                notifyIdeSettings.PropertyChanged += IdeSettings_PropertyChanged;
+                ApplyIdeSettings();
+            }
+        }
+
+        private void IdeSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            ApplyIdeSettings();
+        }
+
+        private void ApplyIdeSettings()
+        {
+            var s = ViewModel.IdeSettings;
+            // Font family
+            if (!string.IsNullOrEmpty(s.FontFamily))
+                CodeEditor.FontFamily = new FontFamily(s.FontFamily);
+            // Font size
+            CodeEditor.FontSize = s.FontSize;
+            // Word wrap
+            CodeEditor.WordWrap = s.WordWrap;
+            // Show line numbers
+            CodeEditor.ShowLineNumbers = s.ShowLineNumbers;
+            // TODO: Add more settings as needed (tab size, whitespace, etc.)
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
