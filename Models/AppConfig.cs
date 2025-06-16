@@ -91,6 +91,13 @@ namespace Modrix.Models
 
         [ObservableProperty]
         private bool _highlightMatchingBrackets = true;
+
+        // On Open Settings
+        [ObservableProperty]
+        private bool _closeMainWindowOnOpen = false;
+
+        [ObservableProperty]
+        private string _onOpenNavigateTab = "Workspace";
     }
 
     public enum LineEndingType

@@ -61,6 +61,14 @@ namespace Modrix.ViewModels.Pages
         [ObservableProperty]
         private ObservableCollection<string> _encodingOptions = new();
 
+        public ObservableCollection<string> AvailableTabs { get; } = new()
+        {
+            "Workspace",
+            "Resources",
+            "Settings",
+            "IDE"
+        };
+
         public SettingsViewModel(
             IThemeService themeService,
             IContentDialogService dialogService,

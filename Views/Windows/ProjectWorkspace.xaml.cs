@@ -19,6 +19,7 @@ namespace Modrix.Views.Windows
     {
         public ProjectWorkspaceViewModel ViewModel { get; }
         private SnackbarPresenter _snackbarPresenter;
+        private bool _onOpenHandled = false;
 
         public ProjectWorkspace(
             ProjectWorkspaceViewModel viewModel,
@@ -40,6 +41,32 @@ namespace Modrix.Views.Windows
         private void ProjectWorkspace_Loaded(object sender, RoutedEventArgs e)
         {
             _snackbarPresenter = this.SnackbarPresenter;
+            HandleOnOpenSettings();
+        }
+
+        private void HandleOnOpenSettings()
+        {
+            if (_onOpenHandled) return;
+            _onOpenHandled = true;
+            // Get IdeSettings from SettingsViewModel singleton
+            var settingsVm = Modrix.App.Services.GetService(typeof(Modrix.ViewModels.Pages.SettingsViewModel)) as Modrix.ViewModels.Pages.SettingsViewModel;
+            if (settingsVm == null) return;
+            var ideSettings = settingsVm.IdeSettings;
+            // Close MainWindow if setting is enabled
+            if (ideSettings.CloseMainWindowOnOpen)
+            {
+                foreach (Window win in Application.Current.Windows)
+                {
+                    if (win is MainWindow mainWin && !ReferenceEquals(mainWin, this))
+                    {
+                        mainWin.Close();
+                        break;
+                    }
+                }
+            }
+            // Navigate to the selected tab
+            var tabName = ideSettings.OnOpenNavigateTab;
+            NavigateToTab(tabName);
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
@@ -57,10 +84,6 @@ namespace Modrix.Views.Windows
 
         private void RefreshProject(ModProjectData project)
         {
-           
-
-            
-
             // Reload project
             ViewModel.LoadProject(project);
 
@@ -170,7 +193,6 @@ namespace Modrix.Views.Windows
             // 2) Pass to ConsolePage the corrected args string
             ConsolePage.PendingBuild = (
                 projectDir,
-                
                 "runClient --args=\"--username Dev\"",
                 jdkHome
             );
@@ -196,12 +218,10 @@ namespace Modrix.Views.Windows
                 return;
             }
 
-            
             var jdkHome = await new JdkHelper()
                 .EnsureRequiredJdkAsync(project.MinecraftVersion,
                     new Progress<(string, int)>());
 
-            
             ConsolePage.PendingBuild = (projectDir, "build", jdkHome);
             RootNavigation.Navigate(typeof(Views.Pages.ConsolePage));
         }
@@ -294,6 +314,20 @@ namespace Modrix.Views.Windows
         public void ShowWindow() => Show();
 
         public void CloseWindow() => Close();
+
+        public void NavigateToTab(string tabName)
+        {
+            // Map tab names to page types
+            Type? pageType = tabName switch
+            {
+                "Workspace" => typeof(Modrix.Views.Pages.WorkspacePage),
+                "Resources" => typeof(Modrix.Views.Pages.ResourcesPage),
+                "Settings" => typeof(Modrix.Views.Pages.SettingsPage),
+                "IDE" => typeof(Modrix.Views.Pages.IDEPage),
+                _ => typeof(Modrix.Views.Pages.WorkspacePage)
+            };
+            RootNavigation.Navigate(pageType);
+        }
     }
 
     public static class ProcessExtensions

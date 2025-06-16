@@ -78,20 +78,35 @@
             <!-- Workspace Section -->
             <ui:Card Margin="32,0,32,18" Padding="24">
                 <StackPanel>
+                    
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                         <ui:SymbolIcon Symbol="Desktop24" Width="28" Height="28" Margin="0,0,8,0"/>
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="Workspace"/>
                     </StackPanel>
+
+                    <!-- On Open Settings -->
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock FontWeight="Medium" Text="On Open" Margin="0,0,0,8"/>
+                        <ui:ToggleSwitch Content="Close Main Window" IsChecked="{Binding ViewModel.IdeSettings.CloseMainWindowOnOpen}"/>
+                        <DockPanel Margin="0,8,0,0">
+                            <TextBlock Text="Navigate to Tab:" VerticalAlignment="Center"/>
+                            <ComboBox Margin="8,0,0,0"
+                                ItemsSource="{Binding ViewModel.AvailableTabs}"
+                                SelectedItem="{Binding ViewModel.IdeSettings.OnOpenNavigateTab}"
+                                Width="150"/>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <!-- IDE Settings -->
                     <TextBlock Margin="0,8,0,8" FontWeight="SemiBold" Text="IDE Settings" />
+
+                    
 
                     <!-- Editor Settings -->
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock FontWeight="Medium" Text="Editor" Margin="0,0,0,8"/>
-                        
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Word Wrap" IsChecked="{Binding ViewModel.IdeSettings.WordWrap}"/>
-                        
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Use Spaces for Tabs" IsChecked="{Binding ViewModel.IdeSettings.UseSpacesForTabs}"/>
-                        
                     </StackPanel>
 
                     <!-- Visual Settings -->
@@ -106,7 +121,6 @@
                     <!-- File Settings -->
                     <StackPanel>
                         <TextBlock FontWeight="Medium" Text="File Handling" Margin="0,0,0,8"/>
-
                         <ui:ToggleSwitch Content="Auto Save" IsChecked="{Binding ViewModel.IdeSettings.AutoSave}"/>
                         <DockPanel Margin="0,8,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
                             <TextBlock Text="Auto Save Interval (seconds):" VerticalAlignment="Center"/>
@@ -115,6 +129,7 @@
                     </StackPanel>
                 </StackPanel>
             </ui:Card>
+
 
             <!-- Installation Section -->
             <ui:Card Margin="32,0,32,18" Padding="24">
