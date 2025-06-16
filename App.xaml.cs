@@ -90,11 +90,14 @@ namespace Modrix
                 });
                 services.AddSingleton<IDEPage>();
 
-                //NewsPage
+                // News Page
                 services.AddSingleton<NewsPage>();
 
-                //FeedbackPage
+                // Feedback Page
                 services.AddSingleton<FeedbackPage>();
+
+                // Workspace Page
+                services.AddSingleton<WorkspacePage>();
 
                 //Content dialog
                 services.AddSingleton<IContentDialogService, ContentDialogService>();

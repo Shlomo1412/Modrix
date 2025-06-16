@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Abstractions.Controls;
+using System.Windows.Controls; // <-- Add this for Frame
 
 namespace Modrix.ViewModels.Pages;
 
@@ -378,6 +379,25 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 
             HasUnsavedChanges = false;
             StatusText = "Saved successfully";
+
+            // --- Notify ResourcesPage to refresh textures ---
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window win in Application.Current.Windows)
+                {
+                    if (win is Modrix.Views.Windows.ProjectWorkspace ws)
+                    {
+                        foreach (var obj in LogicalTreeHelper.GetChildren(ws))
+                        {
+                            if (obj is Frame frame && frame.Content is Modrix.Views.Pages.ResourcesPage page)
+                            {
+                                page.Refresh();
+                            }
+                        }
+                    }
+                }
+            });
+            // --- End notify ---
         }
         catch (Exception ex)
         {

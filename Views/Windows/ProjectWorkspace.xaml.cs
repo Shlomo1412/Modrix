@@ -90,6 +90,22 @@ namespace Modrix.Views.Windows
             // Navigate to workspace page
             RootNavigation.Navigate(typeof(Views.Pages.ResourcesPage));
 
+            // --- Refresh ResourcesPage if open ---
+            foreach (Window win in Application.Current.Windows)
+            {
+                if (win is ProjectWorkspace ws)
+                {
+                    foreach (var obj in LogicalTreeHelper.GetChildren(ws))
+                    {
+                        if (obj is Frame frame && frame.Content is Modrix.Views.Pages.ResourcesPage page)
+                        {
+                            page.Refresh();
+                        }
+                    }
+                }
+            }
+            // --- End refresh ---
+
             ShowSnackbar("Project refreshed", "All resources reloaded", ControlAppearance.Success);
         }
 
