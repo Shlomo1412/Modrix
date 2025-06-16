@@ -25,6 +25,7 @@ namespace Modrix.Views.Pages
         // Autosave and file watcher
         private System.Windows.Threading.DispatcherTimer? _autoSaveTimer;
         private FileSystemWatcher? _fileWatcher;
+        private bool _editorLoaded = false;
 
         public IDEPage(IDEPageViewModel viewModel)
         {
@@ -44,14 +45,21 @@ namespace Modrix.Views.Pages
             if (ViewModel.IdeSettings is INotifyPropertyChanged notifyIdeSettings)
             {
                 notifyIdeSettings.PropertyChanged += IdeSettings_PropertyChanged;
+            }
+
+            // Ensure settings are applied after editor is loaded
+            CodeEditor.Loaded += (s, e) =>
+            {
+                _editorLoaded = true;
                 ApplyIdeSettings();
                 SetupAutoSave();
                 SetupFileWatcher();
-            }
+            };
         }
 
         private void IdeSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (!_editorLoaded) return;
             ApplyIdeSettings();
             if (e.PropertyName == nameof(ViewModel.IdeSettings.AutoSave) || e.PropertyName == nameof(ViewModel.IdeSettings.AutoSaveIntervalSeconds))
                 SetupAutoSave();
@@ -61,12 +69,8 @@ namespace Modrix.Views.Pages
 
         private void ApplyIdeSettings()
         {
+            if (!_editorLoaded) return;
             var s = ViewModel.IdeSettings;
-            // Font family
-            if (!string.IsNullOrEmpty(s.FontFamily))
-                CodeEditor.FontFamily = new FontFamily(s.FontFamily);
-            // Font size
-            CodeEditor.FontSize = s.FontSize;
             // Word wrap
             CodeEditor.WordWrap = s.WordWrap;
             // Show line numbers
@@ -78,15 +82,11 @@ namespace Modrix.Views.Pages
             // Show whitespace
             CodeEditor.Options.ShowSpaces = s.ShowWhitespace;
             CodeEditor.Options.ShowTabs = s.ShowWhitespace;
-            // Show line endings
-            CodeEditor.Options.ShowEndOfLine = s.ShowLineEndings;
-            // Highlight current line (AvalonEdit highlights by default, can be toggled via TextArea.TextView.CurrentLineBackground)
-            CodeEditor.TextArea.TextView.CurrentLineBackground = s.HighlightCurrentLine ? new SolidColorBrush(Color.FromArgb(32, 0, 120, 215)) : null;
-            // The following settings are not supported by AvalonEdit and are ignored in code:
-            // - ShowMinimap
-            // - ShowIndentGuides
-            // - HighlightMatchingBrackets
-            // - EnableCodeFolding
+            // Highlight current line
+            if (s.HighlightCurrentLine)
+                CodeEditor.TextArea.TextView.CurrentLineBackground = new SolidColorBrush(Color.FromArgb(32, 0, 120, 215));
+            else
+                CodeEditor.TextArea.TextView.CurrentLineBackground = null;
         }
 
         private void SetupAutoSave()

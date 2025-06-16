@@ -109,8 +109,6 @@
             <avalonedit:TextEditor
                 Grid.Row="1"
                 x:Name="CodeEditor"
-                FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
-                FontSize="14"
                 ShowLineNumbers="True"
                 WordWrap="False"
                 Background="{DynamicResource ApplicationBackgroundBrush}"

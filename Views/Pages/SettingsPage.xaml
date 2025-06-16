@@ -90,26 +90,12 @@
                         <ui:ToggleSwitch Content="Auto Save" IsChecked="{Binding ViewModel.IdeSettings.AutoSave}"/>
                         <DockPanel Margin="0,8,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
                             <TextBlock Text="Auto Save Interval (seconds):" VerticalAlignment="Center"/>
-                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}" Minimum="5" Maximum="300" Width="80"/>
+                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}" Minimum="5" Maximum="300" MinWidth="80"/>
                         </DockPanel>
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Word Wrap" IsChecked="{Binding ViewModel.IdeSettings.WordWrap}"/>
-                        <DockPanel Margin="0,8,0,0">
-                            <TextBlock Text="Tab Size:" VerticalAlignment="Center"/>
-                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.TabSize}" Minimum="1" Maximum="8" Width="80"/>
-                        </DockPanel>
+                        
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Use Spaces for Tabs" IsChecked="{Binding ViewModel.IdeSettings.UseSpacesForTabs}"/>
-                        <DockPanel Margin="0,8,0,0">
-                            <TextBlock Text="Line Endings:" VerticalAlignment="Center"/>
-                            <ComboBox Margin="8,0,0,0" ItemsSource="{Binding Source={StaticResource LineEndingTypes}}" SelectedItem="{Binding ViewModel.IdeSettings.LineEndings}" Width="120"/>
-                        </DockPanel>
-                        <DockPanel Margin="0,8,0,0">
-                            <TextBlock Text="Font Size:" VerticalAlignment="Center"/>
-                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.FontSize}" Minimum="8" Maximum="32" Width="80"/>
-                        </DockPanel>
-                        <DockPanel Margin="0,8,0,0">
-                            <TextBlock Text="Font Family:" VerticalAlignment="Center"/>
-                            <ComboBox Margin="8,0,0,0" ItemsSource="{Binding ViewModel.MonospaceFonts}" SelectedItem="{Binding ViewModel.IdeSettings.FontFamily}" Width="200"/>
-                        </DockPanel>
+                        
                     </StackPanel>
 
                     <!-- Visual Settings -->
