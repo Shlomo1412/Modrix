@@ -87,11 +87,7 @@
                     <!-- Editor Settings -->
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock FontWeight="Medium" Text="Editor" Margin="0,0,0,8"/>
-                        <ui:ToggleSwitch Content="Auto Save" IsChecked="{Binding ViewModel.IdeSettings.AutoSave}"/>
-                        <DockPanel Margin="0,8,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
-                            <TextBlock Text="Auto Save Interval (seconds):" VerticalAlignment="Center"/>
-                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}" Minimum="5" Maximum="300" MinWidth="80"/>
-                        </DockPanel>
+                        
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Word Wrap" IsChecked="{Binding ViewModel.IdeSettings.WordWrap}"/>
                         
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Use Spaces for Tabs" IsChecked="{Binding ViewModel.IdeSettings.UseSpacesForTabs}"/>
@@ -110,8 +106,12 @@
                     <!-- File Settings -->
                     <StackPanel>
                         <TextBlock FontWeight="Medium" Text="File Handling" Margin="0,0,0,8"/>
-                        
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Auto-reload when Changed Externally" IsChecked="{Binding ViewModel.IdeSettings.AutoReloadExternalChanges}"/>
+
+                        <ui:ToggleSwitch Content="Auto Save" IsChecked="{Binding ViewModel.IdeSettings.AutoSave}"/>
+                        <DockPanel Margin="0,8,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
+                            <TextBlock Text="Auto Save Interval (seconds):" VerticalAlignment="Center"/>
+                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}" Minimum="5" Maximum="300" MinWidth="80"/>
+                        </DockPanel>
                     </StackPanel>
                 </StackPanel>
             </ui:Card>
