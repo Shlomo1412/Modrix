@@ -113,6 +113,7 @@ namespace Modrix.Views.Windows
 
             ModTypeComboBox.SelectionChanged += ModTypeComboBox_SelectionChanged;
             MinecraftVersionComboBox.SelectionChanged += (s, e) => ValidateFields();
+            LicenseComboBox.SelectionChanged += (s, e) => ValidateFields();
         }
 
         private void ModTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -137,7 +138,8 @@ namespace Modrix.Views.Windows
                                !string.IsNullOrWhiteSpace(ModIdBox?.Text) &&
                                (!isResourcePack || string.IsNullOrWhiteSpace(PackageBox?.Text)) &&
                                ModTypeComboBox?.SelectedItem != null &&
-                               (isResourcePack || MinecraftVersionComboBox?.SelectedItem != null);
+                               (isResourcePack || MinecraftVersionComboBox?.SelectedItem != null) &&
+                               LicenseComboBox?.SelectedItem != null;
             }
         }
 
