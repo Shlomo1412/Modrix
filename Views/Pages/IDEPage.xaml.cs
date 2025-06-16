@@ -9,6 +9,7 @@ using Microsoft.Win32;
 using Wpf.Ui.Controls;
 using System.Windows.Media;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Modrix.Views.Pages
 {
@@ -20,6 +21,10 @@ namespace Modrix.Views.Pages
         // For drag-and-drop
         private Point _dragStartPoint;
         private FileTreeItem _draggedItem;
+
+        // Autosave and file watcher
+        private System.Windows.Threading.DispatcherTimer? _autoSaveTimer;
+        private FileSystemWatcher? _fileWatcher;
 
         public IDEPage(IDEPageViewModel viewModel)
         {
@@ -40,12 +45,18 @@ namespace Modrix.Views.Pages
             {
                 notifyIdeSettings.PropertyChanged += IdeSettings_PropertyChanged;
                 ApplyIdeSettings();
+                SetupAutoSave();
+                SetupFileWatcher();
             }
         }
 
         private void IdeSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             ApplyIdeSettings();
+            if (e.PropertyName == nameof(ViewModel.IdeSettings.AutoSave) || e.PropertyName == nameof(ViewModel.IdeSettings.AutoSaveIntervalSeconds))
+                SetupAutoSave();
+            if (e.PropertyName == nameof(ViewModel.IdeSettings.AutoReloadExternalChanges))
+                SetupFileWatcher();
         }
 
         private void ApplyIdeSettings()
@@ -60,7 +71,71 @@ namespace Modrix.Views.Pages
             CodeEditor.WordWrap = s.WordWrap;
             // Show line numbers
             CodeEditor.ShowLineNumbers = s.ShowLineNumbers;
-            // TODO: Add more settings as needed (tab size, whitespace, etc.)
+            // Tab size
+            CodeEditor.Options.IndentationSize = s.TabSize;
+            // Use spaces for tabs
+            CodeEditor.Options.ConvertTabsToSpaces = s.UseSpacesForTabs;
+            // Show whitespace
+            CodeEditor.Options.ShowSpaces = s.ShowWhitespace;
+            CodeEditor.Options.ShowTabs = s.ShowWhitespace;
+            // Show line endings
+            CodeEditor.Options.ShowEndOfLine = s.ShowLineEndings;
+            // Highlight current line (AvalonEdit highlights by default, can be toggled via TextArea.TextView.CurrentLineBackground)
+            CodeEditor.TextArea.TextView.CurrentLineBackground = s.HighlightCurrentLine ? new SolidColorBrush(Color.FromArgb(32, 0, 120, 215)) : null;
+            // The following settings are not supported by AvalonEdit and are ignored in code:
+            // - ShowMinimap
+            // - ShowIndentGuides
+            // - HighlightMatchingBrackets
+            // - EnableCodeFolding
+        }
+
+        private void SetupAutoSave()
+        {
+            if (_autoSaveTimer != null)
+            {
+                _autoSaveTimer.Stop();
+                _autoSaveTimer = null;
+            }
+            if (ViewModel.IdeSettings.AutoSave)
+            {
+                _autoSaveTimer = new System.Windows.Threading.DispatcherTimer();
+                _autoSaveTimer.Interval = TimeSpan.FromSeconds(ViewModel.IdeSettings.AutoSaveIntervalSeconds);
+                _autoSaveTimer.Tick += (s, e) =>
+                {
+                    if (ViewModel.HasUnsavedChanges)
+                        ViewModel.SaveFile();
+                };
+                _autoSaveTimer.Start();
+            }
+        }
+
+        private void SetupFileWatcher()
+        {
+            if (_fileWatcher != null)
+            {
+                _fileWatcher.EnableRaisingEvents = false;
+                _fileWatcher.Dispose();
+                _fileWatcher = null;
+            }
+            if (ViewModel.IdeSettings.AutoReloadExternalChanges && !string.IsNullOrEmpty(ViewModel.SelectedFilePath))
+            {
+                _fileWatcher = new FileSystemWatcher(System.IO.Path.GetDirectoryName(ViewModel.SelectedFilePath) ?? "")
+                {
+                    Filter = System.IO.Path.GetFileName(ViewModel.SelectedFilePath),
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size
+                };
+                _fileWatcher.Changed += (s, e) =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (!ViewModel.HasUnsavedChanges)
+                        {
+                            ViewModel.OpenFile(ViewModel.SelectedFilePath);
+                        }
+                    });
+                };
+                _fileWatcher.EnableRaisingEvents = true;
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -76,6 +151,10 @@ namespace Modrix.Views.Pages
                 {
                     _updatingText = false;
                 }
+            }
+            if (e.PropertyName == nameof(ViewModel.SelectedFilePath))
+            {
+                SetupFileWatcher();
             }
         }
 

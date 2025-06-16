@@ -126,9 +126,22 @@ namespace Modrix.ViewModels.Pages
 
         private void LoadIdeSettings()
         {
-            var config = new AppConfig();
-            _configuration.Bind(config);
-            IdeSettings = config.IdeSettings ?? new IdeSettings();
+            var configPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "Modrix",
+                "appsettings.json"
+            );
+
+            if (File.Exists(configPath))
+            {
+                var json = File.ReadAllText(configPath);
+                var config = System.Text.Json.JsonSerializer.Deserialize<AppConfig>(json);
+                IdeSettings = config?.IdeSettings ?? new IdeSettings();
+            }
+            else
+            {
+                IdeSettings = new IdeSettings();
+            }
 
             // Subscribe to changes
             if (IdeSettings is INotifyPropertyChanged notifyPropertyChanged)

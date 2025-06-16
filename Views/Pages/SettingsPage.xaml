@@ -118,26 +118,14 @@
                         <ui:ToggleSwitch Content="Show Line Numbers" IsChecked="{Binding ViewModel.IdeSettings.ShowLineNumbers}"/>
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Whitespace Characters" IsChecked="{Binding ViewModel.IdeSettings.ShowWhitespace}"/>
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Line Endings" IsChecked="{Binding ViewModel.IdeSettings.ShowLineEndings}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Minimap" IsChecked="{Binding ViewModel.IdeSettings.ShowMinimap}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Indent Guides" IsChecked="{Binding ViewModel.IdeSettings.ShowIndentGuides}"/>
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Highlight Current Line" IsChecked="{Binding ViewModel.IdeSettings.HighlightCurrentLine}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Highlight Matching Brackets" IsChecked="{Binding ViewModel.IdeSettings.HighlightMatchingBrackets}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Enable Code Folding" IsChecked="{Binding ViewModel.IdeSettings.EnableCodeFolding}"/>
                     </StackPanel>
 
                     <!-- File Settings -->
                     <StackPanel>
                         <TextBlock FontWeight="Medium" Text="File Handling" Margin="0,0,0,8"/>
-                        <DockPanel>
-                            <TextBlock Text="Default Encoding:" VerticalAlignment="Center"/>
-                            <ComboBox Margin="8,0,0,0" ItemsSource="{Binding ViewModel.EncodingOptions}" SelectedItem="{Binding ViewModel.IdeSettings.DefaultEncoding}" Width="120"/>
-                        </DockPanel>
+                        
                         <ui:ToggleSwitch Margin="0,8,0,0" Content="Auto-reload when Changed Externally" IsChecked="{Binding ViewModel.IdeSettings.AutoReloadExternalChanges}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Create Backup Files Before Saving" IsChecked="{Binding ViewModel.IdeSettings.CreateBackupFiles}"/>
-                        <DockPanel Margin="0,8,0,0">
-                            <TextBlock Text="Max File Size (MB):" VerticalAlignment="Center"/>
-                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.MaxFileSize, Converter={StaticResource BytesToMegabytesConverter}}" Minimum="1" Maximum="100" Width="80"/>
-                        </DockPanel>
                     </StackPanel>
                 </StackPanel>
             </ui:Card>

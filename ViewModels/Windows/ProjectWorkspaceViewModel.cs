@@ -131,6 +131,13 @@ namespace Modrix.ViewModels.Windows
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 },
                     Command = new RelayCommand(ShowDonateDialog),
                     ToolTip = "Support us with a donation"
+                },
+                new NavigationViewItem()
+                {
+                    Content = "Settings",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
+                    TargetPageType = typeof(Views.Pages.SettingsPage),
+                    ToolTip = "Adjust application settings"
                 }
             };
         }
