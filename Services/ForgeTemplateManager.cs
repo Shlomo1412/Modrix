@@ -240,6 +240,7 @@ namespace Modrix.Services
                     .Replace("example_block", $"{data.ModId}_block")
                     .Replace("example_item", $"{data.ModId}_item")
                     .Replace("example_tab", $"{data.ModId}_tab")
+                    .Replace("public Example(FMLJavaModLoadingContext context)", $"public {char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod(FMLJavaModLoadingContext context)")
                     .Replace("@Mod.EventBusSubscriber(modid = MODID", $"@Mod.EventBusSubscriber(modid = MODID");
 
                 var newFilePath = Path.Combine(mainPath, newFileName);
@@ -361,6 +362,7 @@ namespace Modrix.Services
                    fileName == ".gitignore" ||
                    fileName == ".gitattributes" ||
                    fileName.Equals("LICENSE", StringComparison.OrdinalIgnoreCase) ||
+                   fileName == "Config.java" ||
                    fileName == "README.md";
         }
 
