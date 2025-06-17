@@ -158,6 +158,7 @@ public class {itemClassName}Item extends Item {{
             Debug.WriteLine($"Using mod class name: {modClassName}");
             if (isModern)
             {
+                // Modern Fabric: store registered item in a static field to avoid NPE/translation key crash
                 return $@"package {packageName}.item;
 
 import net.minecraft.item.Item;
@@ -168,19 +169,20 @@ import {packageName}.{modClassName};
 
 public class {itemClassName}Item extends Item {{
     public static final String ID = ""{ToSnakeCase(itemName)}"";
-    public static final {itemClassName}Item INSTANCE = new {itemClassName}Item();
+    public static Item ITEM;
 
     public {itemClassName}Item() {{
         super(new Item.Settings());
     }}
 
     public static void register() {{
-        Registry.register(Registries.ITEM, new Identifier({modClassName}.MOD_ID, ID), INSTANCE);
+        ITEM = Registry.register(Registries.ITEM, Identifier.of({modClassName}.MOD_ID, ID), new {itemClassName}Item());
     }}
 }}";
             }
             else
             {
+                // Legacy Fabric (pre-1.17)
                 return $@"package {packageName}.item;
 
 import net.minecraft.item.Item;
@@ -317,6 +319,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class {modClassName} implements ModInitializer {{
+    // Set the actual mod ID from the project, not a hardcoded value
     public static final String MOD_ID = ""{modId}"";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
