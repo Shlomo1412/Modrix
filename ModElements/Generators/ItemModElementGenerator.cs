@@ -91,29 +91,23 @@ namespace Modrix.ModElements.Generators
 
         private void GenerateFabricItem(ModElementGenerationContext context, string itemName, string texturePath)
         {
-            var minecraftVersion = context.MinecraftVersion ?? "1.20.x"; // Default to 1.20.x if not specified
+            var minecraftVersion = context.MinecraftVersion ?? "1.20.x";
             Debug.WriteLine($"Generating Fabric item code for MC version: {minecraftVersion}");
             
             var projectPath = context.ProjectPath;
             var packageName = GetPackageNameFromProject(projectPath);
             var modId = GetModIdFromProject(projectPath);
 
-            // Format the class name (remove spaces, capitalize)
+            // Use modId as-is for class name (to match file and class exactly)
+            var modClassName = modId + "Mod";
             var itemClassName = FormatClassName(itemName);
 
-            // Prepare paths
             var packagePath = packageName.Replace('.', '/');
             var javaDir = FindJavaDirectory(projectPath);
-
             if (string.IsNullOrEmpty(javaDir))
-            {
                 throw new DirectoryNotFoundException("Could not find Java source directory");
-            }
 
-            // Create main mod class FIRST to ensure it exists
-            var modClassName = FormatClassName(modId) + "Mod";
             var modClassPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), $"{modClassName}.java");
-
             if (!File.Exists(modClassPath))
             {
                 var modClassContent = GenerateFabricModClass(packageName, modId, itemClassName);
@@ -122,22 +116,20 @@ namespace Modrix.ModElements.Generators
                 Debug.WriteLine($"Created Fabric mod class at {modClassPath}");
             }
 
-            // Create item class AFTER main mod class
-            var itemClassPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), "item", $"{itemClassName}Item.java");
-            Directory.CreateDirectory(Path.GetDirectoryName(itemClassPath));
+            var itemDirPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), "item");
+            Directory.CreateDirectory(itemDirPath);
+            var itemClassPath = Path.Combine(itemDirPath, $"{itemClassName}Item.java");
 
-            // Write item class - use proper Fabric version for the Minecraft version
-            var itemClass = GenerateFabricItemClass(packageName, modId, itemClassName, itemName, minecraftVersion);
+            string version = NormalizeMinecraftVersion(minecraftVersion);
+            bool isModern = IsModernFabricVersion(version);
+            Debug.WriteLine($"Using modern Fabric imports: {isModern} for version {version}");
+
+            var itemClass = GenerateFabricItemClass(packageName, modId, itemClassName, itemName, version, isModern, modClassName);
             File.WriteAllText(itemClassPath, itemClass);
             Debug.WriteLine($"Created Fabric item class at {itemClassPath}");
 
-            // Copy texture if needed
             HandleTexture(projectPath, texturePath, modId, itemName);
-
-            // Update registry class (for Fabric)
-            UpdateFabricItemRegistry(projectPath, packageName, itemClassName, modId);
-
-            // Update language file
+            UpdateFabricItemRegistry(projectPath, packageName, itemClassName, modId, modClassName);
             UpdateLanguageFile(projectPath, modId, itemName, context.Parameters.TryGetValue("TranslationKey", out var key) ? key?.ToString() : null);
         }
 
@@ -160,27 +152,11 @@ public class {itemClassName}Item extends Item {{
 }}";
         }
 
-        private string GenerateFabricItemClass(string packageName, string modId, string itemClassName, string itemName, string minecraftVersion)
+        private string GenerateFabricItemClass(string packageName, string modId, string itemClassName, string itemName, string version, bool isModern, string modClassName)
         {
-            var modClassName = FormatClassName(modId) + "Mod";
-            
-            // Normalize version string for comparison and strip any non-version data
-            string version = minecraftVersion?.Trim() ?? "1.20.x";
-            // Extract just the major.minor version (1.19, 1.20, etc)
-            if (version.Contains('.'))
-            {
-                int secondDotIndex = version.IndexOf('.', version.IndexOf('.') + 1);
-                if (secondDotIndex > 0)
-                {
-                    version = version.Substring(0, secondDotIndex);
-                }
-            }
-            
-            Debug.WriteLine($"Using template for Minecraft version: {version}");
-            
-            // 1.17+ uses net.minecraft.registry.Registry
-            // pre-1.17 uses net.minecraft.util.registry.Registry
-            if (string.Compare(version, "1.17", StringComparison.OrdinalIgnoreCase) >= 0)
+            Debug.WriteLine($"Generating Fabric item class with {(isModern ? "modern" : "legacy")} registry imports");
+            Debug.WriteLine($"Using mod class name: {modClassName}");
+            if (isModern)
             {
                 return $@"package {packageName}.item;
 
@@ -203,7 +179,7 @@ public class {itemClassName}Item extends Item {{
     }}
 }}";
             }
-            else // For older versions (pre-1.17)
+            else
             {
                 return $@"package {packageName}.item;
 
@@ -283,17 +259,12 @@ public class {itemClassName}Item extends Item {{
             }
         }
 
-        private void UpdateFabricItemRegistry(string projectPath, string packageName, string itemClassName, string modId)
+        private void UpdateFabricItemRegistry(string projectPath, string packageName, string itemClassName, string modId, string modClassName)
         {
             var javaDir = FindJavaDirectory(projectPath);
             if (string.IsNullOrEmpty(javaDir))
                 return;
-                
-            // Ensure consistent mod class name casing
-            var modClassName = FormatClassName(modId) + "Mod";
             var modClassPath = Path.Combine(javaDir, packageName.Replace('.', Path.DirectorySeparatorChar), $"{modClassName}.java");
-            
-            // If the main mod class doesn't exist, create a simple one
             if (!File.Exists(modClassPath))
             {
                 var modClassContent = GenerateFabricModClass(packageName, modId, itemClassName);
@@ -302,52 +273,31 @@ public class {itemClassName}Item extends Item {{
                 Debug.WriteLine($"Created Fabric mod class at {modClassPath}");
                 return;
             }
-            
             var content = File.ReadAllText(modClassPath);
-            
-            // Check if item is already registered
             if (content.Contains($"{itemClassName}Item"))
-            {
-                return; // Already registered
-            }
-            
-            // Add import
+                return;
             string importStatement = $"import {packageName}.item.{itemClassName}Item;\n";
             int lastImportIndex = content.LastIndexOf("import ");
-            if (lastImportIndex < 0) 
+            if (lastImportIndex < 0)
             {
-                // No imports found, add after package
                 int packageEnd = content.IndexOf(';');
                 if (packageEnd > 0)
-                {
                     content = content.Insert(packageEnd + 2, importStatement);
-                }
             }
             else
             {
                 int lastImportEnd = content.IndexOf(';', lastImportIndex) + 1;
                 content = content.Insert(lastImportEnd + 1, importStatement);
             }
-            
-            // Find onInitialize method
             int initIndex = content.IndexOf("public void onInitialize() {");
             if (initIndex == -1)
-            {
                 initIndex = content.IndexOf("public void onInitialize(");
-            }
-            
             if (initIndex != -1)
             {
-                // Find the opening brace
                 int openingBrace = content.IndexOf('{', initIndex);
-                
-                // Find the closing brace for the method
                 int closeBraceIndex = FindClosingBrace(content, openingBrace);
-                
-                // Add registration line just before closing brace
                 string registrationLine = $"\n        {itemClassName}Item.register();";
                 content = content.Insert(closeBraceIndex, registrationLine);
-                
                 File.WriteAllText(modClassPath, content);
                 Debug.WriteLine($"Updated Fabric mod class at {modClassPath}");
             }
@@ -355,15 +305,16 @@ public class {itemClassName}Item extends Item {{
 
         private string GenerateFabricModClass(string packageName, string modId, string itemClassName)
         {
-            // Ensure the mod class name follows Java conventions - starts with capital letter
-            var modClassName = FormatClassName(modId) + "Mod";
-            
+            // Ensure proper capitalization of mod class name
+            var modClassName = modId + "Mod";
+
+            Debug.WriteLine($"Generating Fabric mod class: {modClassName} in package {packageName}");
+
             return $@"package {packageName};
 
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import {packageName}.item.{itemClassName}Item;
 
 public class {modClassName} implements ModInitializer {{
     public static final String MOD_ID = ""{modId}"";
@@ -372,7 +323,7 @@ public class {modClassName} implements ModInitializer {{
     @Override
     public void onInitialize() {{
         LOGGER.info(""{modClassName} initializing..."");
-        {itemClassName}Item.register();
+        // Item registrations will be added here
     }}
 }}";
         }
@@ -720,22 +671,35 @@ public class ItemRegistry {{
         {
             if (string.IsNullOrEmpty(name))
                 return "Default";
-                
+
             var sb = new StringBuilder();
             var parts = name.Split(new[] { ' ', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
-            
+
             foreach (var part in parts)
             {
                 if (part.Length > 0)
                 {
-                    sb.Append(char.ToUpper(part[0]));
-                    if (part.Length > 1)
+                    // Handle lowercase-only words (like "lols")
+                    if (part.All(char.IsLower))
                     {
-                        sb.Append(part.Substring(1));
+                        sb.Append(char.ToUpper(part[0]));
+                        if (part.Length > 1)
+                        {
+                            sb.Append(part.Substring(1));
+                        }
+                    }
+                    else
+                    {
+                        // Original behavior for mixed-case words
+                        sb.Append(char.ToUpper(part[0]));
+                        if (part.Length > 1)
+                        {
+                            sb.Append(part.Substring(1));
+                        }
                     }
                 }
             }
-            
+
             return sb.ToString();
         }
 
@@ -800,6 +764,58 @@ public class ItemRegistry {{
             }
             
             return content.Length - 1;
+        }
+
+        private string NormalizeMinecraftVersion(string version)
+        {
+            // Remove any non-version content like "fabric-" prefix or suffixes
+            version = version.Trim();
+            
+            // Extract just the basic version number (e.g., from "1.20.4-fabric" to "1.20")
+            if (version.Contains('.'))
+            {
+                // Find first dot
+                int firstDot = version.IndexOf('.');
+                if (firstDot >= 0)
+                {
+                    // Find second dot
+                    int secondDot = version.IndexOf('.', firstDot + 1);
+                    if (secondDot > 0)
+                    {
+                        // Return major.minor (e.g., "1.20")
+                        return version.Substring(0, secondDot);
+                    }
+                    else
+                    {
+                        // If no second dot, return what we have
+                        return version;
+                    }
+                }
+            }
+            
+            // If no dots, return as is
+            return version;
+        }
+
+        private bool IsModernFabricVersion(string normalizedVersion)
+        {
+            // Parse major and minor versions
+            if (normalizedVersion.Contains('.'))
+            {
+                string[] parts = normalizedVersion.Split('.');
+                if (parts.Length >= 2 && int.TryParse(parts[0], out int major) && int.TryParse(parts[1], out int minor))
+                {
+                    // Modern Fabric starts with 1.17
+                    if (major > 1 || (major == 1 && minor >= 17))
+                    {
+                        return true;
+                    }
+                }
+            }
+            
+            // Default to modern for newer Minecraft versions and undefined versions
+            // This ensures we use the current Registry class by default
+            return true;
         }
 
         #endregion
