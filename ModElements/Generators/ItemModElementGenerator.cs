@@ -91,7 +91,9 @@ namespace Modrix.ModElements.Generators
 
         private void GenerateFabricItem(ModElementGenerationContext context, string itemName, string texturePath)
         {
-            Debug.WriteLine("Generating Fabric item code");
+            var minecraftVersion = context.MinecraftVersion ?? "1.20.x"; // Default to 1.20.x if not specified
+            Debug.WriteLine($"Generating Fabric item code for MC version: {minecraftVersion}");
+            
             var projectPath = context.ProjectPath;
             var packageName = GetPackageNameFromProject(projectPath);
             var modId = GetModIdFromProject(projectPath);
@@ -108,7 +110,7 @@ namespace Modrix.ModElements.Generators
                 throw new DirectoryNotFoundException("Could not find Java source directory");
             }
 
-            // Create main mod class first to ensure it exists
+            // Create main mod class FIRST to ensure it exists
             var modClassName = FormatClassName(modId) + "Mod";
             var modClassPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), $"{modClassName}.java");
 
@@ -120,12 +122,11 @@ namespace Modrix.ModElements.Generators
                 Debug.WriteLine($"Created Fabric mod class at {modClassPath}");
             }
 
-            // Create item class
+            // Create item class AFTER main mod class
             var itemClassPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), "item", $"{itemClassName}Item.java");
             Directory.CreateDirectory(Path.GetDirectoryName(itemClassPath));
 
             // Write item class - use proper Fabric version for the Minecraft version
-            var minecraftVersion = context.MinecraftVersion ?? "1.20.x"; // Default to 1.20.x if not specified
             var itemClass = GenerateFabricItemClass(packageName, modId, itemClassName, itemName, minecraftVersion);
             File.WriteAllText(itemClassPath, itemClass);
             Debug.WriteLine($"Created Fabric item class at {itemClassPath}");
@@ -162,14 +163,24 @@ public class {itemClassName}Item extends Item {{
         private string GenerateFabricItemClass(string packageName, string modId, string itemClassName, string itemName, string minecraftVersion)
         {
             var modClassName = FormatClassName(modId) + "Mod";
-            // Normalize version string for comparison
+            
+            // Normalize version string for comparison and strip any non-version data
             string version = minecraftVersion?.Trim() ?? "1.20.x";
-            // Use registry import based on MC version
-            // 1.17+ uses net.minecraft.registry.Registry, pre-1.17 uses net.minecraft.util.registry.Registry
-            bool isModern = false;
-            if (version.StartsWith("1.21") || version.StartsWith("1.20") || version.StartsWith("1.19") || version.StartsWith("1.18") || version.StartsWith("1.17"))
-                isModern = true;
-            if (isModern)
+            // Extract just the major.minor version (1.19, 1.20, etc)
+            if (version.Contains('.'))
+            {
+                int secondDotIndex = version.IndexOf('.', version.IndexOf('.') + 1);
+                if (secondDotIndex > 0)
+                {
+                    version = version.Substring(0, secondDotIndex);
+                }
+            }
+            
+            Debug.WriteLine($"Using template for Minecraft version: {version}");
+            
+            // 1.17+ uses net.minecraft.registry.Registry
+            // pre-1.17 uses net.minecraft.util.registry.Registry
+            if (string.Compare(version, "1.17", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 return $@"package {packageName}.item;
 
@@ -278,8 +289,9 @@ public class {itemClassName}Item extends Item {{
             if (string.IsNullOrEmpty(javaDir))
                 return;
                 
+            // Ensure consistent mod class name casing
             var modClassName = FormatClassName(modId) + "Mod";
-            var modClassPath = Path.Combine(javaDir, packageName.Replace('.', '/'), $"{modClassName}.java");
+            var modClassPath = Path.Combine(javaDir, packageName.Replace('.', Path.DirectorySeparatorChar), $"{modClassName}.java");
             
             // If the main mod class doesn't exist, create a simple one
             if (!File.Exists(modClassPath))
@@ -343,6 +355,7 @@ public class {itemClassName}Item extends Item {{
 
         private string GenerateFabricModClass(string packageName, string modId, string itemClassName)
         {
+            // Ensure the mod class name follows Java conventions - starts with capital letter
             var modClassName = FormatClassName(modId) + "Mod";
             
             return $@"package {packageName};

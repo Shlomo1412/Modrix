@@ -272,6 +272,16 @@ namespace Modrix.Views.Pages
                 }
                 UpdateSyntaxHighlighting();
             };
+
+            // Add search functionality with Ctrl+F keyboard shortcut
+            CodeEditor.KeyDown += (s, e) =>
+            {
+                if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control)
+                {
+                    ShowSearchDialog();
+                    e.Handled = true;
+                }
+            };
         }
 
         private void UpdateSyntaxHighlighting()
@@ -298,6 +308,147 @@ namespace Modrix.Views.Pages
             {
                 CodeEditor.SyntaxHighlighting = null;
             }
+        }
+
+        private void ShowSearchDialog()
+        {
+            var searchDialog = new Wpf.Ui.Controls.TextBox
+            {
+                PlaceholderText = "Search in file...",
+                Width = 200,
+                Margin = new Thickness(5)
+            };
+
+            var searchResults = new System.Collections.ObjectModel.ObservableCollection<SearchResult>();
+            var resultsListView = new System.Windows.Controls.ListView
+            {
+                ItemsSource = searchResults,
+                MaxHeight = 200,
+                Margin = new Thickness(5)
+            };
+
+            resultsListView.SelectionChanged += (s, e) =>
+            {
+                if (resultsListView.SelectedItem is SearchResult result)
+                {
+                    CodeEditor.Select(result.StartOffset, result.Length);
+                    CodeEditor.Focus();
+                }
+            };
+
+            // Create a custom dialog content
+            var dialogContent = new StackPanel();
+            dialogContent.Children.Add(searchDialog);
+            dialogContent.Children.Add(resultsListView);
+
+            // Create buttons
+            var findButton = new System.Windows.Controls.Button
+            {
+                Content = "Find All",
+                Margin = new Thickness(5)
+            };
+
+            var closeButton = new System.Windows.Controls.Button
+            {
+                Content = "Close",
+                Margin = new Thickness(5)
+            };
+
+            var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+            buttonPanel.Children.Add(findButton);
+            buttonPanel.Children.Add(closeButton);
+            dialogContent.Children.Add(buttonPanel);
+
+            // Create a simple window instead of MessageBox
+            var dialog = new Window
+            {
+                Title = "Search",
+                Content = dialogContent,
+                SizeToContent = SizeToContent.WidthAndHeight,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Window.GetWindow(this),
+                ResizeMode = ResizeMode.NoResize,
+                WindowStyle = WindowStyle.ToolWindow
+            };
+
+            findButton.Click += (s, e) =>
+            {
+                var searchText = searchDialog.Text;
+                if (string.IsNullOrWhiteSpace(searchText))
+                    return;
+
+                searchResults.Clear();
+                var text = CodeEditor.Text;
+                int index = 0;
+
+                while ((index = text.IndexOf(searchText, index, StringComparison.OrdinalIgnoreCase)) >= 0)
+                {
+                    var lineNumber = CodeEditor.Document.GetLineByOffset(index).LineNumber;
+                    searchResults.Add(new SearchResult
+                    {
+                        LineNumber = lineNumber,
+                        StartOffset = index,
+                        Length = searchText.Length,
+                        Preview = GetLinePreview(text, index, searchText.Length)
+                    });
+                    index += searchText.Length;
+                }
+
+                if (searchResults.Count > 0)
+                {
+                    resultsListView.SelectedIndex = 0;
+                }
+            };
+
+            closeButton.Click += (s, e) => dialog.Close();
+
+            searchDialog.KeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Enter)
+                {
+                    e.Handled = true;
+                    findButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
+                }
+                else if (e.Key == Key.Escape)
+                {
+                    dialog.Close();
+                }
+            };
+
+            dialog.ShowDialog();
+            searchDialog.Focus();
+        }
+
+        private string GetLinePreview(string text, int offset, int length)
+        {
+            int lineStart = offset;
+            while (lineStart > 0 && text[lineStart - 1] != '\n')
+                lineStart--;
+
+            int lineEnd = offset + length;
+            while (lineEnd < text.Length && text[lineEnd] != '\r' && text[lineEnd] != '\n')
+                lineEnd++;
+
+            string line = text.Substring(lineStart, lineEnd - lineStart);
+
+            // Highlight the match in the preview
+            int matchStart = offset - lineStart;
+            string highlighted = line.Substring(0, matchStart) +
+                                "«" + line.Substring(matchStart, length) + "»" +
+                                line.Substring(matchStart + length);
+
+            return highlighted;
+        }
+
+        // Helper class for search results
+        private class SearchResult
+        {
+            public int LineNumber { get; set; }
+            public int StartOffset { get; set; }
+            public int Length { get; set; }
+            public string Preview { get; set; }
+
+            public override string ToString() => $"Line {LineNumber}: {Preview}";
         }
 
         private void SaveCommand_Executed(object sender, ExecutedRoutedEventArgs e)
