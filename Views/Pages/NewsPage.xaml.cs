@@ -18,7 +18,7 @@ namespace Modrix.Views.Pages
         public NewsPage()
         {
             DataContext = this;
-            OpenCommitCommand = new RelayCommand<string>(OpenCommit);
+            OpenCommitCommand = new CommunityToolkit.Mvvm.Input.RelayCommand<string>(OpenCommit);
             InitializeComponent();
 
             // Use the connectivity service to check for internet

@@ -81,7 +81,7 @@
                     </ControlTemplate>
                 </TabControl.Template>
 
-                <!-- Main Tab -->
+                <!-- Main Tab (static) -->
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -93,7 +93,7 @@
                         <!-- Top bar: Search, filter, add -->
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,8">
                             <ui:TextBox PlaceholderText="Search..."
-                                        Text="{Binding ViewModel.SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                         Width="200"
                                         Margin="0,0,8,0">
                                 <ui:TextBox.Icon>
@@ -101,8 +101,8 @@
                                 </ui:TextBox.Icon>
                             </ui:TextBox>
                             <ComboBox Width="140" Margin="0,0,8,0"
-                                      ItemsSource="{Binding ViewModel.FilterOptions}"
-                                      SelectedItem="{Binding ViewModel.SelectedFilterOption}"/>
+                                      ItemsSource="{Binding FilterOptions}"
+                                      SelectedItem="{Binding SelectedFilterOption}"/>
                             <Grid>
                                 <ui:Button x:Name="AddElementButton"
                                            ToolTip="Add Mod Element"
@@ -111,15 +111,15 @@
                                            Height="40"
                                            Appearance="Primary"
                                            Margin="0,0,0,0"
-                                           Command="{Binding ViewModel.OpenAddElementFlyoutCommand}"/>
+                                           Command="{Binding OpenAddElementFlyoutCommand}"/>
                                 <Popup PlacementTarget="{Binding ElementName=AddElementButton}"
                                        Placement="Bottom"
-                                       IsOpen="{Binding ViewModel.IsAddElementFlyoutOpen}"
+                                       IsOpen="{Binding IsAddElementFlyoutOpen}"
                                        StaysOpen="False"
                                        AllowsTransparency="True">
                                     <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="8" Padding="8" Effect="{StaticResource CardShadow}">
                                         <StackPanel MinWidth="220">
-                                            <ItemsControl ItemsSource="{Binding ViewModel.AvailableModElements}">
+                                            <ItemsControl ItemsSource="{Binding AvailableModElements}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Button
@@ -145,7 +145,7 @@
                         <!-- Card List -->
                         <ScrollViewer>
                             <Grid>
-                                <ItemsControl ItemsSource="{Binding ViewModel.ModElements}">
+                                <ItemsControl ItemsSource="{Binding ModElements}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
@@ -189,7 +189,7 @@
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Visibility" Value="Collapsed"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ViewModel.ModElements.Count}" Value="0">
+                                                <DataTrigger Binding="{Binding ModElements.Count}" Value="0">
                                                     <Setter Property="Visibility" Value="Visible"/>
                                                 </DataTrigger>
                                             </Style.Triggers>

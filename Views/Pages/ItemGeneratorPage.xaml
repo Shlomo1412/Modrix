@@ -1,0 +1,85 @@
+<Page x:Class="Modrix.Views.Pages.ItemGeneratorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      Title="ItemGeneratorPage">
+    <Grid>
+        <!-- Top bar with Cancel and Create -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,12,0" VerticalAlignment="Top">
+            <ui:Button Content="Cancel" Width="100" Margin="0,0,8,0" Click="Cancel_Click"/>
+            <ui:Button Content="Create" Appearance="Primary" Width="120" Click="Create_Click"/>
+        </StackPanel>
+        
+        <!-- Main content -->
+        <ScrollViewer Margin="0,60,0,0">
+            <StackPanel Margin="40,20,40,40" VerticalAlignment="Top">
+                <TextBlock Text="Item Name" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,4"/>
+                <TextBox x:Name="NameTextBox" Width="300" Height="32" Margin="0,0,0,16" Text="{Binding ItemName, UpdateSourceTrigger=PropertyChanged}"/>
+                
+                <TextBlock Text="Texture" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,4"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <TextBox x:Name="TextureTextBox" Width="220" Height="32" IsReadOnly="True" Text="{Binding TexturePath}"/>
+                    <ui:Button Content="Choose..." Margin="8,0,0,0" Click="ChooseTexture_Click"/>
+                </StackPanel>
+                
+                <TextBlock Text="Properties" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,4"/>
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Stack Size -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Max Stack Size:" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                    <ComboBox Grid.Row="0" Grid.Column="1" Width="100" HorizontalAlignment="Left" SelectedValue="{Binding MaxStackSize}" Margin="0,0,0,8">
+                        <ComboBoxItem Content="1"/>
+                        <ComboBoxItem Content="16"/>
+                        <ComboBoxItem Content="64" IsSelected="True"/>
+                    </ComboBox>
+                    
+                    <!-- Glint -->
+                    <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Content="Has Enchanted Glint" IsChecked="{Binding HasGlint}" Margin="0,0,0,8"/>
+                    
+                    <!-- Food -->
+                    <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Is Food Item" IsChecked="{Binding IsFood}" Margin="0,0,0,8" 
+                              Checked="IsFood_Checked" Unchecked="IsFood_Unchecked"/>
+                </Grid>
+                
+                <!-- Food Properties (conditionally visible) -->
+                <StackPanel x:Name="FoodPropertiesPanel" Margin="0,0,0,16" Visibility="Collapsed">
+                    <TextBlock Text="Food Properties" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Food Value (Hunger Points) -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Hunger Points:" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                        <ui:NumberBox Grid.Row="0" Grid.Column="1" MinWidth="100" HorizontalAlignment="Left" Value="{Binding FoodValue}" Margin="0,0,0,8" Minimum="0" Maximum="20"/>
+                        
+                        <!-- Saturation -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Saturation:" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                        <ui:NumberBox Grid.Row="1" Grid.Column="1" MinWidth="100" HorizontalAlignment="Left" Value="{Binding SaturationValue}" Margin="0,0,0,8" Minimum="0" Maximum="20"/>
+                    </Grid>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- NavigationView at bottom -->
+        <ui:NavigationView PaneDisplayMode="Bottom" VerticalAlignment="Bottom" Height="60">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="Home" Icon="Home24"/>
+            </ui:NavigationView.MenuItems>
+        </ui:NavigationView>
+    </Grid>
+</Page>

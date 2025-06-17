@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Windows.Controls;
 
 namespace Modrix.ModElements
 {
@@ -16,11 +17,16 @@ namespace Modrix.ModElements
         /// </summary>
         /// <param name="context">Context with project info, user input, etc.</param>
         void Generate(ModElementGenerationContext context);
+
+        /// <summary>
+        /// Returns the XAML Page (UserControl or Page) for this generator, for use in the workspace.
+        /// </summary>
+        /// <returns>A WPF Page or UserControl instance for editing/creating this mod element.</returns>
+        Page CreatePage();
     }
 
     public class ModElementGenerationContext
     {
-        // Project directory, user input, etc. Add properties as needed.
         public string ProjectPath { get; set; }
         public string ModLoader { get; set; }
         public string MinecraftVersion { get; set; }
