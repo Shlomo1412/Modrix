@@ -15,10 +15,10 @@ namespace Modrix.ModElements
     public abstract class ModElementData
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Name { get; set; }
-        public string Type { get; set; }
+        public string Name { get; set; } = "";
+        public string Type { get; set; } = "";
         public string Description { get; set; } = "";
-        public string IconPath { get; set; }
+        public string IconPath { get; set; } = "";
         public DateTime Created { get; set; } = DateTime.Now;
         public DateTime LastModified { get; set; } = DateTime.Now;
 
@@ -59,8 +59,8 @@ namespace Modrix.ModElements
     /// </summary>
     public class ItemModElementData : ModElementData
     {
-        public string TexturePath { get; set; }
-        public string TranslationKey { get; set; }
+        public string TexturePath { get; set; } = "";
+        public string TranslationKey { get; set; } = "";
         public int MaxStackSize { get; set; } = 64;
         public bool HasGlint { get; set; } = false;
         public bool IsFood { get; set; } = false;
