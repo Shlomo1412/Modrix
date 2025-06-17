@@ -110,10 +110,8 @@ namespace Modrix.ModElements.Generators
             var modClassPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), $"{modClassName}.java");
             if (!File.Exists(modClassPath))
             {
-                var modClassContent = GenerateFabricModClass(packageName, modId, itemClassName);
-                Directory.CreateDirectory(Path.GetDirectoryName(modClassPath));
-                File.WriteAllText(modClassPath, modClassContent);
-                Debug.WriteLine($"Created Fabric mod class at {modClassPath}");
+                Debug.WriteLine($"Warning: Could not find main Fabric mod class at {modClassPath}. Skipping mod class update.");
+                // Do not generate a new mod class file, just skip updating it
             }
 
             var itemDirPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), "item");
@@ -269,10 +267,7 @@ public class {itemClassName}Item extends Item {{
             var modClassPath = Path.Combine(javaDir, packageName.Replace('.', Path.DirectorySeparatorChar), $"{modClassName}.java");
             if (!File.Exists(modClassPath))
             {
-                var modClassContent = GenerateFabricModClass(packageName, modId, itemClassName);
-                Directory.CreateDirectory(Path.GetDirectoryName(modClassPath) ?? "");
-                File.WriteAllText(modClassPath, modClassContent);
-                Debug.WriteLine($"Created Fabric mod class at {modClassPath}");
+                Debug.WriteLine($"Warning: Could not find main Fabric mod class at {modClassPath}. Skipping mod class update.");
                 return;
             }
             var content = File.ReadAllText(modClassPath);
@@ -303,32 +298,6 @@ public class {itemClassName}Item extends Item {{
                 File.WriteAllText(modClassPath, content);
                 Debug.WriteLine($"Updated Fabric mod class at {modClassPath}");
             }
-        }
-
-        private string GenerateFabricModClass(string packageName, string modId, string itemClassName)
-        {
-            // Ensure proper capitalization of mod class name
-            var modClassName = modId + "Mod";
-
-            Debug.WriteLine($"Generating Fabric mod class: {modClassName} in package {packageName}");
-
-            return $@"package {packageName};
-
-import net.fabricmc.api.ModInitializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class {modClassName} implements ModInitializer {{
-    // Set the actual mod ID from the project, not a hardcoded value
-    public static final String MOD_ID = ""{modId}"";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
-    @Override
-    public void onInitialize() {{
-        LOGGER.info(""{modClassName} initializing..."");
-        // Item registrations will be added here
-    }}
-}}";
         }
 
         private string GenerateForgeItemRegistryClass(string packageName, string firstItemClassName)

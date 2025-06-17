@@ -68,14 +68,6 @@ namespace Modrix.Services
             }
         }
 
-        
-
-       
-
-        
-
-        
-
         private async Task CopyTemplateFilesAsync(
             string targetPath,
             IProgress<(string, int)> progress,
@@ -110,6 +102,17 @@ namespace Modrix.Services
 
                 await CopyFileAsync(filePath, destPath);
 
+                // Replace 'modid' with the real modId in text files
+                if (IsTextFile(destPath))
+                {
+                    var content = await File.ReadAllTextAsync(destPath);
+                    if (content.Contains("modid") || content.Contains("MOD_ID"))
+                    {
+                        content = content.Replace("modid", modId).Replace("MOD_ID", modId.ToUpperInvariant());
+                        await File.WriteAllTextAsync(destPath, content);
+                    }
+                }
+
                 copiedFiles++;
                 var currentProgress = 10 + (int)((double)copiedFiles / totalFiles * 25);
                 progress.Report(($"Copying files ({copiedFiles}/{totalFiles})", currentProgress));
@@ -121,9 +124,15 @@ namespace Modrix.Services
                 await CopyDirectoryAsync(clientResourcesPath, Path.Combine(targetPath, "src", "client", "resources"));
             }
 
-            
             await FixAssetsFolder(targetPath, modId);
             await FixMixinFiles(targetPath, modId);
+        }
+
+        private bool IsTextFile(string filePath)
+        {
+            var textExtensions = new[] { ".java", ".json", ".properties", ".gradle", ".md", ".txt", ".xml", ".cfg" };
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            return textExtensions.Contains(ext);
         }
 
         private async Task FixAssetsFolder(string projectPath, string modId)
