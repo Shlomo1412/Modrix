@@ -30,10 +30,14 @@ namespace Modrix.ModElements.Generators
                 throw new ArgumentException("Item texture path is required");
             }
 
-            Debug.WriteLine($"Generating item with ModLoader: {context.ModLoader}");
+            if (string.IsNullOrWhiteSpace(context.ModLoader))
+            {
+                throw new InvalidOperationException($"ModLoader is not set in context for project {context.ProjectPath}. This is a bug in the project setup or manager.");
+            }
 
-            // Handle different mod loaders
-            switch (context.ModLoader.ToLower())
+            Debug.WriteLine($"[ItemModElementGenerator] Generating item for mod loader: {context.ModLoader} (project: {context.ProjectPath})");
+
+            switch (context.ModLoader.ToLowerInvariant())
             {
                 case "forge":
                 case "neoforge":
@@ -43,72 +47,8 @@ namespace Modrix.ModElements.Generators
                     GenerateFabricItem(context, name, texturePath);
                     break;
                 default:
-                    // If ModLoader isn't set correctly, try to detect from files
-                    var detectedModLoader = DetectModLoaderFromFiles(context.ProjectPath);
-                    Debug.WriteLine($"Mod loader not specified correctly, detected: {detectedModLoader}");
-                    
-                    if (detectedModLoader.ToLower() == "forge" || detectedModLoader.ToLower() == "neoforge")
-                        GenerateForgeItem(context, name, texturePath);
-                    else
-                        GenerateFabricItem(context, name, texturePath);
-                    break;
+                    throw new NotSupportedException($"Unknown or unsupported mod loader: {context.ModLoader}");
             }
-        }
-
-        private string DetectModLoaderFromFiles(string projectPath)
-        {
-            try
-            {
-                // Check for fabric.mod.json
-                if (File.Exists(Path.Combine(projectPath, "src", "main", "resources", "fabric.mod.json")))
-                    return "fabric";
-
-                // Check for mods.toml
-                if (File.Exists(Path.Combine(projectPath, "src", "main", "resources", "META-INF", "mods.toml")))
-                {
-                    // Check for NeoForge vs Forge
-                    var tomlContent = File.ReadAllText(Path.Combine(projectPath, "src", "main", "resources", "META-INF", "mods.toml"));
-                    if (tomlContent.Contains("neoforge") || tomlContent.Contains("NeoForge"))
-                        return "neoforge";
-                    return "forge";
-                }
-
-                // Check build.gradle for dependencies
-                if (File.Exists(Path.Combine(projectPath, "build.gradle")))
-                {
-                    var gradleContent = File.ReadAllText(Path.Combine(projectPath, "build.gradle"));
-                    if (gradleContent.Contains("fabric"))
-                        return "fabric";
-                    if (gradleContent.Contains("neoforge"))
-                        return "neoforge";
-                    if (gradleContent.Contains("forge"))
-                        return "forge";
-                }
-
-                // Try to read from modrix.config
-                var configPath = Path.Combine(projectPath, "modrix.config");
-                if (File.Exists(configPath))
-                {
-                    var content = File.ReadAllText(configPath);
-                    var index = content.IndexOf("\"ModType\": \"");
-                    if (index >= 0)
-                    {
-                        var start = index + 12;
-                        var end = content.IndexOf("\"", start);
-                        if (end > start)
-                        {
-                            var modType = content.Substring(start, end - start).ToLower();
-                            return modType; // Will be "fabric", "forge" etc.
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error detecting mod loader: {ex.Message}");
-            }
-
-            return "fabric"; // Default to Fabric if detection fails
         }
 
         private void GenerateForgeItem(ModElementGenerationContext context, string itemName, string texturePath)

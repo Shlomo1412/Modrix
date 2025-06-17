@@ -137,9 +137,36 @@ namespace Modrix.ModElements
                 var configPath = Path.Combine(_projectPath, "modrix.config");
                 if (File.Exists(configPath))
                 {
-                    var json = File.ReadAllText(configPath);
-                    var config = JsonSerializer.Deserialize<ModProjectData>(json);
-                    return config?.ModType ?? "Forge"; // Default to Forge
+                    // Check if it's a JSON file first
+                    try
+                    {
+                        var json = File.ReadAllText(configPath);
+                        var config = JsonSerializer.Deserialize<ModProjectData>(json);
+                        if (config?.ModType != null)
+                        {
+                            var modType = config.ModType.Trim().ToLowerInvariant();
+                            if (modType.Contains("fabric")) return "fabric";
+                            if (modType.Contains("forge")) return "forge";
+                            if (modType.Contains("neo")) return "neoforge";
+                            return modType.Length > 0 ? char.ToUpper(modType[0]) + modType.Substring(1) : "Forge";
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        // If JSON parsing fails, try key-value format
+                        var lines = File.ReadAllLines(configPath);
+                        foreach (var line in lines)
+                        {
+                            if (line.StartsWith("ModType="))
+                            {
+                                var modType = line.Substring(8).Trim().ToLowerInvariant();
+                                if (modType.Contains("fabric")) return "fabric";
+                                if (modType.Contains("forge")) return "forge";
+                                if (modType.Contains("neo")) return "neoforge";
+                                return modType.Length > 0 ? char.ToUpper(modType[0]) + modType.Substring(1) : "Forge";
+                            }
+                        }
+                    }
                 }
             }
             catch
