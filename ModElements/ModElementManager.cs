@@ -184,9 +184,28 @@ namespace Modrix.ModElements
                 var configPath = Path.Combine(_projectPath, "modrix.config");
                 if (File.Exists(configPath))
                 {
-                    var json = File.ReadAllText(configPath);
-                    var config = JsonSerializer.Deserialize<ModProjectData>(json);
-                    return config?.MinecraftVersion ?? "1.21.x"; // Default version
+                    // Try JSON format first
+                    try
+                    {
+                        var json = File.ReadAllText(configPath);
+                        var config = JsonSerializer.Deserialize<ModProjectData>(json);
+                        if (config?.MinecraftVersion != null)
+                        {
+                            return config.MinecraftVersion;
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        // If JSON parsing fails, try key-value format
+                        var lines = File.ReadAllLines(configPath);
+                        foreach (var line in lines)
+                        {
+                            if (line.StartsWith("MinecraftVersion="))
+                            {
+                                return line.Substring(18).Trim();
+                            }
+                        }
+                    }
                 }
             }
             catch

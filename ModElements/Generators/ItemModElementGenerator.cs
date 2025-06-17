@@ -35,7 +35,7 @@ namespace Modrix.ModElements.Generators
                 throw new InvalidOperationException($"ModLoader is not set in context for project {context.ProjectPath}. This is a bug in the project setup or manager.");
             }
 
-            Debug.WriteLine($"[ItemModElementGenerator] Generating item for mod loader: {context.ModLoader} (project: {context.ProjectPath})");
+            Debug.WriteLine($"[ItemModElementGenerator] Generating item for mod loader: {context.ModLoader}, MC Version: {context.MinecraftVersion} (project: {context.ProjectPath})");
 
             switch (context.ModLoader.ToLowerInvariant())
             {
@@ -95,35 +95,47 @@ namespace Modrix.ModElements.Generators
             var projectPath = context.ProjectPath;
             var packageName = GetPackageNameFromProject(projectPath);
             var modId = GetModIdFromProject(projectPath);
-            
+
             // Format the class name (remove spaces, capitalize)
             var itemClassName = FormatClassName(itemName);
-            
+
             // Prepare paths
             var packagePath = packageName.Replace('.', '/');
             var javaDir = FindJavaDirectory(projectPath);
-            
+
             if (string.IsNullOrEmpty(javaDir))
             {
                 throw new DirectoryNotFoundException("Could not find Java source directory");
             }
-            
+
+            // Create main mod class first to ensure it exists
+            var modClassName = FormatClassName(modId) + "Mod";
+            var modClassPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), $"{modClassName}.java");
+
+            if (!File.Exists(modClassPath))
+            {
+                var modClassContent = GenerateFabricModClass(packageName, modId, itemClassName);
+                Directory.CreateDirectory(Path.GetDirectoryName(modClassPath));
+                File.WriteAllText(modClassPath, modClassContent);
+                Debug.WriteLine($"Created Fabric mod class at {modClassPath}");
+            }
+
             // Create item class
-            var itemClassPath = Path.Combine(javaDir, packagePath, "item", $"{itemClassName}Item.java");
-            Directory.CreateDirectory(Path.GetDirectoryName(itemClassPath ?? ""));
-            
+            var itemClassPath = Path.Combine(javaDir, packagePath.Replace('/', Path.DirectorySeparatorChar), "item", $"{itemClassName}Item.java");
+            Directory.CreateDirectory(Path.GetDirectoryName(itemClassPath));
+
             // Write item class - use proper Fabric version for the Minecraft version
             var minecraftVersion = context.MinecraftVersion ?? "1.20.x"; // Default to 1.20.x if not specified
             var itemClass = GenerateFabricItemClass(packageName, modId, itemClassName, itemName, minecraftVersion);
             File.WriteAllText(itemClassPath, itemClass);
             Debug.WriteLine($"Created Fabric item class at {itemClassPath}");
-            
+
             // Copy texture if needed
             HandleTexture(projectPath, texturePath, modId, itemName);
-            
+
             // Update registry class (for Fabric)
             UpdateFabricItemRegistry(projectPath, packageName, itemClassName, modId);
-            
+
             // Update language file
             UpdateLanguageFile(projectPath, modId, itemName, context.Parameters.TryGetValue("TranslationKey", out var key) ? key?.ToString() : null);
         }
@@ -150,9 +162,14 @@ public class {itemClassName}Item extends Item {{
         private string GenerateFabricItemClass(string packageName, string modId, string itemClassName, string itemName, string minecraftVersion)
         {
             var modClassName = FormatClassName(modId) + "Mod";
-            
-            // Different versions of Minecraft require different imports for Fabric
-            if (minecraftVersion.StartsWith("1.19") || minecraftVersion.StartsWith("1.20"))
+            // Normalize version string for comparison
+            string version = minecraftVersion?.Trim() ?? "1.20.x";
+            // Use registry import based on MC version
+            // 1.17+ uses net.minecraft.registry.Registry, pre-1.17 uses net.minecraft.util.registry.Registry
+            bool isModern = false;
+            if (version.StartsWith("1.21") || version.StartsWith("1.20") || version.StartsWith("1.19") || version.StartsWith("1.18") || version.StartsWith("1.17"))
+                isModern = true;
+            if (isModern)
             {
                 return $@"package {packageName}.item;
 
@@ -175,30 +192,7 @@ public class {itemClassName}Item extends Item {{
     }}
 }}";
             }
-            else if (minecraftVersion.StartsWith("1.21"))
-            {
-                return $@"package {packageName}.item;
-
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
-import {packageName}.{modClassName};
-
-public class {itemClassName}Item extends Item {{
-    public static final String ID = ""{ToSnakeCase(itemName)}"";
-    public static final {itemClassName}Item INSTANCE = new {itemClassName}Item();
-
-    public {itemClassName}Item() {{
-        super(new Item.Settings());
-    }}
-
-    public static void register() {{
-        Registry.register(Registries.ITEM, new Identifier({modClassName}.MOD_ID, ID), INSTANCE);
-    }}
-}}";
-            }
-            else // For older versions
+            else // For older versions (pre-1.17)
             {
                 return $@"package {packageName}.item;
 

@@ -148,31 +148,86 @@
                                 <ItemsControl ItemsSource="{Binding ModElements}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left"/>
+                                            <WrapPanel Orientation="Horizontal" />
                                         </ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Margin="8,8,8,16" Padding="0" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="10" Effect="{StaticResource CardShadow}">
+                                            <!-- Auto-resizing Mod Element Card -->
+                                            <Border Margin="8,8,8,16" 
+                                                    Padding="12" 
+                                                    Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                                                    CornerRadius="10" 
+                                                    Effect="{StaticResource CardShadow}"
+                                                    MinWidth="300"
+                                                    MaxWidth="450">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="64"/>
+                                                        <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+
                                                     <!-- Icon -->
-                                                    <Border Grid.Column="0" Width="64" Height="64" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="8" Margin="8">
-                                                        <Image Source="{Binding Icon}" Width="40" Height="40" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                    <Border Grid.Column="0" 
+                                                            Grid.RowSpan="2"
+                                                            Width="52" 
+                                                            Height="52" 
+                                                            Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                                                            CornerRadius="8" 
+                                                            VerticalAlignment="Top"
+                                                            Margin="0,0,12,0">
+                                                        <Image Source="{Binding Icon}" 
+                                                               Width="32" 
+                                                               Height="32" 
+                                                               VerticalAlignment="Center" 
+                                                               HorizontalAlignment="Center"/>
                                                     </Border>
-                                                    <!-- Info -->
-                                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold"/>
-                                                        <TextBlock Text="{Binding Description}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,2"/>
-                                                    </StackPanel>
+
+                                                    <!-- Name -->
+                                                    <TextBlock Grid.Column="1" 
+                                                               Grid.Row="0"
+                                                               Text="{Binding Name}" 
+                                                               FontSize="16" 
+                                                               FontWeight="SemiBold"
+                                                               TextWrapping="Wrap"
+                                                               VerticalAlignment="Top"/>
+
+                                                    <!-- Description -->
+                                                    <TextBlock Grid.Column="1" 
+                                                               Grid.Row="1"
+                                                               Text="{Binding Description}" 
+                                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                                               Margin="0,4,0,0"
+                                                               TextWrapping="Wrap"
+                                                               VerticalAlignment="Top"/>
+
                                                     <!-- Action Buttons -->
-                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
-                                                        <ui:Button Icon="{ui:SymbolIcon BoxEdit24}" ToolTip="Edit" Width="32" Height="32" Margin="0,0,6,0" Padding="4" Command="{Binding DataContext.EditModElementCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}"/>
-                                                        <ui:Button Icon="{ui:SymbolIcon Delete20}" ToolTip="Delete" Width="32" Height="32" Padding="4" Appearance="Danger" Command="{Binding DataContext.DeleteModElementCommand, RelativeSource={RelativeSource AncestorType=Page}}" CommandParameter="{Binding}"/>
+                                                    <StackPanel Grid.Column="2" 
+                                                                Grid.RowSpan="2"
+                                                                Orientation="Horizontal" 
+                                                                Margin="8,0,0,0" 
+                                                                VerticalAlignment="Center">
+                                                        <ui:Button Icon="{ui:SymbolIcon BoxEdit24}" 
+                                                                   ToolTip="Edit" 
+                                                                   Width="32" 
+                                                                   Height="32" 
+                                                                   Margin="0,0,6,0" 
+                                                                   Padding="4" 
+                                                                   Command="{Binding DataContext.EditModElementCommand, RelativeSource={RelativeSource AncestorType=Page}}" 
+                                                                   CommandParameter="{Binding}"/>
+                                                        <ui:Button Icon="{ui:SymbolIcon Delete20}" 
+                                                                   ToolTip="Delete" 
+                                                                   Width="32" 
+                                                                   Height="32" 
+                                                                   Padding="4" 
+                                                                   Appearance="Danger" 
+                                                                   Command="{Binding DataContext.DeleteModElementCommand, RelativeSource={RelativeSource AncestorType=Page}}" 
+                                                                   CommandParameter="{Binding}"/>
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
