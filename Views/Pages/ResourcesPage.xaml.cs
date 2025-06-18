@@ -370,6 +370,85 @@ namespace Modrix.Views.Pages
             }
         }
 
+        // Markdown formatting button handlers for README editor
+        private void BoldButton_Click(object sender, RoutedEventArgs e)
+        {
+            InsertMarkdownSyntax("**", "**");
+        }
+
+        private void ItalicButton_Click(object sender, RoutedEventArgs e)
+        {
+            InsertMarkdownSyntax("*", "*");
+        }
+
+        private void UnderlineButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Markdown does not support underline natively, use HTML <u> tag
+            InsertMarkdownSyntax("<u>", "</u>");
+        }
+
+        private void SpoilerButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Common spoiler syntax: ">!spoiler!<" (used by Discord/GitHub)
+            InsertMarkdownSyntax(">!", "!<");
+        }
+
+        private void BulletButton_Click(object sender, RoutedEventArgs e)
+        {
+            InsertListMarkdown("- ");
+        }
+
+        private void NumberedButton_Click(object sender, RoutedEventArgs e)
+        {
+            InsertListMarkdown("1. ");
+        }
+
+        private void CodeButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Inline code or code block depending on selection
+            if (ReadmeEditor != null && !string.IsNullOrEmpty(ReadmeEditor.SelectedText) && ReadmeEditor.SelectedText.Contains("\n"))
+                InsertMarkdownSyntax("\n```\n", "\n```\n");
+            else
+                InsertMarkdownSyntax("`", "`");
+        }
+
+        // Helper for wrapping selected text
+        private void InsertMarkdownSyntax(string prefix, string suffix)
+        {
+            if (ReadmeEditor == null) return;
+            var selStart = ReadmeEditor.SelectionStart;
+            var selLength = ReadmeEditor.SelectionLength;
+            var text = ReadmeEditor.Text;
+            var selected = selLength > 0 ? text.Substring(selStart, selLength) : "";
+            var newText = text.Remove(selStart, selLength).Insert(selStart, prefix + selected + suffix);
+            ReadmeEditor.Text = newText;
+            ReadmeEditor.Focus();
+            ReadmeEditor.SelectionStart = selStart + prefix.Length;
+            ReadmeEditor.SelectionLength = selected.Length;
+        }
+
+        // Helper for inserting list syntax at line starts
+        private void InsertListMarkdown(string listPrefix)
+        {
+            if (ReadmeEditor == null) return;
+            var selStart = ReadmeEditor.SelectionStart;
+            var selLength = ReadmeEditor.SelectionLength;
+            var text = ReadmeEditor.Text;
+            var selected = selLength > 0 ? text.Substring(selStart, selLength) : "";
+            var lines = selected.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(lines[i]) && !lines[i].TrimStart().StartsWith(listPrefix))
+                    lines[i] = listPrefix + lines[i].TrimStart();
+            }
+            var newSelected = string.Join("\n", lines);
+            var newText = text.Remove(selStart, selLength).Insert(selStart, newSelected);
+            ReadmeEditor.Text = newText;
+            ReadmeEditor.Focus();
+            ReadmeEditor.SelectionStart = selStart;
+            ReadmeEditor.SelectionLength = newSelected.Length;
+        }
+
         private void LoadTextures(string dir)
         {
             if (!Directory.Exists(dir) || TexturesList == null) return;
