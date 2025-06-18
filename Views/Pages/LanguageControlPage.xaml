@@ -25,8 +25,8 @@
             <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
                 <ui:SymbolIcon Symbol="LocalLanguage24" Width="40" Height="40" Margin="0,0,16,0"/>
                 <StackPanel>
-                    <TextBlock Text="Language Control" FontSize="28" FontWeight="Bold"/>
-                    <TextBlock Text="Manage your mod's translations and language files" FontSize="15" Foreground="#99000000" Margin="0,2,0,0"/>
+                    <TextBlock Text="Language Control" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="Manage your mod's translations and language files" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                 </StackPanel>
                 <ui:Button 
                     Appearance="Secondary"
@@ -174,8 +174,8 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="Edit Translation" FontWeight="SemiBold" FontSize="16"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <ui:Button Appearance="Secondary" Content="Cancel" Command="{Binding CancelEditingCommand}" Margin="0,0,8,0"/>
-                                    <ui:Button Appearance="Primary" Content="Save" Command="{Binding SaveEditingCommand}"/>
+                                    <ui:Button Appearance="Secondary" Content="Cancel" Command="{Binding CancelEditingCommand}" Margin="0,0,8,0" Icon="{ui:SymbolIcon Dismiss24}"/>
+                                    <ui:Button Appearance="Primary" Content="Save" Command="{Binding SaveEditingCommand}" Icon="{ui:SymbolIcon Save24}"/>
                                 </StackPanel>
                             </Grid>
                             <StackPanel Margin="0,12,0,0">
@@ -224,12 +224,14 @@
 
                     <!-- Translations List -->
                     <ItemsControl 
-                        ItemsSource="{Binding FilteredTranslations}"
-                        Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Collapsed}}">
+                        ItemsSource="{Binding FilteredTranslations}">
                         <ItemsControl.Style>
                             <Style TargetType="ItemsControl">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsAddingNew}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsEditing}" Value="True">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                 </Style.Triggers>
