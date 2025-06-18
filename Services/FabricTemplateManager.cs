@@ -30,9 +30,7 @@ namespace Modrix.Services
                 await UpdateMixinConfigs(data);
                 await UpdateModJson(data);
                 await CopyIconAsync(data);
-
-                // Ensure all Java files have the correct MOD_ID
-                await FixAllModIdReferences(data.Location, data.ModId);
+                await ChangeModIdInMainClass(data.Location, data.ModId);
 
                 if (data.IncludeReadme)
                 {
@@ -68,41 +66,6 @@ namespace Modrix.Services
                 if (navWin is MainWindow main)
                     main.ShowProjectFailedSnackbar(ex.Message);
                 throw;
-            }
-        }
-
-        // Helper method to replace MOD_ID constant with actual mod ID
-        private string ReplaceModIdConstant(string content, string modId)
-        {
-            // This pattern matches the MOD_ID constant declaration with any spacing/formatting
-            var pattern = @"(public\s+static\s+final\s+String\s+MOD_ID\s*=\s*[""])modid([""]\s*;)";
-            return Regex.Replace(content, pattern, $"$1{modId}$2");
-        }
-
-        // Dedicated method to ensure all Java files have the correct MOD_ID
-        private async Task FixAllModIdReferences(string projectPath, string modId)
-        {
-            var srcPath = Path.Combine(projectPath, "src");
-            if (!Directory.Exists(srcPath)) return;
-
-            // Find all Java files in the project
-            var allJavaFiles = Directory.GetFiles(srcPath, "*.java", SearchOption.AllDirectories);
-            
-            foreach (var filePath in allJavaFiles)
-            {
-                // Skip files that don't need MOD_ID fixing
-                if (!File.ReadAllText(filePath).Contains("MOD_ID")) continue;
-
-                // Read, fix, and write back the content
-                var content = await File.ReadAllTextAsync(filePath);
-                var updatedContent = ReplaceModIdConstant(content, modId);
-                
-                // Only write if changes were made
-                if (content != updatedContent)
-                {
-                    await File.WriteAllTextAsync(filePath, updatedContent);
-                    Debug.WriteLine($"Updated MOD_ID in {filePath}");
-                }
             }
         }
 
@@ -148,9 +111,6 @@ namespace Modrix.Services
                     // Special handling for Java files
                     if (destPath.EndsWith(".java"))
                     {
-                        // Replace MOD_ID constant value
-                        content = ReplaceModIdConstant(content, modId);
-                        
                         // Replace other occurrences of modid
                         content = content.Replace("modid", modId);
                     }
@@ -378,9 +338,6 @@ namespace Modrix.Services
                         content = content.Replace("ExampleModClient", $"{data.ModId}ModClient");
                     }
 
-                    // Replace MOD_ID constant value
-                    content = ReplaceModIdConstant(content, data.ModId);
-
                     var newPath = filePath
                         .Replace("com" + Path.DirectorySeparatorChar + "example", packagePath)
                         .Replace("net" + Path.DirectorySeparatorChar + "fabricmc" + Path.DirectorySeparatorChar + "example", packagePath)
@@ -591,10 +548,31 @@ namespace Modrix.Services
                    fileName == "README.md";
         }
 
-        
+        /// <summary>
+        /// Finds the main class file (src/main/java/.../{modId}Mod.java) and replaces the MOD_ID constant value with the correct modId.
+        /// </summary>
+        public async Task ChangeModIdInMainClass(string projectPath, string modId)
+        {
+            // Build the expected main class file path
+            var mainJavaDir = Path.Combine(projectPath, "src", "main", "java");
+            if (!Directory.Exists(mainJavaDir)) return;
 
+            // Recursively search for the main class file named {modId}Mod.java (case-insensitive)
+            var mainClassFile = Directory.GetFiles(mainJavaDir, "*Mod.java", SearchOption.AllDirectories)
+                .FirstOrDefault(f => string.Equals(Path.GetFileName(f), $"{modId}Mod.java", StringComparison.OrdinalIgnoreCase));
 
+            if (mainClassFile == null || !File.Exists(mainClassFile)) return;
 
+            var content = await File.ReadAllTextAsync(mainClassFile);
+            var pattern = "public static final String MOD_ID = \"modid\";";
+            var replacement = $"public static final String MOD_ID = \"{modId}\";";
+
+            if (content.Contains(pattern))
+            {
+                content = content.Replace(pattern, replacement);
+                await File.WriteAllTextAsync(mainClassFile, content);
+            }
+        }
 
         private async Task ShowMessageAsync(string message, string title)
         {
