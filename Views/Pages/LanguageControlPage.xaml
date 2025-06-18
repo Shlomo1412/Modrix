@@ -23,7 +23,7 @@
         <!-- Sticky Header -->
         <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18">
             <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
-                <ui:SymbolIcon Symbol="LocalLanguage24" Width="40" Height="40" Margin="0,0,16,0"/>
+                <ui:Image Source="pack://application:,,,/Resources/Icons/LanguageControlIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
                 <StackPanel>
                     <TextBlock Text="Language Control" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     <TextBlock Text="Manage your mod's translations and language files" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>

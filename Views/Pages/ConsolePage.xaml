@@ -18,7 +18,7 @@
                 <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
                     <ui:Image Source="pack://application:,,,/Resources/Icons/ConsoleIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
                     <StackPanel>
-                        <TextBlock Text="Console" FontSize="28" FontWeight="Bold"/>
+                        <TextBlock Text="Console" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="View build output and runtime logs" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
