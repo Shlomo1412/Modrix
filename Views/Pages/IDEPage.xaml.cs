@@ -27,6 +27,11 @@ namespace Modrix.Views.Pages
         private FileSystemWatcher? _fileWatcher;
         private bool _editorLoaded = false;
 
+        private double _editorFontSize = 14.0; // Default font size
+        private const double MinFontSize = 8.0;
+        private const double MaxFontSize = 40.0;
+        private const double FontSizeStep = 1.0;
+
         public IDEPage(IDEPageViewModel viewModel)
         {
             ViewModel = viewModel;
@@ -35,6 +40,9 @@ namespace Modrix.Views.Pages
             InitializeComponent();
             SetupFileTreeViewEvents();
             SetupEditor();
+
+            // Set initial font size
+            CodeEditor.FontSize = _editorFontSize;
 
             if (ViewModel is INotifyPropertyChanged notifyViewModel)
             {
@@ -55,6 +63,9 @@ namespace Modrix.Views.Pages
                 SetupAutoSave();
                 SetupFileWatcher();
             };
+
+            // Add mouse wheel zoom (Ctrl+Wheel)
+            CodeEditor.PreviewMouseWheel += CodeEditor_PreviewMouseWheel;
         }
 
         private void IdeSettings_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -459,6 +470,34 @@ namespace Modrix.Views.Pages
         private void SaveCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = ViewModel.HasUnsavedChanges;
+        }
+
+        private void ZoomInButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetEditorFontSize(_editorFontSize + FontSizeStep);
+        }
+
+        private void ZoomOutButton_Click(object sender, RoutedEventArgs e)
+        {
+            SetEditorFontSize(_editorFontSize - FontSizeStep);
+        }
+
+        private void SetEditorFontSize(double newSize)
+        {
+            _editorFontSize = Math.Max(MinFontSize, Math.Min(MaxFontSize, newSize));
+            CodeEditor.FontSize = _editorFontSize;
+        }
+
+        private void CodeEditor_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                if (e.Delta > 0)
+                    SetEditorFontSize(_editorFontSize + FontSizeStep);
+                else if (e.Delta < 0)
+                    SetEditorFontSize(_editorFontSize - FontSizeStep);
+                e.Handled = true;
+            }
         }
 
         // Drag-and-drop handlers

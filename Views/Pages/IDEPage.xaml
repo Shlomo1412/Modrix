@@ -75,6 +75,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <ui:Card Grid.Column="0"
@@ -97,7 +99,22 @@
                     </Grid>
                 </ui:Card>
 
+                <!-- Zoom Out Button -->
                 <ui:Button Grid.Column="1"
+                          Margin="8,0,0,5"
+                          Appearance="Secondary"
+                          ToolTip="Zoom Out (Ctrl+-)"
+                          Click="ZoomOutButton_Click"
+                          Icon="{ui:SymbolIcon ZoomOut24}"/>
+                <!-- Zoom In Button -->
+                <ui:Button Grid.Column="2"
+                          Margin="4,0,0,5"
+                          Appearance="Secondary"
+                          ToolTip="Zoom In (Ctrl+=)"
+                          Click="ZoomInButton_Click"
+                          Icon="{ui:SymbolIcon ZoomIn24}"/>
+                
+                <ui:Button Grid.Column="3"
                           Margin="8,0,0,5"
                           Appearance="Primary"
                           Command="{Binding ViewModel.SaveCommand}"
