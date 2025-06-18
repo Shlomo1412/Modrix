@@ -13,7 +13,7 @@ namespace Modrix.ModElements.Generators
     {
         public string Name => "Item";
         public string Description => "Create a new item for your mod.";
-        public string Icon => "pack://application:,,,/Resources/Icons/WorkspaceIcon.png";
+        public string Icon => "pack://application:,,,/Resources/Icons/ItemIcon.png";
         public IReadOnlyList<string> SupportedModLoaders => new[] { "Forge", "Fabric" };
         public IReadOnlyList<string> SupportedMinecraftVersions => new[] { "1.21.x", "1.20.x", "1.19.x" };
 
