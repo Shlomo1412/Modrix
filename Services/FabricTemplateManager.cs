@@ -30,7 +30,10 @@ namespace Modrix.Services
                 await UpdateMixinConfigs(data);
                 await UpdateModJson(data);
                 await CopyIconAsync(data);
-                
+
+                // Ensure all Java files have the correct MOD_ID
+                await FixAllModIdReferences(data.Location, data.ModId);
+
                 if (data.IncludeReadme)
                 {
                     await CreateReadmeFile(data);
@@ -65,6 +68,41 @@ namespace Modrix.Services
                 if (navWin is MainWindow main)
                     main.ShowProjectFailedSnackbar(ex.Message);
                 throw;
+            }
+        }
+
+        // Helper method to replace MOD_ID constant with actual mod ID
+        private string ReplaceModIdConstant(string content, string modId)
+        {
+            // This pattern matches the MOD_ID constant declaration with any spacing/formatting
+            var pattern = @"(public\s+static\s+final\s+String\s+MOD_ID\s*=\s*[""])modid([""]\s*;)";
+            return Regex.Replace(content, pattern, $"$1{modId}$2");
+        }
+
+        // Dedicated method to ensure all Java files have the correct MOD_ID
+        private async Task FixAllModIdReferences(string projectPath, string modId)
+        {
+            var srcPath = Path.Combine(projectPath, "src");
+            if (!Directory.Exists(srcPath)) return;
+
+            // Find all Java files in the project
+            var allJavaFiles = Directory.GetFiles(srcPath, "*.java", SearchOption.AllDirectories);
+            
+            foreach (var filePath in allJavaFiles)
+            {
+                // Skip files that don't need MOD_ID fixing
+                if (!File.ReadAllText(filePath).Contains("MOD_ID")) continue;
+
+                // Read, fix, and write back the content
+                var content = await File.ReadAllTextAsync(filePath);
+                var updatedContent = ReplaceModIdConstant(content, modId);
+                
+                // Only write if changes were made
+                if (content != updatedContent)
+                {
+                    await File.WriteAllTextAsync(filePath, updatedContent);
+                    Debug.WriteLine($"Updated MOD_ID in {filePath}");
+                }
             }
         }
 
@@ -106,11 +144,22 @@ namespace Modrix.Services
                 if (IsTextFile(destPath))
                 {
                     var content = await File.ReadAllTextAsync(destPath);
-                    if (content.Contains("modid") || content.Contains("MOD_ID"))
+                    
+                    // Special handling for Java files
+                    if (destPath.EndsWith(".java"))
+                    {
+                        // Replace MOD_ID constant value
+                        content = ReplaceModIdConstant(content, modId);
+                        
+                        // Replace other occurrences of modid
+                        content = content.Replace("modid", modId);
+                    }
+                    else if (content.Contains("modid") || content.Contains("MOD_ID"))
                     {
                         content = content.Replace("modid", modId).Replace("MOD_ID", modId.ToUpperInvariant());
-                        await File.WriteAllTextAsync(destPath, content);
                     }
+                    
+                    await File.WriteAllTextAsync(destPath, content);
                 }
 
                 copiedFiles++;
@@ -315,11 +364,11 @@ namespace Modrix.Services
                 {
                     var content = await File.ReadAllTextAsync(filePath);
 
-                    
+                    // Replace package declaration
                     content = content.Replace("com.example", data.Package)
                                      .Replace("net.fabricmc.example", data.Package);
 
-                    
+                    // Replace class name
                     if (filePath.Contains("ExampleMod"))
                     {
                         content = content.Replace("ExampleMod", $"{data.ModId}Mod");
@@ -329,7 +378,9 @@ namespace Modrix.Services
                         content = content.Replace("ExampleModClient", $"{data.ModId}ModClient");
                     }
 
-                    
+                    // Replace MOD_ID constant value
+                    content = ReplaceModIdConstant(content, data.ModId);
+
                     var newPath = filePath
                         .Replace("com" + Path.DirectorySeparatorChar + "example", packagePath)
                         .Replace("net" + Path.DirectorySeparatorChar + "fabricmc" + Path.DirectorySeparatorChar + "example", packagePath)
@@ -541,75 +592,6 @@ namespace Modrix.Services
         }
 
         
-
-        private string? FindBestJdkHome(int requiredVersion = 0)
-        {
-            // First check: Look for JDK in registry and Program Files
-            Version bestV = new(0, 0);
-            string? best = null;
-
-            void TryPath(string p)
-            {
-                if (!Directory.Exists(p)) return;
-                if (TryReadReleaseVersion(p, out var v) &&
-                    (v.Major >= requiredVersion || requiredVersion == 0))
-                {
-                    if (v > bestV)
-                    {
-                        bestV = v;
-                        best = p;
-                    }
-                }
-            }
-
-            // Check registry and program files as before
-            // [Keep existing registry and program files scanning code]
-
-            // Second check: Look at JAVA_HOME environment variable
-            var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
-            if (!string.IsNullOrEmpty(javaHome) && Directory.Exists(javaHome))
-            {
-                Debug.WriteLine($"[JDK Search] Found JAVA_HOME: {javaHome}");
-                TryPath(javaHome);
-            }
-
-            // Third check: Look for JDK installation directories under JAVA_HOME
-            if (!string.IsNullOrEmpty(javaHome))
-            {
-                var parentDir = Directory.GetParent(javaHome)?.FullName;
-                if (parentDir != null && Directory.Exists(parentDir))
-                {
-                    foreach (var dir in Directory.GetDirectories(parentDir, "jdk*"))
-                    {
-                        TryPath(dir);
-                    }
-                }
-            }
-
-            return best;
-        }
-
-        
-        private bool TryReadReleaseVersion(string dir, out Version version)
-        {
-            version = new(0, 0);
-            try
-            {
-                var f = Path.Combine(dir, "release");
-                if (!File.Exists(f)) return false;
-
-                foreach (var ln in File.ReadAllLines(f))
-                {
-                    if (!ln.StartsWith("JAVA_VERSION=")) continue;
-                    var parts = ln.Split('"');
-                    if (parts.Length < 2) return false;
-                    version = Version.Parse(parts[1]);
-                    return true;
-                }
-            }
-            catch { /* swallow */ }
-            return false;
-        }
 
 
 

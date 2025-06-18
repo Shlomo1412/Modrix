@@ -4,11 +4,297 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Modrix.Views.Pages"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="LanguageControlPage">
+      d:DesignHeight="650" d:DesignWidth="900"
+      Title="Language Control">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.10"/>
+    </Page.Resources>
 
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Sticky Header -->
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18">
+            <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="LocalLanguage24" Width="40" Height="40" Margin="0,0,16,0"/>
+                <StackPanel>
+                    <TextBlock Text="Language Control" FontSize="28" FontWeight="Bold"/>
+                    <TextBlock Text="Manage your mod's translations and language files" FontSize="15" Foreground="#99000000" Margin="0,2,0,0"/>
+                </StackPanel>
+                <ui:Button 
+                    Appearance="Secondary"
+                    Icon="{ui:SymbolIcon Folder24}"
+                    Content="Open Lang Folder"
+                    Command="{Binding OpenLanguageFolderCommand}"
+                    Margin="32,0,0,0"
+                    VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="0,18,0,32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Languages Panel -->
+                <StackPanel Grid.Column="0">
+                    <ui:Card Padding="18" Margin="0,0,0,18" Effect="{StaticResource CardShadow}">
+                        <StackPanel>
+                            <TextBlock Text="Languages" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <ListView
+                                x:Name="LanguagesList"
+                                ItemsSource="{Binding LanguageFiles}"
+                                SelectedItem="{Binding SelectedLanguageFile}"
+                                BorderThickness="0"
+                                Height="320"
+                                Background="Transparent">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="8,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Code}" Foreground="#99000000" FontSize="12"/>
+                                            </StackPanel>
+                                            <ui:Badge Grid.Column="1" 
+                                                      Appearance="Success" 
+                                                      VerticalAlignment="Center" 
+                                                      Margin="4,0,0,0"
+                                                      Content="{Binding Entries.Count}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <ui:Card Padding="18" Margin="0,0,0,18" Effect="{StaticResource CardShadow}">
+                        <StackPanel>
+                            <TextBlock Text="Add New Language" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" 
+                                           PlaceholderText="e.g. fr_fr, de_de" 
+                                           Text="{Binding NewLanguageCode, UpdateSourceTrigger=PropertyChanged}"/>
+                                <ui:Button Grid.Column="1" 
+                                          Icon="{ui:SymbolIcon Add24}"
+                                          Margin="8,0,0,0"
+                                          Command="{Binding CreateNewLanguageCommand}"/>
+                            </Grid>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <ui:Button Appearance="Danger" 
+                              Icon="{ui:SymbolIcon Delete24}" 
+                              Content="Delete Language" 
+                              Command="{Binding DeleteLanguageCommand}"
+                              Margin="0,0,0,0"/>
+                </StackPanel>
+
+                <!-- Spacer -->
+                <Grid Grid.Column="1"/>
+
+                <!-- Translations Panel -->
+                <StackPanel Grid.Column="2">
+                    <ui:Card Padding="18" Margin="0,0,0,18" Effect="{StaticResource CardShadow}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding SelectedLanguageFile.DisplayName, StringFormat='Translations for {0}'}" 
+                                           FontSize="18" FontWeight="SemiBold"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding FilteredTranslations.Count, StringFormat={}{0} entries}" 
+                                               Foreground="#99000000"/>
+                                    <TextBlock Text="{Binding MissingTranslationsCount, StringFormat={}{0} missing}" 
+                                               Foreground="#E51400"
+                                               Margin="4,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:Button Appearance="Secondary" 
+                                          Icon="{ui:SymbolIcon ArrowImport24}" 
+                                          Content="Import from Base" 
+                                          Command="{Binding ImportFromBaseCommand}"
+                                          Margin="0,0,8,0"/>
+                                <ui:Button Appearance="Primary" 
+                                          Icon="{ui:SymbolIcon Add24}" 
+                                          Content="Add Translation" 
+                                          Command="{Binding StartAddNewCommand}"/>
+                            </StackPanel>
+                        </Grid>
+                    </ui:Card>
+
+                    <ui:Card Padding="18" Margin="0,0,0,18" Effect="{StaticResource CardShadow}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox Grid.Column="0" 
+                                       PlaceholderText="Search translations..." 
+                                       Icon="{ui:SymbolIcon Search24}"
+                                       Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
+                                <ui:TextBox.InputBindings>
+                                    <KeyBinding Key="Return" Command="{Binding ApplyFilterCommand}"/>
+                                </ui:TextBox.InputBindings>
+                            </ui:TextBox>
+                            <ui:ToggleSwitch Grid.Column="1" Content="Show Missing Only" 
+                                            IsChecked="{Binding ShowMissingOnly}" Margin="12,0,0,0"/>
+                        </Grid>
+                    </ui:Card>
+
+                    <!-- Editing Panel -->
+                    <ui:Card Padding="18" Margin="0,0,0,18" Effect="{StaticResource CardShadow}"
+                             Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Edit Translation" FontWeight="SemiBold" FontSize="16"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <ui:Button Appearance="Secondary" Content="Cancel" Command="{Binding CancelEditingCommand}" Margin="0,0,8,0"/>
+                                    <ui:Button Appearance="Primary" Content="Save" Command="{Binding SaveEditingCommand}"/>
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="Translation Key:"/>
+                                <ui:TextBox IsReadOnly="True" 
+                                        Text="{Binding EditingKey}"
+                                        Margin="0,4,0,12"/>
+                                <TextBlock Text="Base Value (English):"/>
+                                <ui:TextBox IsReadOnly="True" 
+                                        Text="{Binding SelectedTranslation.BaseValue}"
+                                        Margin="0,4,0,12"/>
+                                <TextBlock Text="Translation:"/>
+                                <ui:TextBox Text="{Binding EditingValue, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <!-- Adding New Panel -->
+                    <ui:Card Padding="18" Margin="0,0,0,18" Effect="{StaticResource CardShadow}"
+                             Visibility="{Binding IsAddingNew, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Add New Translation" FontWeight="SemiBold" FontSize="16"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <ui:Button Appearance="Secondary" Content="Cancel" Command="{Binding CancelEditingCommand}" Margin="0,0,8,0" Icon="{ui:SymbolIcon Dismiss24}"/>
+                                    <ui:Button Appearance="Primary" Content="Add" Command="{Binding SaveEditingCommand}" Icon="{ui:SymbolIcon Add24}"/>
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Margin="0,12,0,0">
+                                <TextBlock Text="Translation Key:"/>
+                                <ui:TextBox PlaceholderText="e.g. item.mymod.my_item" 
+                                        Text="{Binding EditingKey, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,4,0,12"/>
+                                <TextBlock Text="Translation Value:"/>
+                                <ui:TextBox PlaceholderText="e.g. My Item" 
+                                        Text="{Binding EditingValue, UpdateSourceTrigger=PropertyChanged}"
+                                        Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ui:Card>
+
+                    <!-- Translations List -->
+                    <ItemsControl 
+                        ItemsSource="{Binding FilteredTranslations}"
+                        Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter={x:Static Visibility.Collapsed}}">
+                        <ItemsControl.Style>
+                            <Style TargetType="ItemsControl">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAddingNew}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ItemsControl.Style>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ui:Card Margin="0,0,0,8" Effect="{StaticResource CardShadow}">
+                                    <ui:CardAction Padding="18" 
+                                              Command="{Binding DataContext.StartEditingCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" 
+                                              CommandParameter="{Binding}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0" 
+                                                       Text="{Binding Key}" 
+                                                       FontWeight="SemiBold" 
+                                                       TextWrapping="Wrap"/>
+
+                                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,4,0,0">
+                                                <TextBlock Text="Base:" 
+                                                           Foreground="#99000000" 
+                                                           FontSize="12"/>
+                                                <TextBlock Text="{Binding BaseValue}" TextWrapping="Wrap"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,8,0,0">
+                                                <TextBlock Text="Translation:" 
+                                                           Foreground="#99000000" 
+                                                           FontSize="12"/>
+                                                <TextBlock Text="{Binding LocalValue, TargetNullValue='(Not Translated)'}" 
+                                                           TextWrapping="Wrap">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsMissing}" Value="True">
+                                                                    <Setter Property="Foreground" Value="#E51400"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+
+                                            <ui:Badge Grid.Row="0" Grid.Column="1" 
+                                                      Appearance="Caution" 
+                                                      VerticalAlignment="Top"
+                                                      Visibility="{Binding IsMissing, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                      Content="Missing"/>
+                                        </Grid>
+                                    </ui:CardAction>
+                                </ui:Card>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>
