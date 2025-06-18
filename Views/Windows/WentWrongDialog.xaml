@@ -23,11 +23,14 @@
         <Border Grid.Row="1" CornerRadius="12" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="18" Margin="0,0,0,18">
             <StackPanel>
                 <TextBlock Text="We apologize for the inconvenience." FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8"/>
-                <TextBlock x:Name="ErrorMessageText" TextWrapping="Wrap" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Height="120" MinHeight="80" MaxHeight="180" Margin="0,0,0,8">
+                    <TextBlock x:Name="ErrorMessageText" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontFamily="Consolas" FontSize="13"/>
+                </ScrollViewer>
                 <TextBlock Text="If this keeps happening, please report the issue or restart the application." FontStyle="Italic" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
             </StackPanel>
         </Border>
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <ui:Button Content="Copy error" Height="36" Icon="{ui:SymbolIcon Copy24}" Margin="0,0,8,0" Click="CopyError_Click"/>
             <ui:Button Content="Close" Height="36" Icon="{ui:SymbolIcon Dismiss24}" Click="Close_Click"/>
         </StackPanel>
     </Grid>
