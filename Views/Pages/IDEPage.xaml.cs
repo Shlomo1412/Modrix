@@ -10,6 +10,7 @@ using Wpf.Ui.Controls;
 using System.Windows.Media;
 using System.Threading.Tasks;
 using System.IO;
+using Modrix.Views.Windows;
 
 namespace Modrix.Views.Pages
 {
@@ -323,79 +324,37 @@ namespace Modrix.Views.Pages
 
         private void ShowSearchDialog()
         {
-            var searchDialog = new Wpf.Ui.Controls.TextBox
+            var dialog = new IdeSearchDialog();
+            void DoSearch()
             {
-                PlaceholderText = "Search in file...",
-                Width = 200,
-                Margin = new Thickness(5)
-            };
-
-            var searchResults = new System.Collections.ObjectModel.ObservableCollection<SearchResult>();
-            var resultsListView = new System.Windows.Controls.ListView
-            {
-                ItemsSource = searchResults,
-                MaxHeight = 200,
-                Margin = new Thickness(5)
-            };
-
-            resultsListView.SelectionChanged += (s, e) =>
-            {
-                if (resultsListView.SelectedItem is SearchResult result)
-                {
-                    CodeEditor.Select(result.StartOffset, result.Length);
-                    CodeEditor.Focus();
-                }
-            };
-
-            // Create a custom dialog content
-            var dialogContent = new StackPanel();
-            dialogContent.Children.Add(searchDialog);
-            dialogContent.Children.Add(resultsListView);
-
-            // Create buttons
-            var findButton = new System.Windows.Controls.Button
-            {
-                Content = "Find All",
-                Margin = new Thickness(5)
-            };
-
-            var closeButton = new System.Windows.Controls.Button
-            {
-                Content = "Close",
-                Margin = new Thickness(5)
-            };
-
-            var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-            buttonPanel.Children.Add(findButton);
-            buttonPanel.Children.Add(closeButton);
-            dialogContent.Children.Add(buttonPanel);
-
-            // Create a simple window instead of MessageBox
-            var dialog = new Window
-            {
-                Title = "Search",
-                Content = dialogContent,
-                SizeToContent = SizeToContent.WidthAndHeight,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Owner = Window.GetWindow(this),
-                ResizeMode = ResizeMode.NoResize,
-                WindowStyle = WindowStyle.ToolWindow
-            };
-
-            findButton.Click += (s, e) =>
-            {
-                var searchText = searchDialog.Text;
+                var searchText = dialog.SearchText;
                 if (string.IsNullOrWhiteSpace(searchText))
-                    return;
-
-                searchResults.Clear();
-                var text = CodeEditor.Text;
-                int index = 0;
-
-                while ((index = text.IndexOf(searchText, index, StringComparison.OrdinalIgnoreCase)) >= 0)
                 {
+                    dialog.Results.Clear();
+                    dialog.SetResultsCountText("No results");
+                    return;
+                }
+                dialog.Results.Clear();
+                var text = CodeEditor.Text;
+                var comparison = dialog.MatchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+                int index = 0;
+                while (index < text.Length)
+                {
+                    index = text.IndexOf(searchText, index, comparison);
+                    if (index < 0) break;
+                    // Whole word check
+                    if (dialog.WholeWord)
+                    {
+                        bool isStart = index == 0 || !char.IsLetterOrDigit(text[index - 1]);
+                        bool isEnd = (index + searchText.Length == text.Length) || !char.IsLetterOrDigit(text[index + searchText.Length]);
+                        if (!(isStart && isEnd))
+                        {
+                            index += searchText.Length;
+                            continue;
+                        }
+                    }
                     var lineNumber = CodeEditor.Document.GetLineByOffset(index).LineNumber;
-                    searchResults.Add(new SearchResult
+                    dialog.Results.Add(new IdeSearchDialog.SearchResult
                     {
                         LineNumber = lineNumber,
                         StartOffset = index,
@@ -404,30 +363,24 @@ namespace Modrix.Views.Pages
                     });
                     index += searchText.Length;
                 }
-
-                if (searchResults.Count > 0)
+                if (dialog.Results.Count > 0)
                 {
-                    resultsListView.SelectedIndex = 0;
+                    dialog.SetSelectedIndex(0);
                 }
-            };
-
-            closeButton.Click += (s, e) => dialog.Close();
-
-            searchDialog.KeyDown += (s, e) =>
+                dialog.SetResultsCountText(dialog.Results.Count == 0 ? "No results" : $"{dialog.Results.Count} result{(dialog.Results.Count == 1 ? "" : "s")}");
+            }
+            dialog.FindRequested += (s, e) => DoSearch();
+            dialog.SelectionChanged += (s, e) =>
             {
-                if (e.Key == Key.Enter)
+                if (dialog.SelectedResult != null)
                 {
-                    e.Handled = true;
-                    findButton.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                }
-                else if (e.Key == Key.Escape)
-                {
-                    dialog.Close();
+                    CodeEditor.Select(dialog.SelectedResult.StartOffset, dialog.SelectedResult.Length);
+                    CodeEditor.ScrollToLine(dialog.SelectedResult.LineNumber);
+                    CodeEditor.Focus();
                 }
             };
-
-            dialog.ShowDialog();
-            searchDialog.Focus();
+            dialog.Show();
+            dialog.FocusSearchBox();
         }
 
         private string GetLinePreview(string text, int offset, int length)
