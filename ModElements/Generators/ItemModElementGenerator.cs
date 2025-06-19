@@ -57,36 +57,36 @@ namespace Modrix.ModElements.Generators
             var projectPath = context.ProjectPath;
             var packageName = GetPackageNameFromProject(projectPath);
             var modId = GetModIdFromProject(projectPath);
-            
-            // Format the class name (remove spaces, capitalize)
+
+            // Format the class name
             var itemClassName = FormatClassName(itemName);
-            
+
             // Prepare paths
             var packagePath = packageName.Replace('.', '/');
             var javaDir = FindJavaDirectory(projectPath);
-            
+
             if (string.IsNullOrEmpty(javaDir))
             {
                 throw new DirectoryNotFoundException("Could not find Java source directory");
             }
-            
+
             // Create item class
             var itemClassPath = Path.Combine(javaDir, packagePath, "item", $"{itemClassName}Item.java");
             Directory.CreateDirectory(Path.GetDirectoryName(itemClassPath));
-            
+
             // Write item class
-            var itemClass = GenerateForgeItemClass(packageName, modId, itemClassName, itemName);
+            var itemClass = GenerateForgeItemClass(packageName, itemClassName);
             File.WriteAllText(itemClassPath, itemClass);
             Debug.WriteLine($"Created Forge item class at {itemClassPath}");
-            
-            // Copy texture if needed
+
+            // Copy texture and create model
             HandleTexture(projectPath, texturePath, modId, itemName);
-            
+
             // Update registry class
             UpdateForgeItemRegistry(projectPath, packageName, itemClassName);
-            
+
             // Update language file
-            UpdateLanguageFile(projectPath, modId, itemName, context.Parameters.TryGetValue("TranslationKey", out var key) ? key?.ToString() : null);
+            UpdateLanguageFile(projectPath, modId, itemName);
         }
 
         private void GenerateFabricItem(ModElementGenerationContext context, string itemName, string texturePath)
@@ -128,27 +128,22 @@ namespace Modrix.ModElements.Generators
 
             HandleTexture(projectPath, texturePath, modId, itemName);
             UpdateFabricItemRegistry(projectPath, packageName, itemClassName, modId, modClassName);
-            UpdateLanguageFile(projectPath, modId, itemName, context.Parameters.TryGetValue("TranslationKey", out var key) ? key?.ToString() : null);
+            UpdateLanguageFile(projectPath, modId, itemName);
         }
 
-        private string GenerateForgeItemClass(string packageName, string modId, string itemClassName, string itemName)
+        private string GenerateForgeItemClass(string packageName, string itemClassName)
         {
-            var modClassName = FormatClassName(modId) + "Mod";
-            
             return $@"package {packageName}.item;
 
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.CreativeModeTab;
-import {packageName}.{modClassName};
 
 public class {itemClassName}Item extends Item {{
-    public static final String ID = ""{ToSnakeCase(itemName)}"";
-
-    public {itemClassName}Item() {{
-        super(new Item.Properties());
+    public {itemClassName}Item(Properties properties) {{
+        super(properties);
     }}
 }}";
         }
+
 
         private string GenerateFabricItemClass(string packageName, string modId, string itemClassName, string itemName, string version, bool isModern, string modClassName)
         {
@@ -208,54 +203,46 @@ public class {itemClassName}Item extends Item {{
             var javaDir = FindJavaDirectory(projectPath);
             var packagePath = packageName.Replace('.', '/');
             var registryPath = Path.Combine(javaDir, packagePath, "registry", "ItemRegistry.java");
-            
-            // If registry file doesn't exist, create it
+            var snakeCaseName = ToSnakeCase(itemClassName);
+
             if (!File.Exists(registryPath))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(registryPath) ?? "");
-                var registryClass = GenerateForgeItemRegistryClass(packageName, itemClassName);
+                Directory.CreateDirectory(Path.GetDirectoryName(registryPath));
+                var registryClass = GenerateForgeItemRegistryClass(packageName, itemClassName, snakeCaseName);
                 File.WriteAllText(registryPath, registryClass);
                 Debug.WriteLine($"Created Forge ItemRegistry at {registryPath}");
-                
-                // Also update main mod class to call registry
+
                 UpdateForgeModClass(projectPath, packageName);
             }
             else
             {
-                // Update existing registry
                 var content = File.ReadAllText(registryPath);
-                
-                // Check if the item is already registered
-                if (content.Contains($"{itemClassName}Item"))
+
+                if (content.Contains($" {ToUpperSnakeCase(itemClassName)} ") ||
+                    content.Contains($"{itemClassName}Item"))
                 {
-                    return; // Already registered
+                    return;
                 }
-                
-                // Find the registration method
-                int registerIndex = content.IndexOf("public static void register(IEventBus eventBus) {");
-                if (registerIndex == -1)
+
+                string importStatement = $"import {packageName}.item.{itemClassName}Item;\n";
+                content = InsertAfterLastImport(content, importStatement);
+
+                string fieldDeclaration = $@"
+                public static final RegistryObject<Item> {ToUpperSnakeCase(itemClassName)} = 
+                    ITEMS.register(""{snakeCaseName}"", 
+                        () -> new {itemClassName}Item(new Item.Properties()));";
+
+
+                int insertPosition = FindLastRegistryObjectEnd(content);
+                if (insertPosition == -1)
                 {
-                    registerIndex = content.IndexOf("public static void register(") + 24;
+                    insertPosition = content.IndexOf("public static void register(");
+                    if (insertPosition == -1) insertPosition = content.LastIndexOf('}');
                 }
-                
-                if (registerIndex != -1)
-                {
-                    // Find the closing brace for the method
-                    int closeBraceIndex = FindClosingBrace(content, registerIndex);
-                    
-                    // Add import
-                    string importStatement = $"import {packageName}.item.{itemClassName}Item;\n";
-                    int lastImportIndex = content.LastIndexOf("import ");
-                    int lastImportEnd = content.IndexOf(';', lastImportIndex) + 1;
-                    content = content.Insert(lastImportEnd + 1, importStatement);
-                    
-                    // Add registration line just before closing brace
-                    string registrationLine = $"\n        ITEMS.register(\"{ToSnakeCase(itemClassName)}\", () -> new {itemClassName}Item());";
-                    content = content.Insert(closeBraceIndex, registrationLine);
-                    
-                    File.WriteAllText(registryPath, content);
-                    Debug.WriteLine($"Updated Forge ItemRegistry at {registryPath}");
-                }
+
+                content = content.Insert(insertPosition, fieldDeclaration);
+                File.WriteAllText(registryPath, content);
+                Debug.WriteLine($"Updated Forge ItemRegistry at {registryPath}");
             }
         }
 
@@ -300,11 +287,11 @@ public class {itemClassName}Item extends Item {{
             }
         }
 
-        private string GenerateForgeItemRegistryClass(string packageName, string firstItemClassName)
+        private string GenerateForgeItemRegistryClass(string packageName, string itemClassName, string snakeCaseName)
         {
             var modId = packageName.Substring(packageName.LastIndexOf('.') + 1);
             var modClassName = FormatClassName(modId) + "Mod";
-            
+
             return $@"package {packageName}.registry;
 
 import net.minecraft.world.item.Item;
@@ -313,16 +300,16 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.eventbus.api.IEventBus;
 import {packageName}.{modClassName};
-import {packageName}.item.{firstItemClassName}Item;
+import {packageName}.item.{itemClassName}Item;
 
 public class ItemRegistry {{
-    
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, 
-        {modClassName}.MOD_ID);
+    public static final DeferredRegister<Item> ITEMS = 
+        DeferredRegister.create(ForgeRegistries.ITEMS, {modClassName}.MOD_ID);
     
     // Items
-    public static final RegistryObject<Item> {ToUpperSnakeCase(firstItemClassName)} = 
-        ITEMS.register(""{ToSnakeCase(firstItemClassName)}"", () -> new {firstItemClassName}Item());
+    public static final RegistryObject<Item> {ToUpperSnakeCase(itemClassName)} = 
+        ITEMS.register(""{snakeCaseName}"", 
+            () -> new {itemClassName}Item(new Item.Properties()));
     
     public static void register(IEventBus eventBus) {{
         ITEMS.register(eventBus);
@@ -336,168 +323,114 @@ public class ItemRegistry {{
             var modId = GetModIdFromProject(projectPath);
             var modClassName = FormatClassName(modId) + "Mod";
             var modClassPath = Path.Combine(javaDir, packageName.Replace('.', '/'), $"{modClassName}.java");
-            
-            if (!File.Exists(modClassPath))
-            {
-                Debug.WriteLine($"Warning: Could not find main Forge mod class at {modClassPath}");
-                return; // Can't update non-existent mod class
-            }
-            
+
+            if (!File.Exists(modClassPath)) return;
+
             var content = File.ReadAllText(modClassPath);
-            
-            // Check if registry is already imported and registered
-            if (content.Contains("ItemRegistry") && content.Contains("ItemRegistry.register("))
-            {
-                return; // Already registered
-            }
-            
+
+            // Skip if already registered
+            if (content.Contains("ItemRegistry.register(")) return;
+
             // Add import
             string importStatement = $"import {packageName}.registry.ItemRegistry;\n";
-            int lastImportIndex = content.LastIndexOf("import ");
-            if (lastImportIndex >= 0)
+            content = InsertAfterLastImport(content, importStatement);
+
+            // Find constructor
+            int constructorIndex = content.IndexOf($"public {modClassName}(");
+            if (constructorIndex == -1) return;
+
+            int openBrace = content.IndexOf('{', constructorIndex);
+            int closeBrace = FindClosingBrace(content, openBrace);
+
+            // Check if modEventBus is already declared
+            bool hasExistingEventBus = content.Contains("IEventBus modEventBus");
+
+            // Add registration call
+            string registration;
+            if (hasExistingEventBus)
             {
-                int lastImportEnd = content.IndexOf(';', lastImportIndex) + 1;
-                content = content.Insert(lastImportEnd + 1, importStatement);
-                
-                // Find constructor or initialization method
-                int constructorIndex = content.IndexOf("public " + modClassName + "(");
-                if (constructorIndex != -1)
+                // Use existing event bus variable
+                registration = "\n        ItemRegistry.register(modEventBus);";
+            }
+            else
+            {
+                // Create new event bus declaration
+                registration = @"
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        ItemRegistry.register(modEventBus);";
+
+                // Add FML import if needed
+                if (!content.Contains("FMLJavaModLoadingContext"))
                 {
-                    constructorIndex += modClassName.Length + 8;
-                    // Find the closing brace for the constructor
-                    int closeBraceIndex = FindClosingBrace(content, constructorIndex);
-                    
-                    // Add registration line just before closing brace
-                    string registrationLine = "\n        ItemRegistry.register(modEventBus);";
-                    content = content.Insert(closeBraceIndex, registrationLine);
-                    
-                    File.WriteAllText(modClassPath, content);
-                    Debug.WriteLine($"Updated Forge mod class at {modClassPath}");
+                    string fmlImport = "import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;\n";
+                    content = InsertAfterLastImport(content, fmlImport);
                 }
             }
+
+            content = content.Insert(closeBrace, registration);
+            File.WriteAllText(modClassPath, content);
         }
 
         private void HandleTexture(string projectPath, string texturePath, string modId, string itemName)
         {
-            try
+            var resourcesDir = FindResourcesDirectory(projectPath) ??
+                Path.Combine(projectPath, "src", "main", "resources");
+
+            Directory.CreateDirectory(resourcesDir);
+
+            // Copy texture
+            var textureDestDir = Path.Combine(resourcesDir, "assets", modId, "textures", "item");
+            Directory.CreateDirectory(textureDestDir);
+
+            var textureFileName = ToSnakeCase(itemName) + ".png";
+            var textureDestPath = Path.Combine(textureDestDir, textureFileName);
+
+            if (File.Exists(texturePath))
             {
-                // Determine destination texture path
-                var resourcesDir = FindResourcesDirectory(projectPath);
-                if (resourcesDir == null)
-                {
-                    resourcesDir = Path.Combine(projectPath, "src", "main", "resources");
-                    Directory.CreateDirectory(resourcesDir);
-                }
-                
-                var textureDestDir = Path.Combine(resourcesDir, "assets", modId, "textures", "item");
-                Directory.CreateDirectory(textureDestDir);
-                
-                var textureFileName = ToSnakeCase(itemName) + ".png";
-                var textureDestPath = Path.Combine(textureDestDir, textureFileName);
-                
-                // Copy texture file
-                if (File.Exists(texturePath))
-                {
-                    File.Copy(texturePath, textureDestPath, true);
-                    Debug.WriteLine($"Copied texture from {texturePath} to {textureDestPath}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Warning: Texture file not found: {texturePath}");
-                }
-                
-                // Create item model JSON
-                var modelDir = Path.Combine(resourcesDir, "assets", modId, "models", "item");
-                Directory.CreateDirectory(modelDir);
-                
-                var modelPath = Path.Combine(modelDir, $"{ToSnakeCase(itemName)}.json");
-                var modelJson = $@"{{
+                File.Copy(texturePath, textureDestPath, true);
+            }
+
+            // Create item model
+            var modelDir = Path.Combine(resourcesDir, "assets", modId, "models", "item");
+            Directory.CreateDirectory(modelDir);
+
+            var modelPath = Path.Combine(modelDir, $"{ToSnakeCase(itemName)}.json");
+            File.WriteAllText(modelPath, $@"{{
   ""parent"": ""item/generated"",
   ""textures"": {{
     ""layer0"": ""{modId}:item/{ToSnakeCase(itemName)}""
   }}
-}}";
-                File.WriteAllText(modelPath, modelJson);
-                Debug.WriteLine($"Created model JSON at {modelPath}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error handling texture: {ex.Message}");
-                throw; // Rethrow to show the error to the user
-            }
+}}");
         }
 
-        private void UpdateLanguageFile(string projectPath, string modId, string itemName, string? translationKey = null)
+        private void UpdateLanguageFile(string projectPath, string modId, string itemName)
         {
-            var resourcesDir = FindResourcesDirectory(projectPath);
-            if (resourcesDir == null)
-            {
-                resourcesDir = Path.Combine(projectPath, "src", "main", "resources");
-                Directory.CreateDirectory(resourcesDir);
-            }
-            
+            var resourcesDir = FindResourcesDirectory(projectPath) ??
+                Path.Combine(projectPath, "src", "main", "resources");
+
             var langDir = Path.Combine(resourcesDir, "assets", modId, "lang");
             Directory.CreateDirectory(langDir);
-            
+
             var langPath = Path.Combine(langDir, "en_us.json");
-            
-            // Create translation key if not provided
-            if (string.IsNullOrEmpty(translationKey))
-            {
-                translationKey = $"item.{modId}.{ToSnakeCase(itemName)}";
-            }
-            
-            // Check if language file exists
+            var translationKey = $"item.{modId}.{ToSnakeCase(itemName)}";
+            var translation = itemName;
+
+            Dictionary<string, string> langEntries = new();
+
             if (File.Exists(langPath))
             {
                 try
                 {
-                    // Try parsing as JSON first to handle it properly
-                    var json = File.ReadAllText(langPath);
-                    var langEntries = JsonSerializer.Deserialize<Dictionary<string, string>>(json, 
-                        new JsonSerializerOptions { AllowTrailingCommas = true });
-                    
-                    if (langEntries == null)
-                        langEntries = new Dictionary<string, string>();
-                        
-                    // Add or update the translation
-                    langEntries[translationKey] = itemName;
-                    
-                    // Write back as nicely formatted JSON
-                    var updatedJson = JsonSerializer.Serialize(langEntries, 
-                        new JsonSerializerOptions { WriteIndented = true });
-                    
-                    File.WriteAllText(langPath, updatedJson);
-                    Debug.WriteLine($"Updated language file at {langPath}");
+                    langEntries = JsonSerializer.Deserialize<Dictionary<string, string>>(
+                        File.ReadAllText(langPath)) ?? new Dictionary<string, string>();
                 }
-                catch
-                {
-                    // Fallback to simple text manipulation if JSON parsing fails
-                    var content = File.ReadAllText(langPath);
-                    
-                    if (!content.Contains(translationKey))
-                    {
-                        int lastBraceIndex = content.LastIndexOf('}');
-                        if (lastBraceIndex > 0)
-                        {
-                            var isLastEntry = !content.Substring(0, lastBraceIndex).TrimEnd().EndsWith(",");
-                            string newEntry = isLastEntry ? $",\n  \"{translationKey}\": \"{itemName}\"" : $"\n  \"{translationKey}\": \"{itemName}\",";
-                            content = content.Insert(lastBraceIndex, newEntry);
-                            File.WriteAllText(langPath, content);
-                            Debug.WriteLine($"Updated language file (text mode) at {langPath}");
-                        }
-                    }
-                }
+                catch { /* Ignore parse errors */ }
             }
-            else
-            {
-                // Create new language file
-                var langJson = $@"{{
-  ""{translationKey}"": ""{itemName}""
-}}";
-                File.WriteAllText(langPath, langJson);
-                Debug.WriteLine($"Created new language file at {langPath}");
-            }
+
+            langEntries[translationKey] = translation;
+
+            File.WriteAllText(langPath, JsonSerializer.Serialize(langEntries,
+                new JsonSerializerOptions { WriteIndented = true }));
         }
 
         public Page CreatePage()
@@ -767,6 +700,30 @@ public class ItemRegistry {{
             
             // If no dots, return as is
             return version;
+        }
+
+        private string InsertAfterLastImport(string content, string importStatement)
+        {
+            int lastImport = content.LastIndexOf("import ");
+            if (lastImport != -1)
+            {
+                int endOfImport = content.IndexOf(';', lastImport) + 1;
+                return content.Insert(endOfImport, "\n" + importStatement);
+            }
+            else
+            {
+                int packageEnd = content.IndexOf(';') + 1;
+                return content.Insert(packageEnd, "\n\n" + importStatement);
+            }
+        }
+
+        private int FindLastRegistryObjectEnd(string content)
+        {
+            int lastRegistry = content.LastIndexOf("RegistryObject<Item>");
+            if (lastRegistry == -1) return -1;
+
+            int endOfLine = content.IndexOf(';', lastRegistry);
+            return endOfLine + 1;
         }
 
         private bool IsModernFabricVersion(string normalizedVersion)
