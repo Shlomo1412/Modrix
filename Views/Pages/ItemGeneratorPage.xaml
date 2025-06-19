@@ -20,9 +20,9 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" Margin="32,10,0,0" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Cube24" Width="36" Height="36" Margin="0,0,12,0"/>
+                    <ui:Image Source="pack://application:,,,/Resources/Icons/ItemIcon.png" Width="36" Height="36" Margin="0,0,12,0"/>
                     <StackPanel>
-                        <TextBlock Text="Create New Item" FontSize="26" FontWeight="Bold"/>
+                        <TextBlock Text="Create New Item" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="Define your custom item for your mod" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>

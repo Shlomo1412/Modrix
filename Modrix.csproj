@@ -58,6 +58,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\ModElements\**" />
+    <EmbeddedResource Remove="Views\ModElements\**" />
+    <None Remove="Views\ModElements\**" />
+    <Page Remove="Views\ModElements\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Resources\Cursors\Eraser.cur">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -76,9 +83,6 @@
     <Folder Include="Templates\FabricMod\src\main\resources\assets\modid\" />
     <Folder Include="Templates\ForgeMod\src\main\java\com\example\" />
     <Folder Include="Templates\ForgeMod\src\main\resources\assets\modid\" />
-    <Folder Include="Views\ModElements\Controls\" />
-    <Folder Include="Views\ModElements\Windows\" />
-    <Folder Include="Views\ModElements\Pages\" />
   </ItemGroup>
 
 </Project>
