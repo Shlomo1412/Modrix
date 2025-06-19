@@ -224,13 +224,15 @@ namespace Modrix.Services
                 // Update package declaration
                 content = content.Replace("package com.example", $"package {data.Package}");
 
-                // Update mod class name and MODID
+                // Update mod class name and MODID -> MOD_ID
                 content = content
                     .Replace("class Example", $"class {char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod")
                     .Replace("class ExampleMod", $"class {char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod")
-                    .Replace("@Mod(Example.MODID)", $"@Mod({char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod.MODID)")
-                    .Replace("@Mod(ExampleMod.MODID)", $"@Mod({char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod.MODID)")
-                    .Replace("public static final String MODID = \"example\"", $"public static final String MODID = \"{data.ModId}\"")
+                    .Replace("@Mod(Example.MODID)", $"@Mod({char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod.MOD_ID)")
+                    .Replace("@Mod(ExampleMod.MODID)", $"@Mod({char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod.MOD_ID)")
+                    .Replace("public static final String MODID = \"example\"", $"public static final String MOD_ID = \"{data.ModId}\"")
+                    .Replace("MODID", "MOD_ID")
+                    .Replace("modid = MODID", "modid = MOD_ID")
                     .Replace("example:example_block", $"{data.ModId}:{data.ModId}_block")
                     .Replace("example:example_item", $"{data.ModId}:{data.ModId}_item")
                     .Replace("example:example_tab", $"{data.ModId}:{data.ModId}_tab")
@@ -241,7 +243,7 @@ namespace Modrix.Services
                     .Replace("example_item", $"{data.ModId}_item")
                     .Replace("example_tab", $"{data.ModId}_tab")
                     .Replace("public Example(FMLJavaModLoadingContext context)", $"public {char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod(FMLJavaModLoadingContext context)")
-                    .Replace("@Mod.EventBusSubscriber(modid = MODID", $"@Mod.EventBusSubscriber(modid = MODID");
+                    .Replace("@Mod.EventBusSubscriber(modid = MOD_ID", "@Mod.EventBusSubscriber(modid = MOD_ID");
 
                 var newFilePath = Path.Combine(mainPath, newFileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(newFilePath));
