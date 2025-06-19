@@ -19,6 +19,7 @@ namespace Modrix.Views.Pages
         private bool _showIndex = false;
         private bool _autoScroll = true;
         private bool _isBuildRunning = false;
+        private Process? _currentProcess;
 
         public ConsolePage()
         {
@@ -38,6 +39,13 @@ namespace Modrix.Views.Pages
         {
             if (PendingBuild is { } info)
             {
+                // If a build is running, kill it and clean up
+                if (_currentProcess != null && !_currentProcess.HasExited)
+                {
+                    try { _currentProcess.Kill(true); } catch { }
+                    _currentProcess.Dispose();
+                    _currentProcess = null;
+                }
                 PendingBuild = null;
                 _lineNumber = 0;
                 ConsoleOutput.Document.Blocks.Clear();
@@ -48,6 +56,14 @@ namespace Modrix.Views.Pages
 
         public async Task StartGradleBuild(string projectDir, string gradleTasks, string jdkHome)
         {
+            // Kill any previous process if still running
+            if (_currentProcess != null && !_currentProcess.HasExited)
+            {
+                try { _currentProcess.Kill(true); } catch { }
+                _currentProcess.Dispose();
+                _currentProcess = null;
+            }
+
             var wrapper = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                           ? "gradlew.bat"
                           : "gradlew";
@@ -75,6 +91,7 @@ namespace Modrix.Views.Pages
                 psi.EnvironmentVariables["JAVA_HOME"] = jdkHome;
 
             var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
+            _currentProcess = proc;
 
             proc.OutputDataReceived += (s, e) => {
                 if (!string.IsNullOrEmpty(e.Data))
@@ -96,6 +113,9 @@ namespace Modrix.Views.Pages
                   success ? Brushes.LimeGreen : Brushes.Red
                 );
                 _isBuildRunning = false;
+                // Clean up
+                try { proc.Dispose(); } catch { }
+                if (_currentProcess == proc) _currentProcess = null;
             };
 
             AppendLine($"$ {wrapperPath} {gradleTasks}", Brushes.Gray);
