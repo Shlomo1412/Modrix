@@ -213,8 +213,16 @@ namespace Modrix.Views.Windows
                 jdkHome
             );
 
-            // 3) 
-            RootNavigation.Navigate(typeof(Views.Pages.ConsolePage));
+            // 3) Navigate or trigger build if already open
+            var currentPage = RootNavigation.GetType().GetProperty("CurrentPage")?.GetValue(RootNavigation) as Page;
+            if (currentPage is Modrix.Views.Pages.ConsolePage consolePage)
+            {
+                consolePage.StartPendingBuildIfAny();
+            }
+            else
+            {
+                RootNavigation.Navigate(typeof(Modrix.Views.Pages.ConsolePage));
+            }
         }
 
         private async void BuildButton_Click(object sender, RoutedEventArgs e)
@@ -239,7 +247,15 @@ namespace Modrix.Views.Windows
                     new Progress<(string, int)>());
 
             ConsolePage.PendingBuild = (projectDir, "build", jdkHome);
-            RootNavigation.Navigate(typeof(Views.Pages.ConsolePage));
+            var currentPage2 = RootNavigation.GetType().GetProperty("CurrentPage")?.GetValue(RootNavigation) as Page;
+            if (currentPage2 is Modrix.Views.Pages.ConsolePage consolePage2)
+            {
+                consolePage2.StartPendingBuildIfAny();
+            }
+            else
+            {
+                RootNavigation.Navigate(typeof(Modrix.Views.Pages.ConsolePage));
+            }
         }
 
         private async Task RunGradleBuildAsync(

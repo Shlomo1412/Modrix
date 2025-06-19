@@ -18,6 +18,7 @@ namespace Modrix.Views.Pages
         private int _lineNumber;
         private bool _showIndex = false;
         private bool _autoScroll = true;
+        private bool _isBuildRunning = false;
 
         public ConsolePage()
         {
@@ -27,14 +28,21 @@ namespace Modrix.Views.Pages
 
         private void ConsolePage_Loaded(object sender, RoutedEventArgs e)
         {
-            // reset console
-            _lineNumber = 0;
-            ConsoleOutput.Document.Blocks.Clear();
+            StartPendingBuildIfAny();
+        }
 
+        /// <summary>
+        /// Call this to start a pending build if one is set. Safe to call multiple times.
+        /// </summary>
+        public void StartPendingBuildIfAny()
+        {
             if (PendingBuild is { } info)
             {
                 PendingBuild = null;
-                StartGradleBuild(info.ProjectDir, info.Tasks, info.JdkHome);
+                _lineNumber = 0;
+                ConsoleOutput.Document.Blocks.Clear();
+                _isBuildRunning = true;
+                _ = StartGradleBuild(info.ProjectDir, info.Tasks, info.JdkHome);
             }
         }
 
@@ -48,6 +56,7 @@ namespace Modrix.Views.Pages
             if (!File.Exists(wrapperPath))
             {
                 AppendLine($"[ERROR] Gradle wrapper not found at {wrapperPath}", Brushes.Red);
+                _isBuildRunning = false;
                 return;
             }
 
@@ -86,6 +95,7 @@ namespace Modrix.Views.Pages
                     : $"[BUILD FAILED - exit {proc.ExitCode}]",
                   success ? Brushes.LimeGreen : Brushes.Red
                 );
+                _isBuildRunning = false;
             };
 
             AppendLine($"$ {wrapperPath} {gradleTasks}", Brushes.Gray);
