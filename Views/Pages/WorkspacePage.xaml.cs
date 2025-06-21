@@ -13,6 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using Modrix.ModElements;
 using Modrix.ModElements.Generators;
+using Wpf.Ui.Controls;
+using SystemMessageBox = System.Windows.MessageBox;
+using SystemMessageBoxButton = System.Windows.MessageBoxButton;
+using SystemMessageBoxImage = System.Windows.MessageBoxImage;
+using SystemMessageBoxResult = System.Windows.MessageBoxResult;
+using SystemImage = System.Windows.Controls.Image;
+using SystemTextBlock = System.Windows.Controls.TextBlock;
+using SystemButton = System.Windows.Controls.Button;
+using SystemMenuItem = System.Windows.Controls.MenuItem;
 
 namespace Modrix.Views.Pages
 {
@@ -152,7 +161,7 @@ namespace Modrix.Views.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading mod elements: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                SystemMessageBox.Show($"Error loading mod elements: {ex.Message}", "Error", SystemMessageBoxButton.OK, SystemMessageBoxImage.Error);
             }
         }
 
@@ -181,20 +190,29 @@ namespace Modrix.Views.Pages
                 Orientation = Orientation.Horizontal,
                 Children =
                 {
-                    new Image { Source = new BitmapImage(new Uri(generator.Icon, UriKind.RelativeOrAbsolute)), Width = 20, Height = 20, Margin = new Thickness(0,0,4,0) },
-                    new TextBlock { Text = generator.Name, VerticalAlignment = VerticalAlignment.Center }
+                    new SystemImage { Source = new BitmapImage(new Uri(generator.Icon, UriKind.RelativeOrAbsolute)), Width = 20, Height = 20, Margin = new Thickness(0,0,4,0) },
+                    new SystemTextBlock { Text = generator.Name, VerticalAlignment = VerticalAlignment.Center }
                 }
             };
             
-            var closeButton = new Button { Content = "×", Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(4,0,0,0) };
+            var closeButton = new SystemButton { Content = "×", Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(4,0,0,0) };
             header.Children.Add(closeButton);
             
-            // Create the tab item with the frame as content
-            var tabItem = new TabItem
+            // ContextMenu for tab
+            var contextMenu = new ContextMenu();
+            var openInWindowMenuItem = new SystemMenuItem
             {
-                Header = header,
-                Content = frame
+                Header = "Open as a New Window",
+                Icon = new SymbolIcon(SymbolRegular.Open24)
             };
+            var tabItem = new TabItem();
+            openInWindowMenuItem.Click += (s, e) => OpenTabAsWindow(tabItem);
+            contextMenu.Items.Add(openInWindowMenuItem);
+            
+            // Create the tab item with the frame as content
+            tabItem.Header = header;
+            tabItem.Content = frame;
+            tabItem.ContextMenu = contextMenu;
             
             // Add close button functionality
             closeButton.Click += (s, e) => 
@@ -226,20 +244,29 @@ namespace Modrix.Views.Pages
                     Orientation = Orientation.Horizontal,
                     Children =
                     {
-                        new Image { Source = new BitmapImage(new Uri(itemData.Icon, UriKind.RelativeOrAbsolute)), Width = 20, Height = 20, Margin = new Thickness(0,0,4,0) },
-                        new TextBlock { Text = $"Edit: {itemData.Name}", VerticalAlignment = VerticalAlignment.Center }
+                        new SystemImage { Source = new BitmapImage(new Uri(itemData.Icon, UriKind.RelativeOrAbsolute)), Width = 20, Height = 20, Margin = new Thickness(0,0,4,0) },
+                        new SystemTextBlock { Text = $"Edit: {itemData.Name}", VerticalAlignment = VerticalAlignment.Center }
                     }
                 };
                 
-                var closeButton = new Button { Content = "×", Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(4,0,0,0) };
+                var closeButton = new SystemButton { Content = "×", Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(4,0,0,0) };
                 header.Children.Add(closeButton);
                 
-                // Create the tab item
-                var tabItem = new TabItem
+                // ContextMenu for tab
+                var contextMenu = new ContextMenu();
+                var openInWindowMenuItem = new SystemMenuItem
                 {
-                    Header = header,
-                    Content = frame
+                    Header = "Open as a New Window",
+                    Icon = new SymbolIcon(SymbolRegular.Open24)
                 };
+                var tabItem = new TabItem();
+                openInWindowMenuItem.Click += (s, e) => OpenTabAsWindow(tabItem);
+                contextMenu.Items.Add(openInWindowMenuItem);
+                
+                // Create the tab item
+                tabItem.Header = header;
+                tabItem.Content = frame;
+                tabItem.ContextMenu = contextMenu;
                 
                 // Add close button functionality
                 closeButton.Click += (s, e) => 
@@ -254,30 +281,44 @@ namespace Modrix.Views.Pages
             }
             else
             {
-                MessageBox.Show("Editor for this element type is not yet implemented.", "Not Implemented", MessageBoxButton.OK, MessageBoxImage.Information);
+                SystemMessageBox.Show("Editor for this element type is not yet implemented.", "Not Implemented", SystemMessageBoxButton.OK, SystemMessageBoxImage.Information);
             }
+        }
+
+        private void OpenTabAsWindow(TabItem tabItem)
+        {
+            if (tabItem == null) return;
+            WorkspaceTabs.Items.Remove(tabItem);
+            var newWindow = new Window
+            {
+                Title = (tabItem.Header as StackPanel)?.Children.OfType<SystemTextBlock>().FirstOrDefault()?.Text ?? "Detached Tab",
+                Content = tabItem.Content,
+                Width = 800,
+                Height = 600
+            };
+            newWindow.Show();
         }
 
         private async void DeleteModElement(ModElementData element)
         {
-            var result = MessageBox.Show(
+            var result = SystemMessageBox.Show(
                 $"Are you sure you want to delete the {element.Type} '{element.Name}'? This cannot be undone.",
                 "Confirm Deletion",
-                MessageBoxButton.YesNo, 
-                MessageBoxImage.Warning);
+                SystemMessageBoxButton.YesNo, 
+                SystemMessageBoxImage.Warning);
                 
-            if (result == MessageBoxResult.Yes)
+            if (result == SystemMessageBoxResult.Yes)
             {
                 try
                 {
                     await _elementManager.DeleteElementAsync(element);
                     _modElements.Remove(element);
                     OnPropertyChanged(nameof(ModElements));
-                    MessageBox.Show($"{element.Type} '{element.Name}' has been deleted.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    SystemMessageBox.Show($"{element.Type} '{element.Name}' has been deleted.", "Success", SystemMessageBoxButton.OK, SystemMessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error deleting element: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    SystemMessageBox.Show($"Error deleting element: {ex.Message}", "Error", SystemMessageBoxButton.OK, SystemMessageBoxImage.Error);
                 }
             }
         }

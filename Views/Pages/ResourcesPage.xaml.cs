@@ -16,6 +16,8 @@ using Wpf.Ui.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
 using MenuItem = Wpf.Ui.Controls.MenuItem;
 using Button = Wpf.Ui.Controls.Button;
+using SystemMenuItem = System.Windows.Controls.MenuItem;
+using SystemTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Modrix.Views.Pages
 {
@@ -169,7 +171,7 @@ namespace Modrix.Views.Pages
                         {
                             foreach (var child in headerPanel1.Children)
                             {
-                                if (child is System.Windows.Controls.TextBlock tb && tb.Text == $"Edit: {fileName}")
+                                if (child is SystemTextBlock tb && tb.Text == $"Edit: {fileName}")
                                 {
                                     existingTab = tabItem;
                                     foundHeaderPanel = headerPanel1;
@@ -222,7 +224,7 @@ namespace Modrix.Views.Pages
                             Symbol = Wpf.Ui.Controls.SymbolRegular.ImageEdit24,
                             Margin = new Thickness(0, 0, 4, 0)
                         },
-                        new System.Windows.Controls.TextBlock
+                        new SystemTextBlock
                         {
                             Text = $"Edit: {fileName}"
                         },
@@ -236,6 +238,17 @@ namespace Modrix.Views.Pages
                     Header = headerPanel,
                     Content = frame
                 };
+
+                // ContextMenu for tab
+                var contextMenu = new ContextMenu();
+                var openInWindowMenuItem = new SystemMenuItem
+                {
+                    Header = "Open as a New Window",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Open24)
+                };
+                openInWindowMenuItem.Click += (s, e) => OpenTabAsWindow(tab);
+                contextMenu.Items.Add(openInWindowMenuItem);
+                tab.ContextMenu = contextMenu;
 
                 // Close button event
                 closeButton.Click += (s, e) =>
@@ -254,6 +267,20 @@ namespace Modrix.Views.Pages
             {
                 ShowMessage($"Error opening texture editor: {ex.Message}", "Error");
             }
+        }
+
+        private void OpenTabAsWindow(TabItem tabItem)
+        {
+            if (tabItem == null) return;
+            ResourcesTabs.Items.Remove(tabItem);
+            var newWindow = new Window
+            {
+                Title = (tabItem.Header as StackPanel)?.Children.OfType<SystemTextBlock>().FirstOrDefault()?.Text ?? "Detached Tab",
+                Content = tabItem.Content,
+                Width = 800,
+                Height = 600
+            };
+            newWindow.Show();
         }
 
         // Icon tab buttons
