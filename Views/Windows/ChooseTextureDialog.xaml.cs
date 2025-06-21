@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Controls;
 using System.Diagnostics;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace Modrix.Views.Windows
 {
@@ -26,7 +27,13 @@ namespace Modrix.Views.Windows
             // Validate project path
             if (string.IsNullOrEmpty(projectPath) || !Directory.Exists(projectPath))
             {
-                System.Windows.MessageBox.Show($"Invalid project path: {projectPath ?? "null"}. Please select a valid project.", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                var msgBox = new MessageBox
+                {
+                    Title = "Error",
+                    Content = $"Invalid project path: {projectPath ?? "null"}. Please select a valid project.",
+                    PrimaryButtonText = "OK"
+                };
+                msgBox.ShowDialogAsync();
                 _projectPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             }
             else
@@ -41,7 +48,13 @@ namespace Modrix.Views.Windows
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error loading textures: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                var msgBox = new MessageBox
+                {
+                    Title = "Error",
+                    Content = $"Error loading textures: {ex.Message}",
+                    PrimaryButtonText = "OK"
+                };
+                msgBox.ShowDialogAsync();
             }
 
             SearchBox.TextChanged += SearchBox_TextChanged;
@@ -317,12 +330,24 @@ namespace Modrix.Views.Windows
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("Please select a valid texture file.", "Selection Required", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    var msgBox = new MessageBox
+                    {
+                        Title = "Selection Required",
+                        Content = "Please select a valid texture file.",
+                        PrimaryButtonText = "OK"
+                    };
+                    msgBox.ShowDialogAsync();
                 }
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error selecting texture: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                var msgBox = new MessageBox
+                {
+                    Title = "Error",
+                    Content = $"Error selecting texture: {ex.Message}",
+                    PrimaryButtonText = "OK"
+                };
+                msgBox.ShowDialogAsync();
             }
         }
 
@@ -331,7 +356,7 @@ namespace Modrix.Views.Windows
             DialogResult = false;
         }
 
-        private void ImportNewTexture_Click(object sender, RoutedEventArgs e)
+        private async void ImportNewTexture_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -381,10 +406,23 @@ namespace Modrix.Views.Windows
                         // Select the tab with project textures
                         SourceTabControl.SelectedIndex = 0;
 
-                        System.Windows.MessageBox.Show($"Texture imported successfully to project textures.", "Import Successful", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        var importMsgBox = new MessageBox
+                        {
+                            Title = "Import Successful",
+                            Content = "Texture imported successfully to project textures.",
+                            PrimaryButtonText = "OK"
+                        };
+                        await importMsgBox.ShowDialogAsync();
 
-                        // Optionally auto-select the imported texture and return
-                        if (System.Windows.MessageBox.Show("Do you want to use the imported texture?", "Select Texture", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question) == System.Windows.MessageBoxResult.Yes)
+                        var selectMsgBox = new MessageBox
+                        {
+                            Title = "Select Texture",
+                            Content = "Do you want to use the imported texture?",
+                            PrimaryButtonText = "Yes",
+                            CloseButtonText = "No"
+                        };
+                        var result = await selectMsgBox.ShowDialogAsync();
+                        if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
                         {
                             DialogResult = true;
                         }
@@ -393,7 +431,13 @@ namespace Modrix.Views.Windows
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Error importing texture: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                var msgBox = new MessageBox
+                {
+                    Title = "Error",
+                    Content = $"Error importing texture: {ex.Message}",
+                    PrimaryButtonText = "OK"
+                };
+                await msgBox.ShowDialogAsync();
             }
         }
 

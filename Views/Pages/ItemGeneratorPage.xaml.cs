@@ -6,6 +6,8 @@ using Modrix.ViewModels.Windows;
 using Modrix.ModElements;
 using System;
 using System.IO;
+using Wpf.Ui.Controls;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace Modrix.Views.Pages
 {
@@ -35,12 +37,12 @@ namespace Modrix.Views.Pages
                 }
                 else
                 {
-                    MessageBox.Show("Could not determine project path. Please ensure a project is loaded.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ShowMessage("Warning", "Could not determine project path. Please ensure a project is loaded.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error initializing item generator: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowMessage("Error", $"Error initializing item generator: {ex.Message}");
             }
             
             // Initialize default values
@@ -79,8 +81,19 @@ namespace Modrix.Views.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error populating item data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowMessage("Error", $"Error populating item data: {ex.Message}");
             }
+        }
+
+        private async void ShowMessage(string title, string message)
+        {
+            var msgBox = new MessageBox
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = "OK"
+            };
+            await msgBox.ShowDialogAsync();
         }
 
         public string ItemName { get; set; } = "";
@@ -91,7 +104,7 @@ namespace Modrix.Views.Pages
         public int FoodValue { get; set; }
         public float SaturationValue { get; set; }
 
-        private void ChooseTexture_Click(object sender, RoutedEventArgs e)
+        private async void ChooseTexture_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -104,7 +117,7 @@ namespace Modrix.Views.Pages
                 
                 if (string.IsNullOrEmpty(projectPath) || !Directory.Exists(projectPath))
                 {
-                    MessageBox.Show("Could not determine project path. Please ensure a project is loaded.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await ShowMessageAsync("Error", "Could not determine project path. Please ensure a project is loaded.");
                     return;
                 }
                 
@@ -118,11 +131,22 @@ namespace Modrix.Views.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error choosing texture: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                await ShowMessageAsync("Error", $"Error choosing texture: {ex.Message}");
             }
         }
 
-        private void Cancel_Click(object sender, RoutedEventArgs e)
+        private async Task ShowMessageAsync(string title, string message)
+        {
+            var msgBox = new MessageBox
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = "OK"
+            };
+            await msgBox.ShowDialogAsync();
+        }
+
+        private async void Cancel_Click(object sender, RoutedEventArgs e)
         {
             // Close or navigate away
             try
@@ -132,7 +156,7 @@ namespace Modrix.Views.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error navigating back: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                await ShowMessageAsync("Error", $"Error navigating back: {ex.Message}");
             }
         }
 
@@ -141,14 +165,14 @@ namespace Modrix.Views.Pages
             // Validate inputs
             if (string.IsNullOrWhiteSpace(ItemName))
             {
-                MessageBox.Show("Item name is required.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await ShowMessageAsync("Validation Error", "Item name is required.");
                 NameTextBox.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(TexturePath) || !File.Exists(TexturePath))
             {
-                MessageBox.Show("Please select a valid texture file.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await ShowMessageAsync("Validation Error", "Please select a valid texture file.");
                 return;
             }
 
@@ -162,7 +186,7 @@ namespace Modrix.Views.Pages
 
                 if (_elementManager == null)
                 {
-                    MessageBox.Show("Could not create element manager. Project path may be invalid.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await ShowMessageAsync("Error", "Could not create element manager. Project path may be invalid.");
                     return;
                 }
 
@@ -210,8 +234,7 @@ namespace Modrix.Views.Pages
                 await _elementManager.GenerateCodeAsync(itemData, generator);
 
                 // Show success message
-                MessageBox.Show($"Item '{ItemName}' has been {(_isEditing ? "updated" : "created")} successfully!", 
-                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                await ShowMessageAsync("Success", $"Item '{ItemName}' has been {(_isEditing ? "updated" : "created")} successfully!");
 
                 // Navigate away
                 var nav = NavigationService;
@@ -219,7 +242,7 @@ namespace Modrix.Views.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                await ShowMessageAsync("Error", $"Error creating item: {ex.Message}");
             }
         }
 

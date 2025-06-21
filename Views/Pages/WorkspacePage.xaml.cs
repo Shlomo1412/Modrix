@@ -14,10 +14,7 @@ using System.Windows.Navigation;
 using Modrix.ModElements;
 using Modrix.ModElements.Generators;
 using Wpf.Ui.Controls;
-using SystemMessageBox = System.Windows.MessageBox;
-using SystemMessageBoxButton = System.Windows.MessageBoxButton;
-using SystemMessageBoxImage = System.Windows.MessageBoxImage;
-using SystemMessageBoxResult = System.Windows.MessageBoxResult;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
 using SystemImage = System.Windows.Controls.Image;
 using SystemTextBlock = System.Windows.Controls.TextBlock;
 using SystemButton = System.Windows.Controls.Button;
@@ -161,7 +158,13 @@ namespace Modrix.Views.Pages
             }
             catch (Exception ex)
             {
-                SystemMessageBox.Show($"Error loading mod elements: {ex.Message}", "Error", SystemMessageBoxButton.OK, SystemMessageBoxImage.Error);
+                var msgBox = new MessageBox
+                {
+                    Title = "Error",
+                    Content = $"Error loading mod elements: {ex.Message}",
+                    PrimaryButtonText = "OK"
+                };
+                await msgBox.ShowDialogAsync();
             }
         }
 
@@ -281,7 +284,13 @@ namespace Modrix.Views.Pages
             }
             else
             {
-                SystemMessageBox.Show("Editor for this element type is not yet implemented.", "Not Implemented", SystemMessageBoxButton.OK, SystemMessageBoxImage.Information);
+                var msgBox = new MessageBox
+                {
+                    Title = "Not Implemented",
+                    Content = "Editor for this element type is not yet implemented.",
+                    PrimaryButtonText = "OK"
+                };
+                await msgBox.ShowDialogAsync();
             }
         }
 
@@ -301,24 +310,41 @@ namespace Modrix.Views.Pages
 
         private async void DeleteModElement(ModElementData element)
         {
-            var result = SystemMessageBox.Show(
-                $"Are you sure you want to delete the {element.Type} '{element.Name}'? This cannot be undone.",
-                "Confirm Deletion",
-                SystemMessageBoxButton.YesNo, 
-                SystemMessageBoxImage.Warning);
+            var confirmBox = new MessageBox
+            {
+                Title = "Confirm Deletion",
+                Content = $"Are you sure you want to delete the {element.Type} '{element.Name}'? This cannot be undone.",
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No"
+            };
+            
+            var result = await confirmBox.ShowDialogAsync();
                 
-            if (result == SystemMessageBoxResult.Yes)
+            if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
             {
                 try
                 {
                     await _elementManager.DeleteElementAsync(element);
                     _modElements.Remove(element);
                     OnPropertyChanged(nameof(ModElements));
-                    SystemMessageBox.Show($"{element.Type} '{element.Name}' has been deleted.", "Success", SystemMessageBoxButton.OK, SystemMessageBoxImage.Information);
+                    
+                    var successBox = new MessageBox
+                    {
+                        Title = "Success",
+                        Content = $"{element.Type} '{element.Name}' has been deleted.",
+                        PrimaryButtonText = "OK"
+                    };
+                    await successBox.ShowDialogAsync();
                 }
                 catch (Exception ex)
                 {
-                    SystemMessageBox.Show($"Error deleting element: {ex.Message}", "Error", SystemMessageBoxButton.OK, SystemMessageBoxImage.Error);
+                    var errorBox = new MessageBox
+                    {
+                        Title = "Error",
+                        Content = $"Error deleting element: {ex.Message}",
+                        PrimaryButtonText = "OK"
+                    };
+                    await errorBox.ShowDialogAsync();
                 }
             }
         }

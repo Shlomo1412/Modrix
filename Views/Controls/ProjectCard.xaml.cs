@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Modrix.Models;
+using Wpf.Ui.Controls;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace Modrix.Views.Controls
 {
@@ -30,8 +32,6 @@ namespace Modrix.Views.Controls
             InitializeComponent();
 
             EditButton.Click += (s, e) => EditClicked?.Invoke(this, e);
-            
-            
         }
 
         private void OptionsButton_Click(object sender, RoutedEventArgs e)
@@ -52,7 +52,7 @@ namespace Modrix.Views.Controls
             OpenFolderClicked?.Invoke(this, e);
         }
 
-        private void FlyoutOpenInIDEButton_Click(object sender, RoutedEventArgs e)
+        private async void FlyoutOpenInIDEButton_Click(object sender, RoutedEventArgs e)
         {
             OptionsFlyout.IsOpen = false;
             if (ProjectData == null) return;
@@ -69,12 +69,24 @@ namespace Modrix.Views.Controls
                 }
                 catch
                 {
-                    MessageBox.Show("Could not open build.gradle in IDE.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    var msgBox = new MessageBox
+                    {
+                        Title = "Error",
+                        Content = "Could not open build.gradle in IDE.",
+                        PrimaryButtonText = "OK"
+                    };
+                    await msgBox.ShowDialogAsync();
                 }
             }
             else
             {
-                MessageBox.Show("build.gradle not found in project directory.", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var msgBox = new MessageBox
+                {
+                    Title = "File Not Found",
+                    Content = "build.gradle not found in project directory.",
+                    PrimaryButtonText = "OK"
+                };
+                await msgBox.ShowDialogAsync();
             }
         }
 

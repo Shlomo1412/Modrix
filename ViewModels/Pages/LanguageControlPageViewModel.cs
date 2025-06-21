@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using Wpf.Ui.Controls;
+using MessageBox = Wpf.Ui.Controls.MessageBox;
 
 namespace Modrix.ViewModels.Pages
 {
@@ -291,7 +293,7 @@ namespace Modrix.ViewModels.Pages
             LoadTranslations(SelectedLanguageFile);
         }
 
-        private void SaveLanguageFile(LanguageFile languageFile)
+        private async void SaveLanguageFile(LanguageFile languageFile)
         {
             try
             {
@@ -305,7 +307,14 @@ namespace Modrix.ViewModels.Pages
             {
                 // Handle error
                 Console.WriteLine($"Error saving language file: {ex.Message}");
-                MessageBox.Show($"Error saving language file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                var msgBox = new MessageBox
+                {
+                    Title = "Error",
+                    Content = $"Error saving language file: {ex.Message}",
+                    PrimaryButtonText = "OK"
+                };
+                await msgBox.ShowDialogAsync();
             }
         }
 
@@ -390,13 +399,18 @@ namespace Modrix.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void CreateNewLanguage()
+        private async void CreateNewLanguage()
         {
             if (string.IsNullOrWhiteSpace(NewLanguageCode) || 
                 LanguageFiles.Any(lf => lf.Code.Equals(NewLanguageCode, StringComparison.OrdinalIgnoreCase)))
             {
-                MessageBox.Show("Please enter a valid language code that doesn't already exist", 
-                    "Invalid Language Code", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var msgBox = new MessageBox
+                {
+                    Title = "Invalid Language Code",
+                    Content = "Please enter a valid language code that doesn't already exist",
+                    PrimaryButtonText = "OK"
+                };
+                await msgBox.ShowDialogAsync();
                 return;
             }
 
@@ -425,19 +439,30 @@ namespace Modrix.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void DeleteLanguage()
+        private async void DeleteLanguage()
         {
             if (SelectedLanguageFile == null || SelectedLanguageFile.Code == "en_us")
             {
-                MessageBox.Show("Cannot delete the base language (en_us)", 
-                    "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var msgBox = new MessageBox
+                {
+                    Title = "Cannot Delete",
+                    Content = "Cannot delete the base language (en_us)",
+                    PrimaryButtonText = "OK"
+                };
+                await msgBox.ShowDialogAsync();
                 return;
             }
 
-            var result = MessageBox.Show($"Are you sure you want to delete the {SelectedLanguageFile.DisplayName} language file?", 
-                "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var confirmBox = new MessageBox
+            {
+                Title = "Confirm Deletion",
+                Content = $"Are you sure you want to delete the {SelectedLanguageFile.DisplayName} language file?",
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "No"
+            };
             
-            if (result == MessageBoxResult.Yes)
+            var result = await confirmBox.ShowDialogAsync();
+            if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
             {
                 try
                 {
@@ -461,8 +486,13 @@ namespace Modrix.ViewModels.Pages
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error deleting language file: {ex.Message}", 
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    var errorBox = new MessageBox
+                    {
+                        Title = "Error",
+                        Content = $"Error deleting language file: {ex.Message}",
+                        PrimaryButtonText = "OK"
+                    };
+                    await errorBox.ShowDialogAsync();
                 }
             }
         }
