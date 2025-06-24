@@ -15,7 +15,7 @@ namespace Modrix.Views.Windows
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = "https://discord.gg/3M58rQC2",
+                FileName = "https://discord.gg/SHSAuM3H3D",
                 UseShellExecute = true
             });
             this.Close();
