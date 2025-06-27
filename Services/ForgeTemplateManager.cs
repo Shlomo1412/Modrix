@@ -19,6 +19,14 @@ namespace Modrix.Services
 
         private static readonly Dictionary<string, (string forgeVersion, string loaderVersion)> ForgeVersions = new()
         {
+            { "1.20.1", ("47.1.3", "47") },
+            { "1.20.2", ("48.0.30", "48") },
+            { "1.20.3", ("49.0.10", "49") },
+            { "1.20.4", ("50.0.5", "50") },
+            { "1.21", ("52.0.0", "52") },
+            { "1.21.1", ("53.0.0", "53") },
+            { "1.21.2", ("53.1.0", "53") },
+            { "1.21.3", ("54.0.0", "54") },
             { "1.21.4", ("54.1.3", "54") },
             { "1.21.5", ("55.0.22", "55") }
         };
@@ -27,6 +35,10 @@ namespace Modrix.Services
         {
             try
             {
+                // Ensure correct JDK version for MC version
+                int requiredJava = GetRequiredJavaVersion(data.MinecraftVersion);
+                await _jdkHelper.EnsureRequiredJdk(data.MinecraftVersion, progress);
+
                 // Initialize project structure
                 data.ProjectDir = data.Location;
                 data.SrcDir = Path.Combine(data.ProjectDir, "src", "main");
@@ -420,6 +432,22 @@ namespace Modrix.Services
             {
                 MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
             });
+        }
+
+        private int GetRequiredJavaVersion(string minecraftVersion)
+        {
+            if (minecraftVersion.StartsWith("1.20"))
+            {
+                return 17;
+            }
+            else if (minecraftVersion.StartsWith("1.21"))
+            {
+                return 21;
+            }
+            else
+            {
+                throw new Exception($"Unsupported Minecraft version: {minecraftVersion}. Supported versions are: {string.Join(", ", ForgeVersions.Keys)}");
+            }
         }
     }
 }

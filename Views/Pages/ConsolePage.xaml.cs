@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -56,6 +59,36 @@ namespace Modrix.Views.Pages
 
         public async Task StartGradleBuild(string projectDir, string gradleTasks, string jdkHome)
         {
+            // Ensure correct JDK version for the project
+            string requiredVersion = GetRequiredJavaVersionFromProject(projectDir);
+            AppendLine($"[DEBUG] Required Java version: {requiredVersion}", Brushes.Yellow);
+            AppendLine($"[DEBUG] Current JDK path: {jdkHome}", Brushes.Yellow);
+            
+            if (!string.IsNullOrEmpty(requiredVersion) && !string.IsNullOrEmpty(jdkHome) && !jdkHome.Contains($"jdk-{requiredVersion}"))
+            {
+                AppendLine($"[DEBUG] JDK version mismatch detected, searching for correct JDK...", Brushes.Yellow);
+                // Try to find the correct JDK again
+                var jdkHelper = new JdkHelper();
+                var correctJdk = jdkHelper.GetInstalledJdks()
+                    .FirstOrDefault(j => j.Version.StartsWith(requiredVersion));
+                if (correctJdk != null)
+                {
+                    jdkHome = correctJdk.Path;
+                    AppendLine($"[DEBUG] Found correct JDK: {jdkHome}", Brushes.Yellow);
+                }
+                else
+                {
+                    AppendLine($"[DEBUG] No matching JDK found for version {requiredVersion}", Brushes.Yellow);
+                }
+            }
+            else
+            {
+                AppendLine($"[DEBUG] Using JDK path as provided", Brushes.Yellow);
+            }
+
+            // Check if build.gradle needs Java version fixes
+            await FixBuildGradleJavaVersion(projectDir, requiredVersion);
+
             // Kill any previous process if still running
             if (_currentProcess != null && !_currentProcess.HasExited)
             {
@@ -123,6 +156,110 @@ namespace Modrix.Views.Pages
             proc.Start();
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
+        }
+
+        private async Task FixBuildGradleJavaVersion(string projectDir, string requiredVersion)
+        {
+            if (string.IsNullOrEmpty(requiredVersion)) return;
+
+            var buildGradlePath = Path.Combine(projectDir, "build.gradle");
+            if (!File.Exists(buildGradlePath)) return;
+
+            try
+            {
+                var content = await File.ReadAllTextAsync(buildGradlePath);
+                bool modified = false;
+
+                // Fix sourceCompatibility and targetCompatibility
+                if (content.Contains("sourceCompatibility") || content.Contains("targetCompatibility"))
+                {
+                    content = Regex.Replace(content, 
+                        @"sourceCompatibility\s*=\s*JavaVersion\.VERSION_\d+", 
+                        $"sourceCompatibility = JavaVersion.VERSION_{requiredVersion}");
+                    content = Regex.Replace(content, 
+                        @"targetCompatibility\s*=\s*JavaVersion\.VERSION_\d+", 
+                        $"targetCompatibility = JavaVersion.VERSION_{requiredVersion}");
+                    modified = true;
+                }
+
+                // Fix java toolchain if present
+                if (content.Contains("java.toolchain.languageVersion"))
+                {
+                    content = Regex.Replace(content,
+                        @"java\.toolchain\.languageVersion\s*=\s*JavaLanguageVersion\.of\(\d+\)",
+                        $"java.toolchain.languageVersion = JavaLanguageVersion.of({requiredVersion})");
+                    modified = true;
+                }
+
+                // Fix compileJava options if present
+                if (content.Contains("compileJava"))
+                {
+                    content = Regex.Replace(content,
+                        @"options\.release\s*=\s*\d+",
+                        $"options.release = {requiredVersion}");
+                    modified = true;
+                }
+
+                if (modified)
+                {
+                    await File.WriteAllTextAsync(buildGradlePath, content);
+                    AppendLine($"[DEBUG] Fixed build.gradle Java version to {requiredVersion}", Brushes.Yellow);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLine($"[DEBUG] Failed to fix build.gradle: {ex.Message}", Brushes.Yellow);
+            }
+        }
+
+        private string GetRequiredJavaVersionFromProject(string projectDir)
+        {
+            // Try to read modrix.config for MinecraftVersion
+            string configPath = Path.Combine(projectDir, "modrix.config");
+            string mcVersion = null;
+            if (File.Exists(configPath))
+            {
+                try
+                {
+                    var lines = File.ReadAllLines(configPath);
+                    foreach (var line in lines)
+                    {
+                        if (line.StartsWith("MinecraftVersion="))
+                        {
+                            mcVersion = line.Substring("MinecraftVersion=".Length).Trim();
+                            break;
+                        }
+                    }
+                }
+                catch { }
+            }
+            // Fallback: try gradle.properties
+            if (mcVersion == null)
+            {
+                string gradleProps = Path.Combine(projectDir, "gradle.properties");
+                if (File.Exists(gradleProps))
+                {
+                    try
+                    {
+                        var lines = File.ReadAllLines(gradleProps);
+                        foreach (var line in lines)
+                        {
+                            if (line.StartsWith("minecraft_version="))
+                            {
+                                mcVersion = line.Substring("minecraft_version=".Length).Trim();
+                                break;
+                            }
+                        }
+                    }
+                    catch { }
+                }
+            }
+            if (string.IsNullOrEmpty(mcVersion)) return null;
+            // Parse version: 1.20.x => 17, 1.21.x => 21
+            var parts = mcVersion.Split('.');
+            if (parts.Length < 2) return null;
+            if (!int.TryParse(parts[1], out int minor)) return null;
+            return minor >= 21 ? "21" : minor >= 17 ? "17" : "8";
         }
 
         private void AppendLine(string text, Brush defaultColor)

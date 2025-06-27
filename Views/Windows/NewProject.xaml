@@ -152,6 +152,15 @@
                                         Width="Auto"
                                         MinWidth="390">
                                         <ComboBoxItem Content="1.21.4" />
+                                        <ComboBoxItem Content="1.21.5" />
+                                        <ComboBoxItem Content="1.21.3" />
+                                        <ComboBoxItem Content="1.21.2" />
+                                        <ComboBoxItem Content="1.21.1" />
+                                        <ComboBoxItem Content="1.21" />
+                                        <ComboBoxItem Content="1.20.4" />
+                                        <ComboBoxItem Content="1.20.3" />
+                                        <ComboBoxItem Content="1.20.2" />
+                                        <ComboBoxItem Content="1.20.1" />
                                     </ComboBox>
                                 </ui:CardControl.Content>
                             </ui:CardControl>

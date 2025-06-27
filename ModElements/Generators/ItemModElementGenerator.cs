@@ -135,15 +135,15 @@ namespace Modrix.ModElements.Generators
         {
             return $@"package {packageName}.item;
 
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.Item;
 
 public class {itemClassName}Item extends Item {{
-    public {itemClassName}Item(Properties properties) {{
-        super(properties);
+    public {itemClassName}Item() {{
+        super(new Item.Properties().stacksTo(64).rarity(Rarity.COMMON));
     }}
 }}";
         }
-
 
         private string GenerateFabricItemClass(string packageName, string modId, string itemClassName, string itemName, string version, bool isModern, string modClassName)
         {
@@ -198,11 +198,41 @@ public class {itemClassName}Item extends Item {{
             }
         }
 
+        private string GenerateForgeItemRegistryClass(string packageName, string itemClassName, string snakeCaseName)
+        {
+            var modId = packageName.Substring(packageName.LastIndexOf('.') + 1);
+            var modClassName = FormatClassName(modId) + "Mod";
+            var registryClassName = modClassName + "Items";
+            return $@"package {packageName}.init;
+
+import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.eventbus.api.IEventBus;
+
+import net.minecraft.world.item.Item;
+
+import {packageName}.{modClassName};
+import {packageName}.item.{itemClassName}Item;
+
+public class {registryClassName} {{
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, {modClassName}.MOD_ID);
+    public static final RegistryObject<Item> {ToUpperSnakeCase(itemClassName)} = ITEMS.register(""{snakeCaseName}"", () -> new {itemClassName}Item());
+
+    public static void register(IEventBus eventBus) {{
+        ITEMS.register(eventBus);
+    }}
+}}";
+        }
+
         private void UpdateForgeItemRegistry(string projectPath, string packageName, string itemClassName)
         {
             var javaDir = FindJavaDirectory(projectPath);
             var packagePath = packageName.Replace('.', '/');
-            var registryPath = Path.Combine(javaDir, packagePath, "registry", "ItemRegistry.java");
+            var modId = packageName.Substring(packageName.LastIndexOf('.') + 1);
+            var modClassName = FormatClassName(modId) + "Mod";
+            var registryClassName = modClassName + "Items";
+            var registryPath = Path.Combine(javaDir, packagePath, "init", $"{registryClassName}.java");
             var snakeCaseName = ToSnakeCase(itemClassName);
 
             if (!File.Exists(registryPath))
@@ -210,40 +240,75 @@ public class {itemClassName}Item extends Item {{
                 Directory.CreateDirectory(Path.GetDirectoryName(registryPath));
                 var registryClass = GenerateForgeItemRegistryClass(packageName, itemClassName, snakeCaseName);
                 File.WriteAllText(registryPath, registryClass);
-                Debug.WriteLine($"Created Forge ItemRegistry at {registryPath}");
+                Debug.WriteLine($"Created Forge {registryClassName} at {registryPath}");
 
                 UpdateForgeModClass(projectPath, packageName);
             }
             else
             {
                 var content = File.ReadAllText(registryPath);
-
                 if (content.Contains($" {ToUpperSnakeCase(itemClassName)} ") ||
                     content.Contains($"{itemClassName}Item"))
                 {
                     return;
                 }
-
                 string importStatement = $"import {packageName}.item.{itemClassName}Item;\n";
                 content = InsertAfterLastImport(content, importStatement);
-
-                string fieldDeclaration = $@"
-                public static final RegistryObject<Item> {ToUpperSnakeCase(itemClassName)} = 
-                    ITEMS.register(""{snakeCaseName}"", 
-                        () -> new {itemClassName}Item(new Item.Properties()));";
-
-
-                int insertPosition = FindLastRegistryObjectEnd(content);
-                if (insertPosition == -1)
+                // Insert new RegistryObject before the register method
+                var registerMethodIndex = content.IndexOf("public static void register(");
+                if (registerMethodIndex > 0)
                 {
-                    insertPosition = content.IndexOf("public static void register(");
-                    if (insertPosition == -1) insertPosition = content.LastIndexOf('}');
+                    // Find the previous line end
+                    int insertPos = content.LastIndexOf(";", registerMethodIndex) + 1;
+                    string fieldDeclaration = $"\n    public static final RegistryObject<Item> {ToUpperSnakeCase(itemClassName)} = ITEMS.register(\"{snakeCaseName}\", () -> new {itemClassName}Item());";
+                    content = content.Insert(insertPos, fieldDeclaration);
                 }
-
-                content = content.Insert(insertPosition, fieldDeclaration);
+                else
+                {
+                    // Fallback: insert before last closing brace
+                    int insertPosition = content.LastIndexOf('}');
+                    string fieldDeclaration = $"\n    public static final RegistryObject<Item> {ToUpperSnakeCase(itemClassName)} = ITEMS.register(\"{snakeCaseName}\", () -> new {itemClassName}Item());";
+                    content = content.Insert(insertPosition, fieldDeclaration + "\n");
+                }
                 File.WriteAllText(registryPath, content);
-                Debug.WriteLine($"Updated Forge ItemRegistry at {registryPath}");
+                Debug.WriteLine($"Updated Forge {registryClassName} at {registryPath}");
             }
+        }
+
+        private void UpdateForgeModClass(string projectPath, string packageName)
+        {
+            var javaDir = FindJavaDirectory(projectPath);
+            var modId = GetModIdFromProject(projectPath);
+            var modClassName = FormatClassName(modId) + "Mod";
+            var registryClassName = modClassName + "Items";
+            var modClassPath = Path.Combine(javaDir, packageName.Replace('.', '/'), $"{modClassName}.java");
+            if (!File.Exists(modClassPath)) return;
+            var content = File.ReadAllText(modClassPath);
+            // Only add if not already present
+            if (content.Contains($"{registryClassName}.register(")) return;
+            string importStatement = $"import {packageName}.init.{registryClassName};\n";
+            content = InsertAfterLastImport(content, importStatement);
+            // Find the constructor
+            int constructorIndex = content.IndexOf($"public {modClassName}(");
+            if (constructorIndex == -1) return;
+            int openBrace = content.IndexOf('{', constructorIndex);
+            if (openBrace == -1) return;
+            // Find where to insert: after modEventBus is defined
+            int modEventBusIndex = content.IndexOf("IEventBus ", openBrace);
+            int insertPos = -1;
+            if (modEventBusIndex != -1)
+            {
+                // Find end of line
+                insertPos = content.IndexOf(';', modEventBusIndex) + 1;
+            }
+            else
+            {
+                // Fallback: after opening brace
+                insertPos = openBrace + 1;
+            }
+            string registration = $"\n        {registryClassName}.register(modEventBus);";
+            content = content.Insert(insertPos, registration);
+            File.WriteAllText(modClassPath, content);
         }
 
         private void UpdateFabricItemRegistry(string projectPath, string packageName, string itemClassName, string modId, string modClassName)
@@ -285,90 +350,6 @@ public class {itemClassName}Item extends Item {{
                 File.WriteAllText(modClassPath, content);
                 Debug.WriteLine($"Updated Fabric mod class at {modClassPath}");
             }
-        }
-
-        private string GenerateForgeItemRegistryClass(string packageName, string itemClassName, string snakeCaseName)
-        {
-            var modId = packageName.Substring(packageName.LastIndexOf('.') + 1);
-            var modClassName = FormatClassName(modId) + "Mod";
-
-            return $@"package {packageName}.registry;
-
-import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-import net.minecraftforge.eventbus.api.IEventBus;
-import {packageName}.{modClassName};
-import {packageName}.item.{itemClassName}Item;
-
-public class ItemRegistry {{
-    public static final DeferredRegister<Item> ITEMS = 
-        DeferredRegister.create(ForgeRegistries.ITEMS, {modClassName}.MOD_ID);
-    
-    // Items
-    public static final RegistryObject<Item> {ToUpperSnakeCase(itemClassName)} = 
-        ITEMS.register(""{snakeCaseName}"", 
-            () -> new {itemClassName}Item(new Item.Properties()));
-    
-    public static void register(IEventBus eventBus) {{
-        ITEMS.register(eventBus);
-    }}
-}}";
-        }
-
-        private void UpdateForgeModClass(string projectPath, string packageName)
-        {
-            var javaDir = FindJavaDirectory(projectPath);
-            var modId = GetModIdFromProject(projectPath);
-            var modClassName = FormatClassName(modId) + "Mod";
-            var modClassPath = Path.Combine(javaDir, packageName.Replace('.', '/'), $"{modClassName}.java");
-
-            if (!File.Exists(modClassPath)) return;
-
-            var content = File.ReadAllText(modClassPath);
-
-            // Skip if already registered
-            if (content.Contains("ItemRegistry.register(")) return;
-
-            // Add import
-            string importStatement = $"import {packageName}.registry.ItemRegistry;\n";
-            content = InsertAfterLastImport(content, importStatement);
-
-            // Find constructor
-            int constructorIndex = content.IndexOf($"public {modClassName}(");
-            if (constructorIndex == -1) return;
-
-            int openBrace = content.IndexOf('{', constructorIndex);
-            int closeBrace = FindClosingBrace(content, openBrace);
-
-            // Check if modEventBus is already declared
-            bool hasExistingEventBus = content.Contains("IEventBus modEventBus");
-
-            // Add registration call
-            string registration;
-            if (hasExistingEventBus)
-            {
-                // Use existing event bus variable
-                registration = "\n        ItemRegistry.register(modEventBus);";
-            }
-            else
-            {
-                // Create new event bus declaration
-                registration = @"
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        ItemRegistry.register(modEventBus);";
-
-                // Add FML import if needed
-                if (!content.Contains("FMLJavaModLoadingContext"))
-                {
-                    string fmlImport = "import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;\n";
-                    content = InsertAfterLastImport(content, fmlImport);
-                }
-            }
-
-            content = content.Insert(closeBrace, registration);
-            File.WriteAllText(modClassPath, content);
         }
 
         private void HandleTexture(string projectPath, string texturePath, string modId, string itemName)

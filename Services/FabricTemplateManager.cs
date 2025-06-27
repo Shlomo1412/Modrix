@@ -22,6 +22,10 @@ namespace Modrix.Services
         {
             try
             {
+                // Ensure correct JDK version for MC version
+                int requiredJava = GetRequiredJavaVersion(data.MinecraftVersion);
+                await _jdkHelper.EnsureRequiredJdk(data.MinecraftVersion, progress);
+
                 await CopyTemplateFilesAsync(data.Location, progress, data.ModId);
                 await FixAssetsFolder(data.Location, data.ModId);
                 await FixMixinFiles(data.Location, data.ModId);
@@ -272,14 +276,21 @@ namespace Modrix.Services
 
                 
                 var originalMcVersion = "1.21.5";
-                var fabricVersions = new Dictionary<string, string>
+                var fabricVersions = new Dictionary<string, (string fabricApi, string loaderVersion)>
                 {
-                    { "1.21.4", "0.119.2+1.21.4" },
-                    { "1.21.5", "0.119.5+1.21.5" }
-                    
+                    { "1.20.1", ("0.85.0+1.20.1", "0.14.24") },
+                    { "1.20.2", ("0.86.0+1.20.2", "0.15.6") },
+                    { "1.20.3", ("0.87.0+1.20.3", "0.15.7") },
+                    { "1.20.4", ("0.88.0+1.20.4", "0.15.7") },
+                    { "1.21", ("0.118.0+1.21", "0.16.0") },
+                    { "1.21.1", ("0.118.1+1.21.1", "0.16.0") },
+                    { "1.21.2", ("0.118.2+1.21.2", "0.16.0") },
+                    { "1.21.3", ("0.119.0+1.21.3", "0.16.5") },
+                    { "1.21.4", ("0.119.2+1.21.4", "0.16.9") },
+                    { "1.21.5", ("0.119.5+1.21.5", "0.16.10") }
                 };
 
-                if (!fabricVersions.TryGetValue(data.MinecraftVersion, out var fabricVersion))
+                if (!fabricVersions.TryGetValue(data.MinecraftVersion, out var fabricInfo))
                 {
                     throw new Exception($"Unsupported Minecraft version: {data.MinecraftVersion}");
                 }
@@ -287,7 +298,8 @@ namespace Modrix.Services
                 gradleContent = gradleContent
                 .Replace($"minecraft_version={originalMcVersion}", $"minecraft_version={data.MinecraftVersion}")
                 .Replace($"yarn_mappings={originalMcVersion}+build.1", $"yarn_mappings={data.MinecraftVersion}+build.1")
-                .Replace($"fabric_version=0.119.5+{originalMcVersion}", $"fabric_version={fabricVersion}")
+                .Replace($"fabric_version=0.119.5+{originalMcVersion}", $"fabric_version={fabricInfo.fabricApi}")
+                .Replace("loader_version=0.16.10", $"loader_version={fabricInfo.loaderVersion}")
                 .Replace("mod_version=0.0.1", $"mod_version={data.Version}")
                 .Replace("maven_group=com.example", $"maven_group={data.Package}")
                 .Replace("archives_base_name=modid", $"archives_base_name={data.ModId}");
@@ -525,15 +537,36 @@ namespace Modrix.Services
         {
             await Task.Run(async () =>
             {
-                progress.Report(("Updating fabric.mod.json...", 70));
-                var modJsonPath = Path.Combine(data.Location, "src", "main", "resources", "fabric.mod.json");
-                var modJson = (await File.ReadAllTextAsync(modJsonPath))
-                    .Replace("\"id\": \"example-mod\"", $"\"id\": \"{data.ModId}\"")
-                    .Replace("\"name\": \"Example Mod\"", $"\"name\": \"{data.Name}\"")
-                    .Replace("\"version\": \"${version}\"", $"\"version\": \"{data.Version}\"")
-                    .Replace("net.fabricmc.example", data.Package);
+                progress.Report(("Updating build.gradle...", 70));
 
-                await File.WriteAllTextAsync(modJsonPath, modJson);
+                // Update build.gradle Java version settings
+                var buildGradlePath = Path.Combine(data.Location, "build.gradle");
+                if (File.Exists(buildGradlePath))
+                {
+                    var buildContent = await File.ReadAllTextAsync(buildGradlePath);
+                    var requiredJava = GetRequiredJavaVersion(data.MinecraftVersion);
+
+                    // Fix Java version settings in build.gradle
+                    buildContent = buildContent
+                        .Replace("it.options.release = 21", $"it.options.release = {requiredJava}")
+                        .Replace("sourceCompatibility = JavaVersion.VERSION_21", $"sourceCompatibility = JavaVersion.VERSION_{requiredJava}")
+                        .Replace("targetCompatibility = JavaVersion.VERSION_21", $"targetCompatibility = JavaVersion.VERSION_{requiredJava}");
+
+                    await File.WriteAllTextAsync(buildGradlePath, buildContent);
+                }
+
+                // Update fabric.mod.json
+                var modJsonPath = Path.Combine(data.Location, "src", "main", "resources", "fabric.mod.json");
+                if (File.Exists(modJsonPath))
+                {
+                    var modJson = (await File.ReadAllTextAsync(modJsonPath))
+                        .Replace("\"id\": \"example-mod\"", $"\"id\": \"{data.ModId}\"")
+                        .Replace("\"name\": \"Example Mod\"", $"\"name\": \"{data.Name}\"")
+                        .Replace("\"version\": \"${version}\"", $"\"version\": \"{data.Version}\"")
+                        .Replace("net.fabricmc.example", data.Package);
+
+                    await File.WriteAllTextAsync(modJsonPath, modJson);
+                }
             });
         }
 
@@ -610,6 +643,22 @@ namespace Modrix.Services
             catch (Exception ex)
             {
                 throw new Exception($"Failed to copy icon: {ex.Message}");
+            }
+        }
+
+        private int GetRequiredJavaVersion(string minecraftVersion)
+        {
+            if (minecraftVersion.StartsWith("1.20"))
+            {
+                return 17;
+            }
+            else if (minecraftVersion.StartsWith("1.21"))
+            {
+                return 21;
+            }
+            else
+            {
+                throw new Exception($"Unsupported Minecraft version: {minecraftVersion}");
             }
         }
     }

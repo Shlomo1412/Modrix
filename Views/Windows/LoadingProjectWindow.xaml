@@ -6,12 +6,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="Creating Project"
-    Width="450"
-    Height="200"
-    d:DesignWidth="450"
-    d:DesignHeight="200"
-    Background="{DynamicResource ApplicationBackgroundBrush}"
-    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Width="480"
+    Height="260"
+    d:DesignWidth="480"
+    d:DesignHeight="260"
+    Background="#1A1A1A"
+    Foreground="Gray"
     ExtendsContentIntoTitleBar="True"
     WindowBackdropType="Mica"
     WindowCornerPreference="Round"
@@ -19,72 +19,50 @@
     ResizeMode="NoResize"
     mc:Ignorable="d">
 
-    <Grid Margin="24,24,24,17">
+    <Grid Margin="18">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock
-                Grid.Column="0"
-                FontSize="16"
-                FontWeight="Medium"
-                Text="Creating New Mod Project"
-                Margin="0,0,0,16"/>
-
-            <!-- Stop Button -->
-
-            <!-- Cancel Button -->
+        <!-- Header with Icon and Title -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
+            <ui:ProgressRing Width="40" Height="40" Margin="0,0,12,0" IsIndeterminate="True" />
+            <StackPanel>
+                <TextBlock Text="Creating New Mod Project" FontSize="22" FontWeight="Bold"/>
+                <TextBlock Text="Please wait while we set up your project..." FontSize="14" Foreground="Gray"/>
+            </StackPanel>
+        </StackPanel>
+        <!-- Main Content Area -->
+        <Border Grid.Row="1" CornerRadius="12" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="18" Margin="0,0,0,18">
+            <StackPanel>
+                <TextBlock x:Name="CurrentTaskText" Text="Initializing..." FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8"/>
+                <ui:CardControl Margin="0,8,0,0">
+                    <ProgressBar 
+                        x:Name="TaskProgressBar"
+                        Height="10" 
+                        Width="365"
+                        Minimum="0"
+                        Maximum="100"/>
+                </ui:CardControl>
+                <ui:ProgressRing
+                    x:Name="LoadingRing"
+                    IsIndeterminate="True"
+                    Margin="0,12,0,0" 
+                    Width="28"
+                    Height="28"/>
+            </StackPanel>
+        </Border>
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
             <ui:Button
                 x:Name="CancelButton"
-                Grid.Column="2"
+                Content="Cancel"
                 Appearance="Danger"
+                Height="36"
+                Width="120"
                 Icon="{ui:SymbolIcon Dismiss24}"
-                ToolTip="Cancel and close"
                 Click="CancelButton_Click"/>
-        </Grid>
-
-        <!-- Status and Logs -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock
-                Grid.Column="0"
-                x:Name="CurrentTaskText"
-                Text="Initializing..."
-                Margin="0,0,30,8"/>
-
-            <!-- More Button with Logs Menu -->
-            
-        </Grid>
-
-        <!-- Progress Bar -->
-        <ui:CardControl Grid.Row="2" Margin="0,8">
-            <ProgressBar 
-                x:Name="TaskProgressBar"
-                Height="10" 
-                Width="365"
-                Minimum="0"
-                Maximum="100"/>
-        </ui:CardControl>
-
-        <ui:ProgressRing
-            x:Name="LoadingRing"
-            IsIndeterminate="True"
-            Margin="380,6,2,6" 
-            Width="20"
-            Height="20" Grid.Row="1"/>
+        </StackPanel>
     </Grid>
 </ui:FluentWindow>

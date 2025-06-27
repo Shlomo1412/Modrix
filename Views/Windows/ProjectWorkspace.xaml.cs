@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -201,10 +202,18 @@ namespace Modrix.Views.Windows
 
             // 1) Ensure JDK
             var jdkHelper = new JdkHelper();
+            int requiredJava = GetRequiredJavaVersion(project.MinecraftVersion);
             var jdkHome = await jdkHelper.EnsureRequiredJdkAsync(
                 project.MinecraftVersion,
                 new Progress<(string, int)>()
             );
+            // If the JDK version is not correct, find the correct one
+            if (!string.IsNullOrEmpty(jdkHome) && !jdkHome.Contains($"jdk-{requiredJava}"))
+            {
+                // Try to find the correct JDK again
+                jdkHome = jdkHelper.GetInstalledJdks()
+                    .FirstOrDefault(j => j.Version.StartsWith(requiredJava.ToString()))?.Path ?? jdkHome;
+            }
 
             // 2) Pass to ConsolePage the corrected args string
             ConsolePage.PendingBuild = (
@@ -242,9 +251,19 @@ namespace Modrix.Views.Windows
                 return;
             }
 
-            var jdkHome = await new JdkHelper()
-                .EnsureRequiredJdkAsync(project.MinecraftVersion,
-                    new Progress<(string, int)>());
+            var jdkHelper = new JdkHelper();
+            int requiredJava = GetRequiredJavaVersion(project.MinecraftVersion);
+            var jdkHome = await jdkHelper.EnsureRequiredJdkAsync(
+                project.MinecraftVersion,
+                new Progress<(string, int)>()
+            );
+            // If the JDK version is not correct, find the correct one
+            if (!string.IsNullOrEmpty(jdkHome) && !jdkHome.Contains($"jdk-{requiredJava}"))
+            {
+                // Try to find the correct JDK again
+                jdkHome = jdkHelper.GetInstalledJdks()
+                    .FirstOrDefault(j => j.Version.StartsWith(requiredJava.ToString()))?.Path ?? jdkHome;
+            }
 
             ConsolePage.PendingBuild = (projectDir, "build", jdkHome);
             var currentPage2 = RootNavigation.GetType().GetProperty("CurrentPage")?.GetValue(RootNavigation) as Page;
@@ -359,6 +378,15 @@ namespace Modrix.Views.Windows
                 _ => typeof(Modrix.Views.Pages.WorkspacePage)
             };
             RootNavigation.Navigate(pageType);
+        }
+
+        private int GetRequiredJavaVersion(string minecraftVersion)
+        {
+            if (minecraftVersion.StartsWith("1.20"))
+                return 17;
+            if (minecraftVersion.StartsWith("1.21"))
+                return 21;
+            return 17; // Default to Java 17
         }
     }
 
