@@ -257,6 +257,9 @@ namespace Modrix.Services
                     .Replace("public Example(FMLJavaModLoadingContext context)", $"public {char.ToUpper(data.ModId[0]) + data.ModId.Substring(1)}Mod(FMLJavaModLoadingContext context)")
                     .Replace("@Mod.EventBusSubscriber(modid = MOD_ID", "@Mod.EventBusSubscriber(modid = MOD_ID");
 
+                // Fix constructor for different Forge versions
+                content = await FixForgeConstructor(content, data.MinecraftVersion, data.ModId);
+
                 var newFilePath = Path.Combine(mainPath, newFileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(newFilePath));
                 await File.WriteAllTextAsync(newFilePath, content);
@@ -275,6 +278,52 @@ namespace Modrix.Services
             {
                 // Ignore cleanup errors as they don't affect functionality
             }
+        }
+
+        private async Task<string> FixForgeConstructor(string content, string minecraftVersion, string modId)
+        {
+            var className = $"{char.ToUpper(modId[0]) + modId.Substring(1)}Mod";
+            
+            // Determine if we need the old or new constructor based on Minecraft version
+            bool isModernForge = IsModernForgeVersion(minecraftVersion);
+            
+            if (isModernForge)
+            {
+                // For Forge 1.21+: Use FMLJavaModLoadingContext parameter
+                content = Regex.Replace(content, 
+                    $@"public {className}\(FMLJavaModLoadingContext context\)",
+                    $"public {className}(FMLJavaModLoadingContext context)");
+            }
+            else
+            {
+                // For Forge 1.20.x: Use parameter-less constructor
+                content = Regex.Replace(content,
+                    $@"public {className}\(FMLJavaModLoadingContext context\)\s*\{{",
+                    $"public {className}() {{");
+
+                // Also need to fix the modEventBus line
+                content = content.Replace(
+                    "IEventBus modEventBus = context.getModEventBus();",
+                    "IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();");
+            }
+            
+            return content;
+        }
+
+        private bool IsModernForgeVersion(string minecraftVersion)
+        {
+            // Modern Forge (with FMLJavaModLoadingContext parameter) starts from 1.21
+            if (string.IsNullOrEmpty(minecraftVersion)) return true; // Default to modern
+            
+            var parts = minecraftVersion.Split('.');
+            if (parts.Length < 2) return true;
+            
+            if (int.TryParse(parts[1], out int minor))
+            {
+                return minor >= 21; // 1.21+ uses modern constructor
+            }
+            
+            return true; // Default to modern if we can't parse
         }
 
         private async Task UpdateBuildFilesAsync(ModProjectData data, IProgress<(string, int)> progress)
