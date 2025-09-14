@@ -276,19 +276,7 @@ namespace Modrix.Services
 
                 
                 var originalMcVersion = "1.21.5";
-                var fabricVersions = new Dictionary<string, (string fabricApi, string loaderVersion)>
-                {
-                    { "1.20.1", ("0.85.0+1.20.1", "0.14.24") },
-                    { "1.20.2", ("0.86.0+1.20.2", "0.15.6") },
-                    { "1.20.3", ("0.87.0+1.20.3", "0.15.7") },
-                    { "1.20.4", ("0.88.0+1.20.4", "0.15.7") },
-                    { "1.21", ("0.118.0+1.21", "0.16.0") },
-                    { "1.21.1", ("0.118.1+1.21.1", "0.16.0") },
-                    { "1.21.2", ("0.118.2+1.21.2", "0.16.0") },
-                    { "1.21.3", ("0.119.0+1.21.3", "0.16.5") },
-                    { "1.21.4", ("0.119.2+1.21.4", "0.16.9") },
-                    { "1.21.5", ("0.119.5+1.21.5", "0.16.10") }
-                };
+                var fabricVersions = GetFabricVersionMappings();
 
                 if (!fabricVersions.TryGetValue(data.MinecraftVersion, out var fabricInfo))
                 {
@@ -491,6 +479,16 @@ namespace Modrix.Services
 
             // Get the required Java version for this Minecraft version
             var requiredJava = GetRequiredJavaVersion(data.MinecraftVersion);
+
+            // Get the Fabric Loader version for this Minecraft version
+            var fabricVersions = GetFabricVersionMappings();
+
+            // Get the appropriate Fabric Loader version
+            string fabricLoaderVersion = "0.16.10"; // Default fallback
+            if (fabricVersions.TryGetValue(data.MinecraftVersion, out var fabricInfo))
+            {
+                fabricLoaderVersion = fabricInfo.loaderVersion;
+            }
             
             content = content
                 .Replace("\"id\": \"modid\"", $"\"id\": \"{data.ModId}\"")
@@ -507,9 +505,10 @@ namespace Modrix.Services
                 .Replace("\"modid.mixins.json\"", $"\"{data.ModId}.mixins.json\"")
                 .Replace("\"modid.client.mixins.json\"", $"\"{data.ModId}.client.mixins.json\"")
                 .Replace("\"minecraft\": \"~1.21.5\"", $"\"minecraft\": \"~{data.MinecraftVersion}\"")
-                .Replace("\"java\": \">=21\"", $"\"java\": \">={requiredJava}\"");
+                .Replace("\"java\": \">=21\"", $"\"java\": \">={requiredJava}\"")
+                .Replace("\"fabricloader\": \">=0.16.10\"", $"\"fabricloader\": \">={fabricLoaderVersion}\"");
 
-
+            
             var authorsArray = $"[{string.Join(", ", data.Authors.Split(',').Select(a => $"\"{a.Trim()}\""))}]";
             content = Regex.Replace(
                 content,
@@ -563,13 +562,24 @@ namespace Modrix.Services
                 if (File.Exists(modJsonPath))
                 {
                     var requiredJava = GetRequiredJavaVersion(data.MinecraftVersion);
+
+                    // Get the Fabric Loader version for this Minecraft version
+                    var fabricVersions = GetFabricVersionMappings();
+
+                    // Get the appropriate Fabric Loader version
+                    string fabricLoaderVersion = "0.16.10"; // Default fallback
+                    if (fabricVersions.TryGetValue(data.MinecraftVersion, out var fabricInfo))
+                    {
+                        fabricLoaderVersion = fabricInfo.loaderVersion;
+                    }
                     
                     var modJson = (await File.ReadAllTextAsync(modJsonPath))
                         .Replace("\"id\": \"example-mod\"", $"\"id\": \"{data.ModId}\"")
                         .Replace("\"name\": \"Example Mod\"", $"\"name\": \"{data.Name}\"")
                         .Replace("\"version\": \"${version}\"", $"\"version\": \"{data.Version}\"")
                         .Replace("net.fabricmc.example", data.Package)
-                        .Replace("\"java\": \">=21\"", $"\"java\": \">={requiredJava}\"");
+                        .Replace("\"java\": \">=21\"", $"\"java\": \">={requiredJava}\"")
+                        .Replace("\"fabricloader\": \">=0.16.10\"", $"\"fabricloader\": \">={fabricLoaderVersion}\"");
 
                     await File.WriteAllTextAsync(modJsonPath, modJson);
                 }
@@ -666,6 +676,23 @@ namespace Modrix.Services
             {
                 throw new Exception($"Unsupported Minecraft version: {minecraftVersion}");
             }
+        }
+
+        private Dictionary<string, (string fabricApi, string loaderVersion)> GetFabricVersionMappings()
+        {
+            return new Dictionary<string, (string fabricApi, string loaderVersion)>
+            {
+                { "1.20.1", ("0.85.0+1.20.1", "0.14.24") },
+                { "1.20.2", ("0.86.0+1.20.2", "0.15.6") },
+                { "1.20.3", ("0.87.0+1.20.3", "0.15.7") },
+                { "1.20.4", ("0.88.0+1.20.4", "0.15.7") },
+                { "1.21", ("0.118.0+1.21", "0.16.0") },
+                { "1.21.1", ("0.118.1+1.21.1", "0.16.0") },
+                { "1.21.2", ("0.118.2+1.21.2", "0.16.0") },
+                { "1.21.3", ("0.119.0+1.21.3", "0.16.5") },
+                { "1.21.4", ("0.119.2+1.21.4", "0.16.9") },
+                { "1.21.5", ("0.119.5+1.21.5", "0.16.10") }
+            };
         }
     }
 }
