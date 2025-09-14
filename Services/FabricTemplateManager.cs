@@ -433,14 +433,14 @@ namespace Modrix.Services
         {
             
             var mainResourcesPath = Path.Combine(data.Location, "src", "main", "resources");
-            await ProcessMixinFile(mainResourcesPath, data.ModId, data.Package + ".mixin");
+            await ProcessMixinFile(mainResourcesPath, data.ModId, data.Package + ".mixin", data.MinecraftVersion);
 
             
             var clientResourcesPath = Path.Combine(data.Location, "src", "client", "resources");
-            await ProcessMixinFile(clientResourcesPath, data.ModId, data.Package + ".mixin.client");
+            await ProcessMixinFile(clientResourcesPath, data.ModId, data.Package + ".mixin.client", data.MinecraftVersion);
         }
 
-        private async Task ProcessMixinFile(string resourcesPath, string modId, string package)
+        private async Task ProcessMixinFile(string resourcesPath, string modId, string package, string minecraftVersion)
         {
             var oldMixinPath = Path.Combine(resourcesPath, "modid.mixins.json");
             var newMixinPath = Path.Combine(resourcesPath, $"{modId}.mixins.json");
@@ -448,18 +448,29 @@ namespace Modrix.Services
             if (File.Exists(oldMixinPath))
             {
                 File.Move(oldMixinPath, newMixinPath);
-                await UpdateMixinFileContent(newMixinPath, package);
+                await UpdateMixinFileContent(newMixinPath, package, minecraftVersion);
             }
         }
 
-        private async Task UpdateMixinFileContent(string filePath, string package)
+        private async Task UpdateMixinFileContent(string filePath, string package, string minecraftVersion)
         {
             var content = await File.ReadAllTextAsync(filePath);
+            
+            // Update package
             content = Regex.Replace(
                 content,
                 @"""package"":\s*""([^""]*)""",
                 $"\"package\": \"{package}\""
             );
+
+            // Update compatibility level based on Minecraft version
+            var requiredJava = GetRequiredJavaVersion(minecraftVersion);
+            content = Regex.Replace(
+                content,
+                @"""compatibilityLevel"":\s*""([^""]*)""",
+                $"\"compatibilityLevel\": \"JAVA_{requiredJava}\""
+            );
+            
             await File.WriteAllTextAsync(filePath, content);
         }
 
