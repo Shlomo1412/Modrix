@@ -489,6 +489,8 @@ namespace Modrix.Services
 
             var content = await File.ReadAllTextAsync(modJsonPath);
 
+            // Get the required Java version for this Minecraft version
+            var requiredJava = GetRequiredJavaVersion(data.MinecraftVersion);
             
             content = content
                 .Replace("\"id\": \"modid\"", $"\"id\": \"{data.ModId}\"")
@@ -504,9 +506,10 @@ namespace Modrix.Services
                 .Replace("\"com.example.ExampleModClient\"", $"\"{data.Package}.{data.ModId}ModClient\"")
                 .Replace("\"modid.mixins.json\"", $"\"{data.ModId}.mixins.json\"")
                 .Replace("\"modid.client.mixins.json\"", $"\"{data.ModId}.client.mixins.json\"")
-                .Replace("\"minecraft\": \"~1.21.5\"", $"\"minecraft\": \"~{data.MinecraftVersion}\"");
+                .Replace("\"minecraft\": \"~1.21.5\"", $"\"minecraft\": \"~{data.MinecraftVersion}\"")
+                .Replace("\"java\": \">=21\"", $"\"java\": \">={requiredJava}\"");
 
-            
+
             var authorsArray = $"[{string.Join(", ", data.Authors.Split(',').Select(a => $"\"{a.Trim()}\""))}]";
             content = Regex.Replace(
                 content,
@@ -559,11 +562,14 @@ namespace Modrix.Services
                 var modJsonPath = Path.Combine(data.Location, "src", "main", "resources", "fabric.mod.json");
                 if (File.Exists(modJsonPath))
                 {
+                    var requiredJava = GetRequiredJavaVersion(data.MinecraftVersion);
+                    
                     var modJson = (await File.ReadAllTextAsync(modJsonPath))
                         .Replace("\"id\": \"example-mod\"", $"\"id\": \"{data.ModId}\"")
                         .Replace("\"name\": \"Example Mod\"", $"\"name\": \"{data.Name}\"")
                         .Replace("\"version\": \"${version}\"", $"\"version\": \"{data.Version}\"")
-                        .Replace("net.fabricmc.example", data.Package);
+                        .Replace("net.fabricmc.example", data.Package)
+                        .Replace("\"java\": \">=21\"", $"\"java\": \">={requiredJava}\"");
 
                     await File.WriteAllTextAsync(modJsonPath, modJson);
                 }
