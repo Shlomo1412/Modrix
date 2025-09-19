@@ -12,12 +12,16 @@ using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Modrix.Views.Windows;
 using Modrix.ViewModels.Pages;
+using Modrix.Services;
 using Wpf.Ui.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
 using MenuItem = Wpf.Ui.Controls.MenuItem;
 using Button = Wpf.Ui.Controls.Button;
 using SystemMenuItem = System.Windows.Controls.MenuItem;
 using SystemTextBlock = System.Windows.Controls.TextBlock;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 
 namespace Modrix.Views.Pages
 {
@@ -27,6 +31,10 @@ namespace Modrix.Views.Pages
         private string _modId;
         private string _readmePath;
         private MediaPlayer _mediaPlayer = new();
+        private ModelValidationService _validationService = new();
+        private ModelValidationService.ValidationResult _lastValidationResult;
+        private ObservableCollection<ModelFileViewModel> _allModels = new();
+        private ObservableCollection<ModelFileViewModel> _filteredModels = new();
 
         public ResourcesPage()
         {
@@ -542,15 +550,29 @@ namespace Modrix.Views.Pages
         {
             if (!Directory.Exists(dir) || ModelsList == null) return;
 
-            var list = Directory.GetFiles(dir, "*.json", SearchOption.AllDirectories)
-                                .Select(f => new ModelFile
-                                {
-                                    FullPath = f,
-                                    FileName = Path.GetFileName(f)
-                                })
-                                .ToList();
+            _allModels.Clear();
+            
+            var modelFiles = Directory.GetFiles(dir, "*.json", SearchOption.AllDirectories);
+            
+            foreach (var file in modelFiles)
+            {
+                var viewModel = new ModelFileViewModel
+                {
+                    FullPath = file,
+                    FileName = Path.GetFileName(file),
+                    StatusIcon = Wpf.Ui.Controls.SymbolRegular.Document24,
+                    StatusColor = Brushes.Gray,
+                    StatusTooltip = "Not validated",
+                    ValidationMessage = "",
+                    HasValidationMessage = false,
+                    HasMissingTextures = false
+                };
+                
+                _allModels.Add(viewModel);
+            }
 
-            ModelsList.ItemsSource = list;
+            _filteredModels = new ObservableCollection<ModelFileViewModel>(_allModels);
+            ModelsList.ItemsSource = _filteredModels;
             UpdateEmptyStates();
         }
 
@@ -804,6 +826,389 @@ namespace Modrix.Views.Pages
             UpdateEmptyStates();
         }
 
+        // Model validation methods
+        private async void ValidateModels_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ShowNotification("Validating models...", "Please wait while we check your models.", NotificationType.Info);
+                
+                _lastValidationResult = await _validationService.ValidateModelsAsync(_projectPath, _modId);
+                
+                UpdateModelValidationUI();
+                
+                var errorCount = _lastValidationResult.Issues.Count(i => i.Type == "Error");
+                var warningCount = _lastValidationResult.Issues.Count(i => i.Type == "Warning");
+                var missingMappings = _lastValidationResult.MissingMappings.Count;
+                
+                ShowValidationResults(errorCount, warningCount, missingMappings);
+                
+                // Find the button by name if it exists
+                var fixButton = this.FindName("FixMappingsButton") as Wpf.Ui.Controls.Button;
+                if (fixButton != null)
+                    fixButton.IsEnabled = missingMappings > 0;
+            }
+            catch (Exception ex)
+            {
+                ShowNotification("Validation Failed", $"Error during validation: {ex.Message}", NotificationType.Error);
+            }
+        }
+
+        private async void FixMissingMappings_Click(object sender, RoutedEventArgs e)
+        {
+            if (_lastValidationResult?.MissingMappings?.Any() != true)
+            {
+                ShowNotification("No Issues", "No missing mappings found. Run validation first.", NotificationType.Info);
+                return;
+            }
+
+            var dialog = new MissingMappingsDialog(_projectPath, _modId, _lastValidationResult.MissingMappings);
+            dialog.Owner = Window.GetWindow(this);
+            
+            if (dialog.ShowDialog() == true && dialog.HasChanges)
+            {
+                // Re-validate after changes
+                ValidateModels_Click(sender, e);
+                ShowNotification("Mappings Fixed", "Model mappings have been updated successfully.", NotificationType.Success);
+            }
+        }
+
+        private void ModelsSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            FilterModels();
+        }
+
+        private void FilterModels()
+        {
+            var searchBox = this.FindName("ModelsSearchBox") as Wpf.Ui.Controls.TextBox;
+            if (searchBox == null || _allModels == null) return;
+            
+            var searchText = searchBox.Text?.ToLower() ?? "";
+            
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                _filteredModels = new ObservableCollection<ModelFileViewModel>(_allModels);
+            }
+            else
+            {
+                _filteredModels = new ObservableCollection<ModelFileViewModel>(
+                    _allModels.Where(m => m.FileName.ToLower().Contains(searchText)));
+            }
+            
+            ModelsList.ItemsSource = _filteredModels;
+            UpdateEmptyStates();
+        }
+
+        private void EditModel_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is ModelFileViewModel model)
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = model.FullPath,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage($"Could not open model: {ex.Message}", "Error");
+                }
+            }
+        }
+
+        private async void RemapModelTextures_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is ModelFileViewModel model)
+            {
+                try
+                {
+                    var missingMappings = _lastValidationResult?.MissingMappings
+                        ?.Where(m => m.ModelPath == model.FullPath)
+                        ?.ToList() ?? new List<ModelValidationService.MissingMapping>();
+
+                    if (!missingMappings.Any())
+                    {
+                        ShowNotification("No Issues", "This model has no missing texture mappings.", NotificationType.Info);
+                        return;
+                    }
+
+                    var dialog = new MissingMappingsDialog(_projectPath, _modId, missingMappings);
+                    dialog.Owner = Window.GetWindow(this);
+                    
+                    if (dialog.ShowDialog() == true && dialog.HasChanges)
+                    {
+                        // Re-validate this specific model
+                        ValidateModels_Click(sender, e);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage($"Error opening remap dialog: {ex.Message}", "Error");
+                }
+            }
+        }
+
+        private void ModelsList_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is FrameworkElement element && element.DataContext is ModelFileViewModel model)
+            {
+                var contextMenu = new ContextMenu();
+
+                var editItem = new MenuItem
+                {
+                    Header = "Edit in External Editor",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Edit24)
+                };
+
+                var validateItem = new MenuItem
+                {
+                    Header = "Validate This Model",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.CheckmarkStarburst24)
+                };
+
+                var remapItem = new MenuItem
+                {
+                    Header = "Remap Textures",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Wand24),
+                    IsEnabled = model.HasMissingTextures
+                };
+
+                var deleteItem = new MenuItem
+                {
+                    Header = "Delete",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Delete24)
+                };
+
+                editItem.Click += (s, args) => EditModel_Click(s, null);
+                validateItem.Click += async (s, args) => await ValidateSingleModel(model);
+                remapItem.Click += (s, args) => RemapModelTextures_Click(s, null);
+                deleteItem.Click += (s, args) => DeleteModel(model);
+
+                contextMenu.Items.Add(editItem);
+                contextMenu.Items.Add(validateItem);
+                contextMenu.Items.Add(remapItem);
+                contextMenu.Items.Add(new Separator());
+                contextMenu.Items.Add(deleteItem);
+
+                contextMenu.IsOpen = true;
+                e.Handled = true;
+            }
+        }
+
+        private async Task ValidateSingleModel(ModelFileViewModel model)
+        {
+            try
+            {
+                var singleResult = await _validationService.ValidateModelsAsync(_projectPath, _modId);
+                var modelIssues = singleResult.Issues.Where(i => i.FilePath == model.FullPath).ToList();
+                var modelMappings = singleResult.MissingMappings.Where(m => m.ModelPath == model.FullPath).ToList();
+
+                UpdateSingleModelUI(model, modelIssues, modelMappings);
+
+                var message = modelIssues.Any() || modelMappings.Any() 
+                    ? $"Found {modelIssues.Count} issues and {modelMappings.Count} missing mappings."
+                    : "Model is valid with no issues.";
+                
+                ShowNotification("Single Model Validation", message, 
+                    modelIssues.Any(i => i.Type == "Error") ? NotificationType.Error : NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error validating model: {ex.Message}", "Validation Error");
+            }
+        }
+
+        private void DeleteModel(ModelFileViewModel model)
+        {
+            try
+            {
+                if (File.Exists(model.FullPath))
+                {
+                    File.Delete(model.FullPath);
+                    _allModels.Remove(model);
+                    FilterModels();
+                    ShowNotification("Model Deleted", $"Successfully deleted {model.FileName}", NotificationType.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Could not delete model: {ex.Message}", "Error");
+            }
+        }
+
+        private void UpdateModelValidationUI()
+        {
+            if (_lastValidationResult == null) return;
+
+            foreach (var model in _allModels)
+            {
+                var issues = _lastValidationResult.Issues.Where(i => i.FilePath == model.FullPath).ToList();
+                var mappings = _lastValidationResult.MissingMappings.Where(m => m.ModelPath == model.FullPath).ToList();
+                
+                UpdateSingleModelUI(model, issues, mappings);
+            }
+        }
+
+        private void UpdateSingleModelUI(ModelFileViewModel model, List<ModelValidationService.ValidationIssue> issues, List<ModelValidationService.MissingMapping> mappings)
+        {
+            var hasErrors = issues.Any(i => i.Type == "Error");
+            var hasWarnings = issues.Any(i => i.Type == "Warning");
+            var hasMissingMappings = mappings.Any();
+
+            if (hasErrors)
+            {
+                model.StatusIcon = Wpf.Ui.Controls.SymbolRegular.ErrorCircle24;
+                model.StatusColor = Brushes.Red;
+                model.StatusTooltip = "Has validation errors";
+            }
+            else if (hasWarnings || hasMissingMappings)
+            {
+                model.StatusIcon = Wpf.Ui.Controls.SymbolRegular.Warning24;
+                model.StatusColor = Brushes.Orange;
+                model.StatusTooltip = "Has warnings or missing mappings";
+            }
+            else
+            {
+                model.StatusIcon = Wpf.Ui.Controls.SymbolRegular.CheckmarkCircle24;
+                model.StatusColor = Brushes.Green;
+                model.StatusTooltip = "Valid";
+            }
+
+            model.HasMissingTextures = hasMissingMappings;
+            
+            if (issues.Any() || mappings.Any())
+            {
+                var messages = new List<string>();
+                if (issues.Any()) messages.Add($"{issues.Count} validation issues");
+                if (mappings.Any()) messages.Add($"{mappings.Count} missing texture mappings");
+                
+                model.ValidationMessage = string.Join(", ", messages);
+                model.HasValidationMessage = true;
+            }
+            else
+            {
+                model.ValidationMessage = "";
+                model.HasValidationMessage = false;
+            }
+        }
+
+        private void ShowValidationResults(int errorCount, int warningCount, int missingMappings)
+        {
+            if (errorCount == 0 && warningCount == 0 && missingMappings == 0)
+            {
+                ShowNotification("Validation Complete", "All models are valid with no issues found.", NotificationType.Success);
+                return;
+            }
+
+            var title = "Model Validation Results";
+            var message = $"Found {errorCount} errors, {warningCount} warnings";
+            if (missingMappings > 0)
+            {
+                message += $", and {missingMappings} missing texture mappings";
+            }
+
+            var type = errorCount > 0 ? NotificationType.Error : NotificationType.Warning;
+            
+            ShowNotification(title, message, type, showAction: missingMappings > 0);
+        }
+
+        // Notification system
+        private void ShowNotification(string title, string message, NotificationType type, int autoHideSeconds = 5, bool showAction = false)
+        {
+            var notificationPanel = this.FindName("NotificationPanel") as Border;
+            if (notificationPanel == null) 
+            {
+                // Fallback to MessageBox if notification panel doesn't exist
+                var messageBox = new MessageBox
+                {
+                    Title = title,
+                    Content = message,
+                    PrimaryButtonText = "OK"
+                };
+                _ = messageBox.ShowDialogAsync();
+                return;
+            }
+
+            var notificationTitle = this.FindName("NotificationTitle") as System.Windows.Controls.TextBlock;
+            var notificationMessage = this.FindName("NotificationMessage") as System.Windows.Controls.TextBlock;
+            var notificationIcon = this.FindName("NotificationIcon") as SymbolIcon;
+            var notificationActionButton = this.FindName("NotificationActionButton") as Wpf.Ui.Controls.Button;
+
+            if (notificationTitle != null) notificationTitle.Text = title;
+            if (notificationMessage != null) notificationMessage.Text = message;
+            
+            if (notificationIcon != null)
+            {
+                switch (type)
+                {
+                    case NotificationType.Success:
+                        notificationIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.CheckmarkCircle24;
+                        notificationIcon.Foreground = Brushes.Green;
+                        break;
+                    case NotificationType.Warning:
+                        notificationIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Warning24;
+                        notificationIcon.Foreground = Brushes.Orange;
+                        break;
+                    case NotificationType.Error:
+                        notificationIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.ErrorCircle24;
+                        notificationIcon.Foreground = Brushes.Red;
+                        break;
+                    default:
+                        notificationIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Info24;
+                        notificationIcon.Foreground = Brushes.Blue;
+                        break;
+                }
+            }
+
+            if (notificationActionButton != null)
+                notificationActionButton.Visibility = showAction ? Visibility.Visible : Visibility.Collapsed;
+            
+            notificationPanel.Visibility = Visibility.Visible;
+
+            if (autoHideSeconds > 0)
+            {
+                var timer = new System.Windows.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(autoHideSeconds)
+                };
+                timer.Tick += (s, e) =>
+                {
+                    timer.Stop();
+                    DismissNotification();
+                };
+                timer.Start();
+            }
+        }
+
+        private void NotificationAction_Click(object sender, RoutedEventArgs e)
+        {
+            FixMissingMappings_Click(sender, e);
+        }
+
+        private void DismissNotification_Click(object sender, RoutedEventArgs e)
+        {
+            DismissNotification();
+        }
+
+        private void DismissNotification()
+        {
+            var notificationPanel = this.FindName("NotificationPanel") as Border;
+            if (notificationPanel != null)
+            {
+                notificationPanel.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        public enum NotificationType
+        {
+            Info,
+            Success,
+            Warning,
+            Error
+        }
+
         // Helper classes
         private class ImageContainer
         {
@@ -822,5 +1227,18 @@ namespace Modrix.Views.Pages
             public string FullPath { get; set; }
             public string FileName { get; set; }
         }
+    }
+
+    // ViewModel for model files
+    public class ModelFileViewModel
+    {
+        public string FullPath { get; set; }
+        public string FileName { get; set; }
+        public Wpf.Ui.Controls.SymbolRegular StatusIcon { get; set; }
+        public Brush StatusColor { get; set; }
+        public string StatusTooltip { get; set; }
+        public string ValidationMessage { get; set; }
+        public bool HasValidationMessage { get; set; }
+        public bool HasMissingTextures { get; set; }
     }
 }

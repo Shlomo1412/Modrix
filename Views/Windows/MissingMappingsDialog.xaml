@@ -1,0 +1,178 @@
+<ui:FluentWindow x:Class="Modrix.Views.Windows.MissingMappingsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="Missing Texture Mappings"
+        Height="600"
+        Width="800"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        WindowCornerPreference="Round">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
+            <ui:SymbolIcon Symbol="Warning24" Width="40" Height="40" Margin="0,0,12,0" Foreground="Orange"/>
+            <StackPanel>
+                <TextBlock Text="Missing Texture Mappings Found" FontSize="22" FontWeight="Bold"/>
+                <TextBlock Text="Some models reference textures that don't exist. Review and fix the mappings below." 
+                          FontSize="14" 
+                          Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                          TextWrapping="Wrap"/>
+            </StackPanel>
+        </StackPanel>
+        
+        <!-- Content -->
+        <Border Grid.Row="1" 
+                CornerRadius="12" 
+                Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                Padding="18" 
+                Margin="0,0,0,18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Toolbar -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                    <ui:Button Content="Auto-Fix All" 
+                              Icon="{ui:SymbolIcon Wand24}"
+                              Click="AutoFixAll_Click"
+                              Appearance="Primary"
+                              ToolTip="Automatically fix mappings where suggestions are available"/>
+                    <ui:Button Content="Refresh Textures" 
+                              Icon="{ui:SymbolIcon ArrowSync24}"
+                              Click="RefreshTextures_Click"
+                              Margin="8,0,0,0"
+                              ToolTip="Refresh the list of available textures"/>
+                    <TextBlock Text="{Binding ElementName=MappingsList, Path=Items.Count, StringFormat='Issues: {0}'}"
+                              VerticalAlignment="Center"
+                              Margin="16,0,0,0"
+                              FontWeight="SemiBold"/>
+                </StackPanel>
+                
+                <!-- Mappings List -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="MappingsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                        CornerRadius="8"
+                                        Padding="16"
+                                        Margin="0,0,0,8"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Issue Info -->
+                                        <StackPanel Grid.Row="0" Grid.Column="0">
+                                            <TextBlock FontWeight="SemiBold" FontSize="14">
+                                                <Run Text="Model:"/>
+                                                <Run Text="{Binding ModelFileName}" Foreground="{DynamicResource SystemAccentColorSecondaryBrush}"/>
+                                            </TextBlock>
+                                            <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <Run Text="Missing texture:"/>
+                                                <Run Text="{Binding ReferencedTexture}" FontWeight="SemiBold"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        
+                                        <!-- Action Buttons -->
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+											<ui:Button Icon="{ui:SymbolIcon Folder24}"
+                                                      ToolTip="Browse for texture"
+                                                      Tag="{Binding}"
+                                                      Click="BrowseTexture_Click"
+                                                      Margin="0,0,4,0"/>
+											<ui:Button Icon="{ui:SymbolIcon Delete24}"
+                                                      ToolTip="Skip this mapping"
+                                                      Tag="{Binding}"
+                                                      Click="SkipMapping_Click"
+                                                      Appearance="Danger"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Suggestion -->
+                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,8,0,0"
+                                                   Visibility="{Binding HasSuggestion, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="Suggested texture:" FontSize="12" FontWeight="SemiBold"/>
+                                            <Grid Margin="0,4,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" 
+                                                       Background="{DynamicResource ControlFillColorTertiaryBrush}"
+                                                       CornerRadius="4"
+                                                       Padding="8,4">
+                                                    <TextBlock Text="{Binding SuggestedTexture}" FontFamily="Consolas"/>
+                                                </Border>
+                                                <ui:Button Grid.Column="1" 
+                                                          Content="Apply"
+                                                          Icon="{ui:SymbolIcon Checkmark24}"
+                                                          Appearance="Primary"
+                                                          Margin="8,0,0,0"
+                                                          Tag="{Binding}"
+                                                          Click="ApplySuggestion_Click"/>
+                                            </Grid>
+                                        </StackPanel>
+                                        
+                                        <!-- Manual Input -->
+                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,8,0,0">
+                                            <TextBlock Text="Or specify manually:" FontSize="12" FontWeight="SemiBold"/>
+                                            <Grid Margin="0,4,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ui:TextBox Grid.Column="0" 
+                                                           x:Name="ManualTextureInput"
+                                                           PlaceholderText="Enter texture path (e.g., block/stone)"
+                                                           Tag="{Binding}"/>
+                                                <ui:Button Grid.Column="1" 
+                                                          Content="Apply"
+                                                          Icon="{ui:SymbolIcon Checkmark24}"
+                                                          Margin="8,0,0,0"
+                                                          Tag="{Binding}"
+                                                          Click="ApplyManual_Click"/>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        
+        <!-- Footer -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <ui:Button Content="Save Changes"
+                      Icon="{ui:SymbolIcon Save24}"
+                      Appearance="Primary"
+                      Margin="0,0,8,0"
+                      Click="SaveChanges_Click"/>
+            <ui:Button Content="Cancel"
+                      Icon="{ui:SymbolIcon Dismiss24}"
+                      Click="Cancel_Click"/>
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>
