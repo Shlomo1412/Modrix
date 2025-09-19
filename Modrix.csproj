@@ -41,7 +41,6 @@
 
   <ItemGroup>
     <PackageReference Include="Scriban" Version="5.0.0" />
-    <PackageReference Include="WPF-UI.Markdown" Version="4.0.2" />
   </ItemGroup>
 
   <ItemGroup>
