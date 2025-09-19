@@ -918,6 +918,135 @@ namespace Modrix.Views.Pages
             }
         }
 
+        private void ViewModel_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is ModelFileViewModel model)
+            {
+                OpenModelInViewer(model.FullPath, model.FileName);
+            }
+        }
+
+        private void OpenModelInViewer(string modelPath, string modelName)
+        {
+            try
+            {
+                if (!File.Exists(modelPath))
+                {
+                    ShowMessage("Model file not found.", "Error");
+                    return;
+                }
+
+                // Check if a tab for this model is already open
+                TabItem existingTab = null;
+                if (ResourcesTabs != null)
+                {
+                    foreach (var item in ResourcesTabs.Items)
+                    {
+                        if (item is TabItem tabItem && tabItem.Header is StackPanel existingHeaderPanel)
+                        {
+                            foreach (var child in existingHeaderPanel.Children)
+                            {
+                                if (child is SystemTextBlock tb && tb.Text == $"View: {modelName}")
+                                {
+                                    existingTab = tabItem;
+                                    break;
+                                }
+                            }
+                        }
+                        if (existingTab != null) break;
+                    }
+                    
+                    if (existingTab != null)
+                    {
+                        ResourcesTabs.SelectedItem = existingTab;
+                        return;
+                    }
+                }
+                
+                // Create the model viewer page
+                var viewerVm = new ModelViewerViewModel();
+                
+                // Set project information for texture loading
+                viewerVm.SetProjectInfo(_projectPath, _modId);
+                
+                var viewerPage = new ModelViewerPage(viewerVm);
+                viewerPage.SetModelPath(modelPath);
+
+                // Create a Frame to host the page
+                var frame = new Frame();
+                frame.Navigate(viewerPage);
+
+                // Create a close button
+                var closeButton = new Button
+                {
+                    Content = "✕",
+                    Width = 22,
+                    Height = 22,
+                    Margin = new Thickness(4, 0, 0, 0),
+                    Padding = new Thickness(0),
+                    Background = Brushes.Transparent,
+                    BorderBrush = Brushes.Transparent,
+                    Cursor = Cursors.Hand,
+                    ToolTip = "Close"
+                };
+
+                // Create the header with icon, text, and close button
+                var headerPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Children =
+                    {
+                        new SymbolIcon
+                        {
+                            Symbol = Wpf.Ui.Controls.SymbolRegular.Cube24,
+                            Margin = new Thickness(0, 0, 4, 0)
+                        },
+                        new SystemTextBlock
+                        {
+                            Text = $"View: {modelName}",
+                            VerticalAlignment = VerticalAlignment.Center
+                        },
+                        closeButton
+                    }
+                };
+
+                // Create a new tab
+                var tab = new TabItem
+                {
+                    Header = headerPanel,
+                    Content = frame
+                };
+
+                // ContextMenu for tab
+                var contextMenu = new ContextMenu();
+                var openInWindowMenuItem = new SystemMenuItem
+                {
+                    Header = "Open as a New Window",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Open24)
+                };
+                openInWindowMenuItem.Click += (s, e) => OpenTabAsWindow(tab);
+                contextMenu.Items.Add(openInWindowMenuItem);
+                tab.ContextMenu = contextMenu;
+
+                // Close button event
+                closeButton.Click += (s, e) =>
+                {
+                    ResourcesTabs.Items.Remove(tab);
+                };
+
+                // Add and select the new tab
+                if (ResourcesTabs != null)
+                {
+                    ResourcesTabs.Items.Add(tab);
+                    ResourcesTabs.SelectedItem = tab;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error opening model viewer: {ex.Message}", "Error");
+            }
+        }
+
         private async void RemapModelTextures_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is ModelFileViewModel model)
@@ -956,6 +1085,12 @@ namespace Modrix.Views.Pages
             {
                 var contextMenu = new ContextMenu();
 
+                var viewItem = new MenuItem
+                {
+                    Header = "View Model",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Eye24)
+                };
+
                 var editItem = new MenuItem
                 {
                     Header = "Edit in External Editor",
@@ -981,11 +1116,13 @@ namespace Modrix.Views.Pages
                     Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Delete24)
                 };
 
+                viewItem.Click += (s, args) => OpenModelInViewer(model.FullPath, model.FileName);
                 editItem.Click += (s, args) => EditModel_Click(s, null);
                 validateItem.Click += async (s, args) => await ValidateSingleModel(model);
                 remapItem.Click += (s, args) => RemapModelTextures_Click(s, null);
                 deleteItem.Click += (s, args) => DeleteModel(model);
 
+                contextMenu.Items.Add(viewItem);
                 contextMenu.Items.Add(editItem);
                 contextMenu.Items.Add(validateItem);
                 contextMenu.Items.Add(remapItem);

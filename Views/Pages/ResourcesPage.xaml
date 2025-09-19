@@ -284,6 +284,11 @@
                                                         
                                                         <!-- Action Buttons -->
                                                         <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                            <ui:Button Icon="{ui:SymbolIcon Eye24}"
+                                                                      ToolTip="View Model"
+                                                                      Tag="{Binding}"
+                                                                      Click="ViewModel_Click"
+                                                                      Margin="0,0,4,0"/>
                                                             <ui:Button Icon="{ui:SymbolIcon Edit24}"
                                                                       ToolTip="Edit Model"
                                                                       Tag="{Binding}"
