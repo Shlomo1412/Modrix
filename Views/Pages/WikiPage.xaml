@@ -1,0 +1,59 @@
+<Page x:Class="Modrix.Views.Pages.WikiPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:wpfui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:Modrix.Views.Controls"
+      mc:Ignorable="d"
+      Title="Wiki">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header/Search -->
+        <DockPanel Margin="12">
+            <ComboBox x:Name="CategoryFilter" Width="180" Margin="0,0,8,0" />
+            <TextBox x:Name="SearchBox" MinWidth="260" VerticalAlignment="Center"/>
+            <DockPanel.Dock>Top</DockPanel.Dock>
+        </DockPanel>
+
+        <!-- Results -->
+        <ScrollViewer Grid.Row="1" Margin="12">
+            <ItemsControl x:Name="ResultsList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,8" Padding="12" CornerRadius="8" Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14"/>
+                                <TextBlock Text="{Binding Category}" Foreground="Gray" FontSize="11"/>
+                                <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                <WrapPanel Margin="0,6,0,0">
+                                    <ItemsControl ItemsSource="{Binding Keywords}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#1F6AD1" CornerRadius="4" Padding="4,2" Margin="0,4,4,0">
+                                                    <TextBlock Text="{Binding}" Foreground="White" FontSize="11"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </WrapPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <wpfui:Button Appearance="Primary" Content="Locate" Click="Locate_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Page>

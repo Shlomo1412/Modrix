@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:controls="clr-namespace:Modrix.Views.Controls"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Missing Texture Mappings"
         Height="600"
@@ -29,6 +31,21 @@
                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                           TextWrapping="Wrap"/>
             </StackPanel>
+            <!-- Wiki tooltip explaining mappings -->
+            <controls:WikiTooltip Margin="12,0,0,0"
+                                   Category="Models"
+                                   Title="What are mappings?"
+                                   Summary="A texture mapping connects a logical texture key in a model (like 'layer0') to a real texture path in your assets. If the path doesn't exist, the mapping is missing and the model can't display that texture. Use this dialog to point each missing key to the correct texture."
+                                   Id="wiki-mappings-explanation">
+                <controls:WikiTooltip.Keywords>
+                    <x:Array Type="{x:Type sys:String}">
+                        <sys:String>mapping</sys:String>
+                        <sys:String>textures</sys:String>
+                        <sys:String>models</sys:String>
+                        <sys:String>assets</sys:String>
+                    </x:Array>
+                </controls:WikiTooltip.Keywords>
+            </controls:WikiTooltip>
         </StackPanel>
         
         <!-- Content -->
@@ -97,12 +114,12 @@
                                         
                                         <!-- Action Buttons -->
                                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-											<ui:Button Icon="{ui:SymbolIcon Folder24}"
+										<ui:Button Icon="{ui:SymbolIcon Folder24}"
                                                       ToolTip="Browse for texture"
                                                       Tag="{Binding}"
                                                       Click="BrowseTexture_Click"
                                                       Margin="0,0,4,0"/>
-											<ui:Button Icon="{ui:SymbolIcon Delete24}"
+										<ui:Button Icon="{ui:SymbolIcon Delete24}"
                                                       ToolTip="Skip this mapping"
                                                       Tag="{Binding}"
                                                       Click="SkipMapping_Click"

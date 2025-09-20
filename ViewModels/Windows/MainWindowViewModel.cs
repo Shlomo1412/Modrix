@@ -43,6 +43,13 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
+                    Content = "Wiki",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.BookOpen24 },
+                    TargetPageType = typeof(Views.Pages.WikiPage),
+                    ToolTip = "Browse in-app help entries"
+                },
+                new NavigationViewItem()
+                {
                     Content = "Community",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.PeopleCommunity24 },
                     Command = new RelayCommand(ShowDiscordDialog),

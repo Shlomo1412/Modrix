@@ -100,6 +100,8 @@ namespace Modrix
                 services.AddSingleton<WorkspacePage>();
                 // Language Control Page
                 services.AddSingleton<LanguageControlPage>();
+                // Wiki page
+                services.AddSingleton<WikiPage>();
 
                 //Content dialog
                 services.AddSingleton<IContentDialogService, ContentDialogService>();

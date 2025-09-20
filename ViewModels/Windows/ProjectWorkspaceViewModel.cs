@@ -103,6 +103,13 @@ namespace Modrix.ViewModels.Windows
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Code24 },
                     TargetPageType = typeof(Views.Pages.IDEPage),
                     ToolTip = "Open the integrated development environment"
+                },
+                new NavigationViewItem()
+                {
+                    Content = "Wiki",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.BookOpen24 },
+                    TargetPageType = typeof(Views.Pages.WikiPage),
+                    ToolTip = "Browse in-app help entries"
                 }
             };
         }
