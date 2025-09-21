@@ -44,13 +44,44 @@ jobs:
       run: dotnet build $env:Project_Name --configuration Release --no-restore
 
     # Verify the build by running basic checks
+    - name: Debug build output structure
+      run: |
+        Write-Host "=== Checking build output structure ==="
+        if (Test-Path "bin") {
+          Get-ChildItem -Path "bin" -Recurse -Filter "*.exe" | ForEach-Object { 
+            Write-Host "Found executable: $($_.FullName)"
+          }
+          Get-ChildItem -Path "bin" -Recurse | Where-Object { $_.PSIsContainer } | ForEach-Object {
+            Write-Host "Directory: $($_.FullName)"
+          }
+        } else {
+          Write-Host "No bin directory found"
+        }
+
     - name: Verify build output
       run: |
-        if (Test-Path "bin\Release\net8.0-windows\Modrix.exe") {
-          Write-Host "✓ Release build successful - executable found"
-          Get-ChildItem "bin\Release\net8.0-windows\" | Select-Object Name, Length
-        } else {
-          Write-Error "✗ Release build failed - executable not found"
+        # Check multiple possible locations for the executable
+        $possiblePaths = @(
+          "bin\Release\net8.0-windows\Modrix.exe",
+          "bin\Release\net8.0-windows\win-x64\Modrix.exe"
+        )
+        
+        $found = $false
+        foreach ($path in $possiblePaths) {
+          if (Test-Path $path) {
+            Write-Host "✓ Release build successful - executable found at: $path"
+            Get-ChildItem (Split-Path $path) | Select-Object Name, Length
+            $found = $true
+            break
+          }
+        }
+        
+        if (-not $found) {
+          Write-Error "✗ Release build failed - executable not found in any expected location"
+          Write-Host "Expected locations checked:"
+          foreach ($path in $possiblePaths) {
+            Write-Host "  - $path"
+          }
           exit 1
         }
 
@@ -65,6 +96,7 @@ jobs:
           --runtime win-x64 `
           --self-contained true `
           --output "exe" `
+          --property:PublishSingleFile=true `
           --verbosity normal
 
     - name: Verify standalone executable
