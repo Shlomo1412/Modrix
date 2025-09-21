@@ -158,6 +158,53 @@ jobs:
           exit 1
         }
 
+    # Install NSIS for beautiful custom installer
+    - name: Install NSIS
+      run: |
+        $url = "https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10-setup.exe/download"
+        $output = "nsis-setup.exe"
+        Write-Host "Downloading NSIS..."
+        Invoke-WebRequest -Uri $url -OutFile $output -UserAgent "Mozilla/5.0"
+        Write-Host "Installing NSIS..."
+        Start-Process -FilePath $output -ArgumentList "/S" -Wait
+        Write-Host "NSIS installed successfully"
+
+    # Create NSIS installer directory
+    - name: Create NSIS installer directory
+      run: New-Item -ItemType Directory -Force -Path "nsis-installer"
+
+    # Create NSIS installer with custom GUI
+    - name: Create NSIS installer with custom GUI
+      run: |
+        $nsisPath = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+        if (Test-Path $nsisPath) {
+          Write-Host "Creating NSIS installer with custom GUI..."
+          & $nsisPath "Modrix.nsi"
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "✓ NSIS installer created successfully"
+          } else {
+            Write-Error "✗ NSIS installer creation failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+        } else {
+          Write-Error "✗ NSIS compiler not found at $nsisPath"
+          exit 1
+        }
+
+    # Verify NSIS installer was created
+    - name: Verify NSIS installer creation
+      run: |
+        $nsisInstallerPath = "nsis-installer\ModrixSetup-NSIS.exe"
+        if (Test-Path $nsisInstallerPath) {
+          $fileInfo = Get-Item $nsisInstallerPath
+          Write-Host "✓ NSIS installer created: $nsisInstallerPath"
+          Write-Host "NSIS installer size: $($fileInfo.Length) bytes"
+        } else {
+          Write-Error "✗ NSIS installer file not found at $nsisInstallerPath"
+          Get-ChildItem "nsis-installer\" -ErrorAction SilentlyContinue | Format-Table -AutoSize
+          exit 1
+        }
+
     # Upload standalone executable artifacts
     - name: Upload standalone executable
       uses: actions/upload-artifact@v4
@@ -171,3 +218,10 @@ jobs:
       with:
         name: Modrix-Installer
         path: installer/ModrixSetup.exe
+
+    # Upload NSIS installer artifact
+    - name: Upload NSIS installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: Modrix-NSIS-Installer
+        path: nsis-installer/ModrixSetup-NSIS.exe
