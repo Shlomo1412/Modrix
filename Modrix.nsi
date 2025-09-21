@@ -50,12 +50,19 @@ VIAddVersionKey "CompanyName" "Modrix Development Team"
 !define MUI_HEADERIMAGE_UNBITMAP "Resources\ModrixIcon.ico"
 
 ; Welcome and finish page customizations
-!define MUI_WELCOMEFINISHPAGE_BITMAP "Resources\ModrixIcon.ico"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "Resources\ModrixIcon.ico"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "Assets\wpfui-icon-256.png"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "Assets\wpfui-icon-256.png"
 
 ; Custom colors - Modern blue theme
 !define MUI_BGCOLOR "0x1e1e1e"
 !define MUI_TEXTCOLOR "0xffffff"
+
+; Custom license text and dialog
+!define MUI_LICENSEPAGE_TEXT_TOP "Please review the license terms before installing Modrix."
+!define MUI_LICENSEPAGE_TEXT_BOTTOM "If you accept the terms of the agreement, click I Agree to continue. You must accept the agreement to install Modrix."
+
+; Directory page customization  
+!define MUI_DIRECTORYPAGE_TEXT_TOP "Setup will install Modrix in the following folder. To install in a different folder, click Browse and select another folder. Click Next to continue."
 
 ; Welcome page settings
 !define MUI_WELCOMEPAGE_TITLE "Welcome to Modrix Setup"
@@ -68,9 +75,17 @@ VIAddVersionKey "CompanyName" "Modrix Development Team"
 !define MUI_FINISHPAGE_RUN_TEXT "Launch Modrix now"
 !define MUI_FINISHPAGE_LINK "Visit the Modrix website"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://github.com/Shlomo1412/Modrix"
+!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README.md"
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "View README"
 
 ; Components page settings
 !define MUI_COMPONENTSPAGE_SMALLDESC
+
+; Installation page customization
+!define MUI_INSTFILESPAGE_COLORS "0x00FF00 0x000000"
+
+; Modern progress bar style
+!define MUI_INSTFILESPAGE_PROGRESSBAR "smooth"
 
 ;--------------------------------
 ; Pages
@@ -146,6 +161,10 @@ Section "Modrix Application" SecMain
     
     ; Application files
     File /r "exe\*.*"
+    
+    ; Documentation files
+    File "README.md"
+    File "LICENSE.txt"
     
     ; Store installation folder
     WriteRegStr HKCU "Software\Modrix" "" $INSTDIR
