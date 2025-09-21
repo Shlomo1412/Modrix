@@ -48,47 +48,47 @@
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon Play12}"
-                        ToolTip="Run"
+                        ToolTip="Run your mod in Minecraft development environment"
                         Margin="4,0"
                         Click="RunButton_Click"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon Bug16}"
-                        ToolTip="Debug"
+                        ToolTip="Debug your mod with breakpoints and logging"
                         Margin="4,0"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon Box16}"
-                        ToolTip="Build"
+                        ToolTip="Build your mod into a JAR file"
                         Margin="4,0"
                         Click="BuildButton_Click"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon ArrowDownload16}"
-                        ToolTip="Import"
+                        ToolTip="Import resources from external sources"
                         Margin="4,0"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon ArrowExportLtr24}"
-                        ToolTip="Export"
+                        ToolTip="Export your mod for distribution"
                         Click="ExportButton_Click"
                         Margin="4,0"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon FolderOpen24}"
-                        ToolTip="Open Project Folder"
+                        ToolTip="Open project folder in file explorer"
                         Margin="4,0"
                         Click="OpenProjectFolder_Click"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon ArrowClockwise24}"
-                        ToolTip="Refresh Project"
+                        ToolTip="Refresh project files and dependencies"
                         Margin="4,0"
                         Click="RefreshButton_Click"/>
                     <ui:Button
                         Appearance="Secondary"
                         Icon="{ui:SymbolIcon Open24}"
-                        ToolTip="Open Project in an External IDE"
+                        ToolTip="Open project in an external IDE like IntelliJ IDEA"
                         Margin="4,0"
                         Click="OpenInIDEButton_Click"/>
                 </StackPanel>

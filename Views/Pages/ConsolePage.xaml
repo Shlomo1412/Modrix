@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:Modrix.Views.Controls"
       mc:Ignorable="d"
       Title="ConsolePage">
 
@@ -18,7 +19,17 @@
                 <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
                     <ui:Image Source="pack://application:,,,/Resources/Icons/ConsoleIcon.png" Width="40" Height="40" Margin="0,0,16,0"/>
                     <StackPanel>
-                        <TextBlock Text="Console" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Console" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <controls:WikiTooltip 
+                                WikiId="gradle-console-output"
+                                Title="Understanding Console Output"
+                                Category="Tools"
+                                Keywords="console,gradle,build,output,errors,debugging"
+                                Description="The console shows real-time output from Gradle builds and Minecraft runs. Green text usually indicates success, red indicates errors, and yellow shows warnings. Use this to debug build issues, track mod loading, and monitor performance."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
                         <TextBlock Text="View build output and runtime logs" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
@@ -45,6 +56,14 @@
                                   VerticalAlignment="Center"
                                   Checked="ChkAutoScroll_Changed"
                                   Unchecked="ChkAutoScroll_Changed"/>
+                        <controls:WikiTooltip 
+                            WikiId="console-auto-scroll"
+                            Title="Auto Scroll Feature"
+                            Category="Tools"
+                            Keywords="auto scroll,console,output,real-time"
+                            Description="Auto scroll automatically scrolls to the bottom of the console as new output appears. This is useful for monitoring builds in real-time. Disable it if you want to read earlier output without being interrupted."
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"/>
                         <ui:Button Appearance="Secondary"
                                    Icon="{ui:SymbolIcon Copy24}"
                                    ToolTip="Copy All"

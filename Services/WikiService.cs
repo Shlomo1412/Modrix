@@ -79,6 +79,97 @@ namespace Modrix.Services
                 Description = "Essential tools for Minecraft modding include your IDE (IntelliJ IDEA or Eclipse), Blockbench for models, image editors for textures, and version control systems like Git.",
                 Keywords = new[] { "tools", "ide", "blockbench", "git", "development" }
             });
+
+            // Advanced modding topics
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "data-generation",
+                Title = "Data Generation",
+                Category = "Tools",
+                Description = "Data generation automatically creates JSON files for recipes, loot tables, advancements, and tags. This prevents errors and ensures consistency across your mod's data files.",
+                Keywords = new[] { "data", "generation", "recipes", "loot tables", "json", "automation" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "mixins-overview",
+                Title = "Mixins",
+                Category = "Tools",
+                Description = "Mixins allow you to modify existing Minecraft code without directly editing it. They're powerful but should be used carefully to maintain compatibility with other mods.",
+                Keywords = new[] { "mixins", "injection", "modification", "compatibility", "advanced" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "registries",
+                Title = "Registries",
+                Category = "General",
+                Description = "Registries are how Minecraft keeps track of all blocks, items, entities, and other content. Everything you add to the game must be registered with the appropriate registry using your mod's namespace.",
+                Keywords = new[] { "registry", "registration", "blocks", "items", "namespace", "content" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "client-server",
+                Title = "Client vs Server",
+                Category = "General",
+                Description = "Minecraft has two sides: client (what players see) and server (game logic). Some code only runs on one side. Understanding this distinction is crucial for multiplayer compatibility.",
+                Keywords = new[] { "client", "server", "sides", "multiplayer", "compatibility", "logic" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "resource-packs",
+                Title = "Resource Packs",
+                Category = "Textures",
+                Description = "Resource packs change the game's appearance without code modifications. They can replace textures, models, sounds, and add custom font characters. Resource packs are easier to create but more limited than mods.",
+                Keywords = new[] { "resource pack", "textures", "models", "sounds", "appearance", "visual" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "debugging",
+                Title = "Debugging Your Mod",
+                Category = "Tools",
+                Description = "Debugging involves finding and fixing issues in your mod. Use the console output to identify errors, add logging statements to track execution, and test thoroughly in both single and multiplayer environments.",
+                Keywords = new[] { "debugging", "errors", "logging", "testing", "console", "troubleshooting" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "performance",
+                Title = "Performance Considerations",
+                Category = "General",
+                Description = "Mod performance affects gameplay experience. Avoid heavy computations in tick events, cache expensive calculations, and be mindful of memory usage. Profile your mod to identify bottlenecks.",
+                Keywords = new[] { "performance", "optimization", "ticking", "memory", "lag", "fps" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "publishing",
+                Title = "Publishing Your Mod",
+                Category = "General",
+                Description = "Publishing involves uploading your mod to platforms like CurseForge or Modrinth. Prepare clear descriptions, screenshots, and ensure your mod works properly before release. Consider versioning and update policies.",
+                Keywords = new[] { "publishing", "curseforge", "modrinth", "release", "distribution", "versioning" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "dependencies",
+                Title = "Mod Dependencies",
+                Category = "Projects",
+                Description = "Dependencies are other mods your mod requires to function. Declare them in your mod metadata file. Consider soft dependencies for optional integrations. Too many dependencies can limit your mod's adoption.",
+                Keywords = new[] { "dependencies", "requirements", "compatibility", "integration", "metadata" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "version-control",
+                Title = "Version Control with Git",
+                Category = "Tools",
+                Description = "Git tracks changes to your code over time and enables collaboration. Initialize a Git repository for your mod project, commit changes regularly, and consider hosting on GitHub for backup and sharing.",
+                Keywords = new[] { "git", "version control", "github", "backup", "collaboration", "commits" }
+            });
         }
 
         public void RegisterWikiEntry(WikiEntry entry)

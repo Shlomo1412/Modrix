@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:Modrix.Views.Windows"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:controls="clr-namespace:Modrix.Views.Controls"
     Title="New Minecraft Mod Project"
     Width="580"
     Height="620"
@@ -41,7 +42,17 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="42,16,42,8" VerticalAlignment="Center">
             <ui:Image Source="pack://application:,,,/Resources/Icons/WorkspaceIcon.png" Width="40" Height="40" Margin="0,0,12,0"/>
             <StackPanel>
-                <TextBlock Text="Create New Mod Project" FontSize="22" FontWeight="Bold"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Create New Mod Project" FontSize="22" FontWeight="Bold"/>
+                    <controls:WikiTooltip 
+                        WikiId="new-project-setup"
+                        Title="Project Setup"
+                        Category="Projects"
+                        Keywords="new,project,setup,configuration,mod,creation"
+                        Description="Creating a new mod project sets up all the necessary files and folder structure for Minecraft modding. Choose your mod loader (Fabric/Forge), target Minecraft version, and provide basic information. Modrix will generate all template files automatically."
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"/>
+                </StackPanel>
                 <TextBlock Text="Configure your Minecraft mod project settings" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
             </StackPanel>
         </StackPanel>
@@ -55,10 +66,20 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="24,20,24,20">
                         <!-- Project Name -->
-                        <TextBlock 
-                            Margin="0,0,0,4"
-                            FontWeight="SemiBold" 
-                            Text="Project Name" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Project Name" />
+                            <controls:WikiTooltip 
+                                WikiId="project-name"
+                                Title="Project Name"
+                                Category="Projects"
+                                Keywords="project,name,display,title"
+                                Description="The project name is the display title of your mod that users will see. This appears in mod menus and documentation. It can contain spaces and special characters, unlike the Mod ID."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
                         <ui:TextBox
                             x:Name="ProjectNameBox"
                             Margin="0,0,0,16"
@@ -67,25 +88,35 @@
                             ToolTip="The display name of your mod"/>
 
                         <!-- Mod/Pack ID -->
-                        <TextBlock 
-                            Margin="0,0,0,4"
-                            FontWeight="SemiBold">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
-                                            <Setter Property="Text" Value="Pack ID" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Forge Mod">
-                                            <Setter Property="Text" Value="Mod ID" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Fabric Mod">
-                                            <Setter Property="Text" Value="Mod ID" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
+                                                <Setter Property="Text" Value="Pack ID" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Forge Mod">
+                                                <Setter Property="Text" Value="Mod ID" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Fabric Mod">
+                                                <Setter Property="Text" Value="Mod ID" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <controls:WikiTooltip 
+                                WikiId="mod-id-rules"
+                                Title="Mod ID Rules"
+                                Category="General"
+                                Keywords="mod,id,registry,namespace,naming"
+                                Description="The Mod ID is a unique identifier for your mod in Minecraft. It must be lowercase, contain only letters, numbers, and underscores (no spaces or special characters). This becomes your mod's namespace for all items, blocks, and assets (e.g., mymod:stone_block)."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
                         <ui:TextBox
                             x:Name="ModIdBox"
                             Margin="0,0,0,16"
@@ -94,10 +125,20 @@
                             ToolTip="Unique identifier (lowercase, no spaces)"/>
 
                         <!-- Project Type -->
-                        <TextBlock 
-                            Margin="0,0,0,4"
-                            FontWeight="SemiBold" 
-                            Text="Project Type" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Project Type" />
+                            <controls:WikiTooltip 
+                                WikiId="project-types"
+                                Title="Mod Loaders"
+                                Category="General"
+                                Keywords="fabric,forge,resource pack,modloader,performance"
+                                Description="Fabric is lightweight and fast, ideal for performance mods and quick updates. Forge has more APIs and features, better for complex content mods but slower to update. Resource packs only change textures and models without code."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
                         <ui:CardControl
                             ToolTip="Choose your project type"
                             Margin="0,0,0,16">
@@ -127,10 +168,20 @@
                             </StackPanel.Style>
 
                             <!-- Package -->
-                            <TextBlock 
-                                Margin="0,0,0,4"
-                                FontWeight="SemiBold" 
-                                Text="Package" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Margin="0,0,0,4"
+                                    FontWeight="SemiBold" 
+                                    Text="Package" />
+                                <controls:WikiTooltip 
+                                    WikiId="java-package-naming"
+                                    Title="Java Package Naming"
+                                    Category="General"
+                                    Keywords="java,package,naming,organization,structure"
+                                    Description="Java packages organize your code and prevent naming conflicts. Use reverse domain notation (com.yourname.modname) if you have a website, or net.yourname.modname otherwise. Use lowercase letters and dots only."
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
                             <ui:TextBox
                                 x:Name="PackageBox"
                                 Margin="0,0,0,16"
@@ -139,10 +190,20 @@
                                 ToolTip="Java package name for your mod"/>
 
                             <!-- Minecraft Version -->
-                            <TextBlock 
-                                Margin="0,0,0,4"
-                                FontWeight="SemiBold" 
-                                Text="Minecraft Version" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Margin="0,0,0,4"
+                                    FontWeight="SemiBold" 
+                                    Text="Minecraft Version" />
+                                <controls:WikiTooltip 
+                                    WikiId="minecraft-version-selection"
+                                    Title="Choosing Minecraft Version"
+                                    Category="General"
+                                    Keywords="minecraft,version,compatibility,java,requirements"
+                                    Description="Choose based on your target audience and required Java version. 1.20.x requires Java 17, 1.21.x requires Java 21. Newer versions have more features but smaller player bases. Consider mod loader stability for your chosen version."
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
                             <ui:CardControl
                                 ToolTip="Select the Minecraft version for your mod"
                                 Margin="0,0,0,16">
@@ -166,10 +227,20 @@
                             </ui:CardControl>
 
                             <!-- License -->
-                            <TextBlock 
-                                Margin="0,0,0,4"
-                                FontWeight="SemiBold" 
-                                Text="License" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Margin="0,0,0,4"
+                                    FontWeight="SemiBold" 
+                                    Text="License" />
+                                <controls:WikiTooltip 
+                                    WikiId="mod-licensing"
+                                    Title="Mod Licensing"
+                                    Category="General"
+                                    Keywords="license,copyright,MIT,GPL,legal,distribution"
+                                    Description="Licenses determine how others can use your mod. MIT is permissive and allows almost anything. GPL requires derivative works to be open source. 'All Rights Reserved' restricts usage. Choose based on how you want your mod to be shared and modified."
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
                             <ui:CardControl
                                 ToolTip="Choose a license for your mod"
                                 Margin="0,0,0,16">
@@ -220,10 +291,20 @@
                         </StackPanel>
 
                         <!-- Project Icon section -->
-                        <TextBlock 
-                            Margin="0,0,0,4"
-                            FontWeight="SemiBold" 
-                            Text="Project Icon (Optional)" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Project Icon (Optional)" />
+                            <controls:WikiTooltip 
+                                WikiId="mod-icon"
+                                Title="Mod Icon"
+                                Category="Textures"
+                                Keywords="icon,texture,pack.png,64x64,branding"
+                                Description="The mod icon appears in mod menus and represents your mod visually. It should be a 64x64 pixel PNG image that clearly represents your mod's theme or content. A good icon helps players identify your mod quickly."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
                         <Grid x:Name="IconSection" Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="60"/>
@@ -293,12 +374,21 @@
                         <!-- Advanced Options -->
                         <ui:CardExpander Margin="0,8,0,0" Header="Advanced Options" CornerRadius="8">
                             <StackPanel Margin="8,12,8,8">
-                                <CheckBox
-                                    x:Name="IncludeReadmeCheckbox"
-                                    Margin="0,0,0,8"
-                                    IsChecked="True"
-                                    Content="Add README.md File"
-                                    ToolTip="Include README.md file on the project template?"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox
+                                        x:Name="IncludeReadmeCheckbox"
+                                        Margin="0,0,8,8"
+                                        IsChecked="True"
+                                        Content="Add README.md File"
+                                        ToolTip="Include README.md file on the project template?"/>
+                                    <controls:WikiTooltip 
+                                        WikiId="readme-file"
+                                        Title="README File"
+                                        Category="General"
+                                        Keywords="readme,documentation,markdown,github"
+                                        Description="A README.md file provides documentation for your mod, explaining what it does, how to install it, and any special requirements. It's essential for open source projects and helps users understand your mod."
+                                        VerticalAlignment="Center"/>
+                                </StackPanel>
                             </StackPanel>
                         </ui:CardExpander>
                     </StackPanel>
