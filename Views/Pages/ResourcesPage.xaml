@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:Modrix.Views.Controls"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:md="http://schemas.lepo.co/wpfui/2022/xaml/markdown"
       mc:Ignorable="d"
@@ -162,6 +163,13 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Image20" />
                                 <TextBlock Text="Textures" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                <controls:WikiTooltip Margin="4,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    WikiId="texture-files"
+                                                    Title="What are Texture Files?"
+                                                    Category="Textures"
+                                                    Keywords="png,image,textures,16x16,minecraft"
+                                                    Description="Texture files are PNG images that define how blocks, items, and entities look in Minecraft. Most textures should be 16x16 pixels, though some can be larger. They must be placed in the 'textures' folder and referenced by models."/>
                             </StackPanel>
                         </TabItem.Header>
                         <DockPanel LastChildFill="True" Margin="8">
@@ -227,6 +235,13 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Cube20" />
                                 <TextBlock Text="Models" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                                <controls:WikiTooltip Margin="4,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    WikiId="model-validation"
+                                                    Title="Model Validation"
+                                                    Category="Models"
+                                                    Keywords="validation,json,blockbench,models"
+                                                    Description="Model validation checks your JSON model files for common issues like missing textures, invalid syntax, or broken references. Use the 'Validate' button to scan all models and identify problems before testing your mod."/>
                             </StackPanel>
                         </TabItem.Header>
                         <DockPanel LastChildFill="True" Margin="8">
@@ -434,6 +449,13 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Document20" />
                                 <TextBlock Text="README" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                                <controls:WikiTooltip Margin="4,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    WikiId="readme-markdown"
+                                                    Title="README and Markdown"
+                                                    Category="General"
+                                                    Keywords="readme,markdown,documentation,github"
+                                                    Description="A README file provides documentation for your mod. Use Markdown syntax to format text with headers, lists, links, and code blocks. This helps users understand what your mod does and how to use it."/>
                             </StackPanel>
                         </TabItem.Header>
                         <!-- Use a Grid for better layout control -->

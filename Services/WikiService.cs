@@ -1,123 +1,178 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Threading;
-using System.Windows;
+using Modrix.Models;
 
 namespace Modrix.Services
 {
-    public class WikiEntry
+    public class WikiService
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Category { get; set; } = "General";
-        public string Title { get; set; } = string.Empty;
-        public string Summary { get; set; } = string.Empty;
-        public string? Details { get; set; }
-        public string[] Keywords { get; set; } = Array.Empty<string>();
-        public string? SourceView { get; set; }
-        public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
+        private static WikiService? _instance;
+        public static WikiService Instance => _instance ??= new WikiService();
 
-        // Weak reference to source control for navigation/focus from Wiki page
-        public WeakReference<FrameworkElement>? SourceElement { get; set; }
-    }
+        private readonly Dictionary<string, WikiEntry> _entries = new();
+        private readonly Dictionary<string, WikiCategory> _categories = new();
 
-    public static class WikiService
-    {
-        private static readonly ReaderWriterLockSlim _lock = new();
-        private static readonly ObservableCollection<WikiEntry> _entries = new();
-        public static ReadOnlyObservableCollection<WikiEntry> Entries { get; } = new(_entries);
+        public ObservableCollection<WikiCategory> Categories { get; } = new();
+        public ObservableCollection<WikiEntry> AllEntries { get; } = new();
 
-        public static event EventHandler? EntriesChanged;
-
-        public static void RegisterOrUpdate(WikiEntry entry)
+        private WikiService() 
         {
-            if (entry == null) return;
-            _lock.EnterWriteLock();
-            try
+            InitializeCommonEntries();
+        }
+
+        /// <summary>
+        /// Initialize the wiki with common entries that are useful across the application
+        /// </summary>
+        private void InitializeCommonEntries()
+        {
+            // Add some fundamental entries that don't require UI tooltips
+            RegisterWikiEntry(new WikiEntry
             {
-                var existing = _entries.FirstOrDefault(e => string.Equals(e.Id, entry.Id, StringComparison.OrdinalIgnoreCase));
-                if (existing == null)
+                Id = "getting-started",
+                Title = "Getting Started with Modding",
+                Category = "General",
+                Description = "Minecraft modding involves creating modifications that add new features, blocks, items, or gameplay mechanics to Minecraft. Start by choosing a mod loader (Fabric or Forge) and setting up your development environment with the right Java version.",
+                Keywords = new[] { "modding", "getting started", "beginner", "tutorial", "setup" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "project-structure",
+                Title = "Project Structure",
+                Category = "Projects",
+                Description = "A typical mod project contains several key directories: src/main/java for your Java code, src/main/resources for assets and data, and configuration files like build.gradle and fabric.mod.json (or mods.toml for Forge).",
+                Keywords = new[] { "project", "structure", "directories", "organization", "files" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "asset-naming",
+                Title = "Asset Naming Conventions",
+                Category = "General",
+                Description = "Assets in Minecraft follow strict naming conventions. Use only lowercase letters, numbers, and underscores. Paths should be namespaced with your mod ID (e.g., mymod:block/stone). This prevents conflicts with other mods.",
+                Keywords = new[] { "naming", "conventions", "assets", "namespace", "modid" }
+            });
+
+            // Add entries to ensure all categories exist
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "model-basics",
+                Title = "Model Basics",
+                Category = "Models",
+                Description = "3D models in Minecraft are defined using JSON files that specify geometry, textures, and display settings. Most models are created using tools like Blockbench and must follow Minecraft's model format.",
+                Keywords = new[] { "models", "json", "blockbench", "3d", "geometry" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "texture-basics",
+                Title = "Texture Basics",
+                Category = "Textures",
+                Description = "Textures are PNG images that define the appearance of blocks, items, and entities. Standard Minecraft textures are 16x16 pixels, though higher resolutions are supported for resource packs.",
+                Keywords = new[] { "textures", "png", "16x16", "images", "pixels" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "development-tools",
+                Title = "Development Tools",
+                Category = "Tools",
+                Description = "Essential tools for Minecraft modding include your IDE (IntelliJ IDEA or Eclipse), Blockbench for models, image editors for textures, and version control systems like Git.",
+                Keywords = new[] { "tools", "ide", "blockbench", "git", "development" }
+            });
+        }
+
+        public void RegisterWikiEntry(WikiEntry entry)
+        {
+            if (string.IsNullOrEmpty(entry.Id))
+                return;
+
+            // Add or update entry
+            _entries[entry.Id] = entry;
+            
+            // Update AllEntries collection
+            var existingEntry = AllEntries.FirstOrDefault(e => e.Id == entry.Id);
+            if (existingEntry != null)
+            {
+                var index = AllEntries.IndexOf(existingEntry);
+                AllEntries[index] = entry;
+            }
+            else
+            {
+                AllEntries.Add(entry);
+            }
+
+            // Update category
+            if (!string.IsNullOrEmpty(entry.Category))
+            {
+                if (!_categories.ContainsKey(entry.Category))
                 {
-                    _entries.Add(entry);
+                    var category = new WikiCategory 
+                    { 
+                        Name = entry.Category,
+                        Description = GetCategoryDescription(entry.Category)
+                    };
+                    _categories[entry.Category] = category;
+                    Categories.Add(category);
+                }
+
+                var cat = _categories[entry.Category];
+                var existingInCategory = cat.Entries.FirstOrDefault(e => e.Id == entry.Id);
+                if (existingInCategory != null)
+                {
+                    var index = cat.Entries.IndexOf(existingInCategory);
+                    cat.Entries[index] = entry;
                 }
                 else
                 {
-                    // Update fields
-                    existing.Category = entry.Category;
-                    existing.Title = entry.Title;
-                    existing.Summary = entry.Summary;
-                    existing.Details = entry.Details;
-                    existing.Keywords = entry.Keywords;
-                    existing.SourceView = entry.SourceView;
-                    existing.SourceElement = entry.SourceElement;
+                    cat.Entries.Add(entry);
                 }
-            }
-            finally
-            {
-                _lock.ExitWriteLock();
-            }
-            EntriesChanged?.Invoke(null, EventArgs.Empty);
-        }
-
-        public static void Unregister(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id)) return;
-            _lock.EnterWriteLock();
-            try
-            {
-                var found = _entries.FirstOrDefault(e => string.Equals(e.Id, id, StringComparison.OrdinalIgnoreCase));
-                if (found != null)
-                {
-                    _entries.Remove(found);
-                }
-            }
-            finally
-            {
-                _lock.ExitWriteLock();
-            }
-            EntriesChanged?.Invoke(null, EventArgs.Empty);
-        }
-
-        public static IEnumerable<string> GetCategories()
-        {
-            _lock.EnterReadLock();
-            try
-            {
-                return _entries.Select(e => e.Category).Where(c => !string.IsNullOrWhiteSpace(c))
-                    .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(c => c).ToArray();
-            }
-            finally
-            {
-                _lock.ExitReadLock();
             }
         }
 
-        public static IEnumerable<WikiEntry> Search(string? text, string? category = null)
+        public WikiEntry? GetEntry(string id)
         {
-            _lock.EnterReadLock();
-            try
+            return _entries.TryGetValue(id, out var entry) ? entry : null;
+        }
+
+        public List<WikiEntry> SearchEntries(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return AllEntries.ToList();
+
+            var lowerSearchTerm = searchTerm.ToLowerInvariant();
+            
+            return AllEntries.Where(entry =>
+                entry.Title.ToLowerInvariant().Contains(lowerSearchTerm) ||
+                entry.Description.ToLowerInvariant().Contains(lowerSearchTerm) ||
+                entry.Category.ToLowerInvariant().Contains(lowerSearchTerm) ||
+                entry.Keywords.Any(k => k.ToLowerInvariant().Contains(lowerSearchTerm))
+            ).ToList();
+        }
+
+        public List<WikiEntry> GetEntriesByCategory(string category)
+        {
+            return _categories.TryGetValue(category, out var cat) ? cat.Entries : new List<WikiEntry>();
+        }
+
+        private static string GetCategoryDescription(string category)
+        {
+            return category switch
             {
-                IEnumerable<WikiEntry> query = _entries;
-                if (!string.IsNullOrWhiteSpace(category) && !string.Equals(category, "All", StringComparison.OrdinalIgnoreCase))
-                {
-                    query = query.Where(e => string.Equals(e.Category, category, StringComparison.OrdinalIgnoreCase));
-                }
-                if (!string.IsNullOrWhiteSpace(text))
-                {
-                    var t = text!.Trim();
-                    query = query.Where(e =>
-                        (!string.IsNullOrEmpty(e.Title) && e.Title.Contains(t, StringComparison.OrdinalIgnoreCase)) ||
-                        (!string.IsNullOrEmpty(e.Summary) && e.Summary.Contains(t, StringComparison.OrdinalIgnoreCase)) ||
-                        (e.Keywords?.Any(k => k.Contains(t, StringComparison.OrdinalIgnoreCase)) == true));
-                }
-                return query.OrderBy(e => e.Category).ThenBy(e => e.Title).ToArray();
-            }
-            finally
-            {
-                _lock.ExitReadLock();
-            }
+                "Models" => "Information about 3D models, textures, and related concepts",
+                "Textures" => "Details about texture files, formats, and mapping",
+                "Projects" => "Project management and workspace concepts",
+                "Tools" => "Development tools and utilities",
+                "General" => "General application concepts and features",
+                _ => $"Information related to {category}"
+            };
+        }
+
+        public void ClearEntries()
+        {
+            _entries.Clear();
+            _categories.Clear();
+            Categories.Clear();
+            AllEntries.Clear();
         }
     }
 }

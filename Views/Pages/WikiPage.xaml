@@ -3,57 +3,60 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:wpfui="http://schemas.lepo.co/wpfui/2022/xaml"
-      xmlns:controls="clr-namespace:Modrix.Views.Controls"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d"
       Title="Wiki">
-    <Grid>
+
+    <Grid Margin="24">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
-        <!-- Header/Search -->
-        <DockPanel Margin="12">
-            <ComboBox x:Name="CategoryFilter" Width="180" Margin="0,0,8,0" />
-            <TextBox x:Name="SearchBox" MinWidth="260" VerticalAlignment="Center"/>
-            <DockPanel.Dock>Top</DockPanel.Dock>
-        </DockPanel>
-
-        <!-- Results -->
-        <ScrollViewer Grid.Row="1" Margin="12">
-            <ItemsControl x:Name="ResultsList">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Margin="0,0,0,8" Padding="12" CornerRadius="8" Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="14"/>
-                                <TextBlock Text="{Binding Category}" Foreground="Gray" FontSize="11"/>
-                                <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,6,0,0"/>
-                                <WrapPanel Margin="0,6,0,0">
-                                    <ItemsControl ItemsSource="{Binding Keywords}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Background="#1F6AD1" CornerRadius="4" Padding="4,2" Margin="0,4,4,0">
-                                                    <TextBlock Text="{Binding}" Foreground="White" FontSize="11"/>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </WrapPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                    <wpfui:Button Appearance="Primary" Content="Locate" Click="Locate_Click"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+        
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,12">
+                <ui:SymbolIcon Symbol="BookInformation24" Width="32" Height="32" Margin="0,0,12,0" 
+                              Foreground="{DynamicResource SystemAccentColorSecondaryBrush}"/>
+                <TextBlock Text="Knowledge Base" FontSize="28" FontWeight="Bold" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Text="Find helpful information and explanations about Modrix features." 
+                      FontSize="14" 
+                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+        
+        <!-- Search Bar -->
+        <Border Grid.Row="1" 
+                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                CornerRadius="8"
+                Padding="16"
+                Margin="0,0,0,18">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <ui:TextBox Grid.Column="0"
+                           x:Name="SearchBox"
+                           PlaceholderText="Search wiki entries..."
+                           Icon="{ui:SymbolIcon Search24}"
+                           TextChanged="SearchBox_TextChanged"/>
+                
+                <ui:Button Grid.Column="1"
+                          Content="Clear"
+                          Icon="{ui:SymbolIcon Delete24}"
+                          Margin="8,0,0,0"
+                          Click="ClearSearch_Click"/>
+            </Grid>
+        </Border>
+        
+        <!-- Content -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="ContentPanel">
+                <!-- Categories will be populated here -->
+            </StackPanel>
         </ScrollViewer>
     </Grid>
 </Page>

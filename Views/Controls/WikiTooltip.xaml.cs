@@ -1,44 +1,37 @@
-using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+using Modrix.Models;
 using Modrix.Services;
 
 namespace Modrix.Views.Controls
 {
     public partial class WikiTooltip : UserControl
     {
-        public WikiTooltip()
+        public static readonly DependencyProperty TitleProperty =
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(WikiTooltip), new PropertyMetadata(string.Empty));
+
+        public static readonly DependencyProperty DescriptionProperty =
+            DependencyProperty.Register(nameof(Description), typeof(string), typeof(WikiTooltip), new PropertyMetadata(string.Empty));
+
+        public static readonly DependencyProperty CategoryProperty =
+            DependencyProperty.Register(nameof(Category), typeof(string), typeof(WikiTooltip), new PropertyMetadata(string.Empty));
+
+        public static readonly DependencyProperty WikiIdProperty =
+            DependencyProperty.Register(nameof(WikiId), typeof(string), typeof(WikiTooltip), new PropertyMetadata(string.Empty, OnWikiIdChanged));
+
+        public static readonly DependencyProperty KeywordsProperty =
+            DependencyProperty.Register(nameof(Keywords), typeof(string), typeof(WikiTooltip), new PropertyMetadata(string.Empty));
+
+        public string Title
         {
-            InitializeComponent();
-            Loaded += OnLoaded;
-            Unloaded += OnUnloaded;
+            get => (string)GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
         }
 
-        public static readonly DependencyProperty IdProperty = DependencyProperty.Register(
-            nameof(Id), typeof(string), typeof(WikiTooltip), new PropertyMetadata(null, OnMetaChanged));
-
-        public static readonly DependencyProperty CategoryProperty = DependencyProperty.Register(
-            nameof(Category), typeof(string), typeof(WikiTooltip), new PropertyMetadata("General", OnMetaChanged));
-
-        public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
-            nameof(Title), typeof(string), typeof(WikiTooltip), new PropertyMetadata("Help", OnMetaChanged));
-
-        public static readonly DependencyProperty SummaryProperty = DependencyProperty.Register(
-            nameof(Summary), typeof(string), typeof(WikiTooltip), new PropertyMetadata(string.Empty, OnMetaChanged));
-
-        public static readonly DependencyProperty KeywordsProperty = DependencyProperty.Register(
-            nameof(Keywords), typeof(string[]), typeof(WikiTooltip), new PropertyMetadata(Array.Empty<string>(), OnMetaChanged));
-
-        // For later highlighting/search matching state
-        public static readonly DependencyProperty HighlightTextProperty = DependencyProperty.Register(
-            nameof(HighlightText), typeof(string), typeof(WikiTooltip), new PropertyMetadata(null));
-
-        public string? Id
+        public string Description
         {
-            get => (string?)GetValue(IdProperty);
-            set => SetValue(IdProperty, value);
+            get => (string)GetValue(DescriptionProperty);
+            set => SetValue(DescriptionProperty, value);
         }
 
         public string Category
@@ -47,80 +40,38 @@ namespace Modrix.Views.Controls
             set => SetValue(CategoryProperty, value);
         }
 
-        public string Title
+        public string WikiId
         {
-            get => (string)GetValue(TitleProperty);
-            set => SetValue(TitleProperty, value);
+            get => (string)GetValue(WikiIdProperty);
+            set => SetValue(WikiIdProperty, value);
         }
 
-        public string Summary
+        public string Keywords
         {
-            get => (string)GetValue(SummaryProperty);
-            set => SetValue(SummaryProperty, value);
-        }
-
-        public string[] Keywords
-        {
-            get => (string[])GetValue(KeywordsProperty);
+            get => (string)GetValue(KeywordsProperty);
             set => SetValue(KeywordsProperty, value);
         }
 
-        public string? HighlightText
+        public WikiTooltip()
         {
-            get => (string?)GetValue(HighlightTextProperty);
-            set => SetValue(HighlightTextProperty, value);
+            InitializeComponent();
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private static void OnWikiIdChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            RegisterEntry();
-        }
-
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(Id))
+            if (d is WikiTooltip tooltip && !string.IsNullOrEmpty(tooltip.WikiId))
             {
-                WikiService.Unregister(Id);
+                // Register this tooltip with the wiki service
+                var wikiService = WikiService.Instance;
+                wikiService.RegisterWikiEntry(new WikiEntry
+                {
+                    Id = tooltip.WikiId,
+                    Title = tooltip.Title,
+                    Description = tooltip.Description,
+                    Category = tooltip.Category,
+                    Keywords = tooltip.Keywords?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>()
+                });
             }
-        }
-
-        private static void OnMetaChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is WikiTooltip wt && wt.IsLoaded)
-            {
-                wt.RegisterEntry();
-            }
-        }
-
-        private void RegisterEntry()
-        {
-            var id = string.IsNullOrWhiteSpace(Id) ? Guid.NewGuid().ToString() : Id!;
-            Id = id; // ensure set
-
-            var sourceView = TryGetViewName(this);
-            var entry = new WikiEntry
-            {
-                Id = id,
-                Category = Category,
-                Title = Title,
-                Summary = Summary,
-                Keywords = Keywords ?? Array.Empty<string>(),
-                SourceView = sourceView,
-                SourceElement = new WeakReference<FrameworkElement>(this)
-            };
-            WikiService.RegisterOrUpdate(entry);
-        }
-
-        private static string? TryGetViewName(FrameworkElement element)
-        {
-            DependencyObject current = element;
-            while (current != null)
-            {
-                if (current is Page page) return page.GetType().Name;
-                if (current is Window win) return win.GetType().Name;
-                current = LogicalTreeHelper.GetParent(current);
-            }
-            return null;
         }
     }
 }

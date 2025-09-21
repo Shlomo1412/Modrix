@@ -25,27 +25,21 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
             <ui:SymbolIcon Symbol="Warning24" Width="40" Height="40" Margin="0,0,12,0" Foreground="Orange"/>
             <StackPanel>
-                <TextBlock Text="Missing Texture Mappings Found" FontSize="22" FontWeight="Bold"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Missing Texture Mappings Found" FontSize="22" FontWeight="Bold"/>
+                    <controls:WikiTooltip Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        WikiId="texture-mappings"
+                                        Title="What are Texture Mappings?"
+                                        Category="Models"
+                                        Keywords="textures,models,mapping,references,paths"
+                                        Description="Texture mappings define which texture files your 3D models should use. When a model references a texture that doesn't exist in your project, it creates a 'missing mapping'. This can happen when texture files are moved, renamed, or deleted. You need to either provide the correct texture file or update the model to reference an existing texture."/>
+                </StackPanel>
                 <TextBlock Text="Some models reference textures that don't exist. Review and fix the mappings below." 
                           FontSize="14" 
                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                           TextWrapping="Wrap"/>
             </StackPanel>
-            <!-- Wiki tooltip explaining mappings -->
-            <controls:WikiTooltip Margin="12,0,0,0"
-                                   Category="Models"
-                                   Title="What are mappings?"
-                                   Summary="A texture mapping connects a logical texture key in a model (like 'layer0') to a real texture path in your assets. If the path doesn't exist, the mapping is missing and the model can't display that texture. Use this dialog to point each missing key to the correct texture."
-                                   Id="wiki-mappings-explanation">
-                <controls:WikiTooltip.Keywords>
-                    <x:Array Type="{x:Type sys:String}">
-                        <sys:String>mapping</sys:String>
-                        <sys:String>textures</sys:String>
-                        <sys:String>models</sys:String>
-                        <sys:String>assets</sys:String>
-                    </x:Array>
-                </controls:WikiTooltip.Keywords>
-            </controls:WikiTooltip>
         </StackPanel>
         
         <!-- Content -->
