@@ -8,6 +8,13 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyTitle>Modrix</AssemblyTitle>
+    <AssemblyDescription>Minecraft Mod Development IDE</AssemblyDescription>
+    <AssemblyCompany>Modrix</AssemblyCompany>
+    <AssemblyProduct>Modrix</AssemblyProduct>
+    <AssemblyCopyright>Copyright © 2024</AssemblyCopyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
 
   <!-- Publishing-specific properties -->
@@ -18,6 +25,15 @@
     <PublishReadyToRun>true</PublishReadyToRun>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
+
+  <!-- Exclude ModrixInstaller directory from main project -->
+  <ItemGroup>
+    <Compile Remove="ModrixInstaller\**" />
+    <EmbeddedResource Remove="ModrixInstaller\**" />
+    <None Remove="ModrixInstaller\**" />
+    <Page Remove="ModrixInstaller\**" />
+    <Content Remove="ModrixInstaller\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />

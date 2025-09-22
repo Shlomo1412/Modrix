@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Modrix", "Modrix.csproj", "{279B89A5-9D88-49DE-9FF5-6658E51D78D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModrixInstaller", "ModrixInstaller\ModrixInstaller.csproj", "{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,14 @@ Global
 		{279B89A5-9D88-49DE-9FF5-6658E51D78D3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{279B89A5-9D88-49DE-9FF5-6658E51D78D3}.Release|Default.ActiveCfg = Release|Any CPU
 		{279B89A5-9D88-49DE-9FF5-6658E51D78D3}.Release|Default.Build.0 = Release|Any CPU
+		{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}.Debug|Default.ActiveCfg = Debug|Any CPU
+		{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}.Debug|Default.Build.0 = Debug|Any CPU
+		{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}.Release|Default.ActiveCfg = Release|Any CPU
+		{0B17E82E-0FB3-4BC6-B125-7E480FBF3888}.Release|Default.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
