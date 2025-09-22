@@ -27,7 +27,7 @@
                                 Category="Tools"
                                 Keywords="console,gradle,build,output,errors,debugging"
                                 Description="The console shows real-time output from Gradle builds and Minecraft runs. Green text usually indicates success, red indicates errors, and yellow shows warnings. Use this to debug build issues, track mod loading, and monitor performance."
-                                Margin="8,0,0,0"
+                                Margin="8,5,0,0"
                                 VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Text="View build output and runtime logs" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>

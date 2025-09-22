@@ -382,6 +382,7 @@
                                         Content="Add README.md File"
                                         ToolTip="Include README.md file on the project template?"/>
                                     <controls:WikiTooltip 
+                                        Margin="0,0,0,8"
                                         WikiId="readme-file"
                                         Title="README File"
                                         Category="General"
