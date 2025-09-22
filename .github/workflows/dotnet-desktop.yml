@@ -161,13 +161,42 @@ jobs:
     # Install NSIS for beautiful custom installer
     - name: Install NSIS
       run: |
-        $url = "https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10-setup.exe/download"
-        $output = "nsis-setup.exe"
-        Write-Host "Downloading NSIS..."
-        Invoke-WebRequest -Uri $url -OutFile $output -UserAgent "Mozilla/5.0"
-        Write-Host "Installing NSIS..."
-        Start-Process -FilePath $output -ArgumentList "/S" -Wait
-        Write-Host "NSIS installed successfully"
+        Write-Host "Installing NSIS via Chocolatey (most reliable method)..."
+        try {
+          # Use chocolatey as primary method since it's more reliable
+          Set-ExecutionPolicy Bypass -Scope Process -Force
+          [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+          
+          # Install chocolatey if not present
+          if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+            Write-Host "Installing Chocolatey..."
+            iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+          }
+          
+          Write-Host "Installing NSIS via Chocolatey..."
+          choco install nsis -y --no-progress
+          Write-Host "NSIS installed successfully via Chocolatey"
+          
+        } catch {
+          Write-Host "Chocolatey installation failed: $($_.Exception.Message)"
+          Write-Host "Trying direct download as fallback..."
+          
+          # Fallback to direct download
+          $url = "https://sourceforge.net/projects/nsis/files/NSIS%203/3.10/nsis-3.10-setup.exe"
+          $output = "nsis-setup.exe"
+          
+          Invoke-WebRequest -Uri $url -OutFile $output -UserAgent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" -MaximumRedirection 5 -TimeoutSec 300
+          
+          # Verify the file was downloaded and is valid
+          if (-not (Test-Path $output) -or (Get-Item $output).Length -lt 1MB) {
+            throw "Downloaded file is invalid or too small"
+          }
+          
+          Write-Host "NSIS downloaded successfully. File size: $((Get-Item $output).Length) bytes"
+          Write-Host "Installing NSIS..."
+          Start-Process -FilePath $output -ArgumentList "/S" -Wait -ErrorAction Stop
+          Write-Host "NSIS installed successfully via direct download"
+        }
 
     # Create NSIS installer directory
     - name: Create NSIS installer directory
@@ -176,8 +205,24 @@ jobs:
     # Create NSIS installer with custom GUI
     - name: Create NSIS installer with custom GUI
       run: |
-        $nsisPath = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
-        if (Test-Path $nsisPath) {
+        # Try multiple possible NSIS installation paths
+        $nsisPaths = @(
+          "${env:ProgramFiles(x86)}\NSIS\makensis.exe",
+          "${env:ProgramFiles}\NSIS\makensis.exe",
+          "${env:ChocolateyInstall}\lib\nsis\tools\makensis.exe",
+          "C:\ProgramData\chocolatey\lib\nsis\tools\makensis.exe"
+        )
+        
+        $nsisPath = $null
+        foreach ($path in $nsisPaths) {
+          if (Test-Path $path) {
+            $nsisPath = $path
+            Write-Host "Found NSIS at: $nsisPath"
+            break
+          }
+        }
+        
+        if ($nsisPath) {
           Write-Host "Creating NSIS installer with custom GUI..."
           & $nsisPath "Modrix.nsi"
           if ($LASTEXITCODE -eq 0) {
@@ -187,8 +232,22 @@ jobs:
             exit 1
           }
         } else {
-          Write-Error "✗ NSIS compiler not found at $nsisPath"
-          exit 1
+          Write-Host "Checking PATH for makensis..."
+          try {
+            & makensis "Modrix.nsi"
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "✓ NSIS installer created successfully using PATH"
+            } else {
+              throw "makensis failed with exit code $LASTEXITCODE"
+            }
+          } catch {
+            Write-Error "✗ NSIS compiler not found in any expected location or PATH"
+            Write-Host "Searched locations:"
+            foreach ($path in $nsisPaths) {
+              Write-Host "  - $path"
+            }
+            exit 1
+          }
         }
 
     # Verify NSIS installer was created
