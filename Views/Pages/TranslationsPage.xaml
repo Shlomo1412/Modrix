@@ -1,0 +1,381 @@
+﻿<Page x:Class="Modrix.Views.Pages.TranslationsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:Modrix.Views.Controls"
+      mc:Ignorable="d"
+      Title="TranslationsPage">
+
+    <Page.Resources>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.10"/>
+    </Page.Resources>
+
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Page Header -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                CornerRadius="12,12,0,0" 
+                Padding="24,16,24,12" 
+                Margin="32,0,32,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="LocalLanguage20" Width="32" Height="32" Margin="0,0,16,0"/>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Translation Manager" FontSize="24" FontWeight="Bold"/>
+                        <controls:WikiTooltip 
+                            WikiId="minecraft-translations"
+                            Title="Minecraft Translations"
+                            Category="ResourcePacks"
+                            Keywords="translations,language,localization,lang,json"
+                            Description="Manage language files and translation overrides for your resource pack. Browse all Minecraft text entries and create custom translations. Supports all Minecraft languages including en_us, fr_fr, de_de, and many others."
+                            Margin="8,2,0,0"
+                            VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Browse and edit translation files for your resource pack" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Border Grid.Row="1" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                CornerRadius="12" 
+                Padding="24" 
+                Margin="32,0,32,32" 
+                Effect="{StaticResource CardShadow}">
+            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Toolbar -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                    <ui:Button Content="Add Translation" 
+                               Icon="{ui:SymbolIcon Add24}" 
+                               Appearance="Primary"
+                               Click="AddTranslation_Click"/>
+                    <ui:Button Content="Import Language File" 
+                               Icon="{ui:SymbolIcon ArrowDownload24}" 
+                               Margin="8,0,0,0"
+                               Click="ImportLanguageFile_Click"/>
+                    <ui:Button Content="Export Language" 
+                               Icon="{ui:SymbolIcon ArrowUpload24}" 
+                               Margin="8,0,0,0"
+                               Click="ExportLanguage_Click"/>
+                    <ui:Button Content="Load Default" 
+                               Icon="{ui:SymbolIcon Archive24}" 
+                               Margin="8,0,0,0"
+                               Click="LoadDefault_Click"
+                               ToolTip="Load default Minecraft translations for reference"/>
+                    
+                    <!-- Language Selector -->
+                    <TextBlock Text="Language:" 
+                               VerticalAlignment="Center" 
+                               Margin="16,0,8,0"/>
+                    <ComboBox x:Name="LanguageSelector" 
+                              Width="120" 
+                              SelectionChanged="LanguageSelector_SelectionChanged"/>
+                    
+                    <!-- Search -->
+                    <ui:TextBox x:Name="SearchBox"
+                                PlaceholderText="Search translations..."
+                                Width="250"
+                                Margin="16,0,0,0"
+                                Icon="{ui:SymbolIcon Search24}"
+                                TextChanged="SearchBox_TextChanged"/>
+                    
+                    <!-- Category Filter -->
+                    <ComboBox x:Name="CategoryFilter" 
+                              Width="120" 
+                              Margin="8,0,0,0"
+                              SelectionChanged="CategoryFilter_SelectionChanged">
+                        <ComboBoxItem Content="All" IsSelected="True"/>
+                        <ComboBoxItem Content="Block"/>
+                        <ComboBoxItem Content="Item"/>
+                        <ComboBoxItem Content="Entity"/>
+                        <ComboBoxItem Content="GUI"/>
+                        <ComboBoxItem Content="Menu"/>
+                        <ComboBoxItem Content="Other"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Status Bar -->
+                <Border Grid.Row="1" 
+                        Background="{DynamicResource ControlFillColorTertiaryBrush}" 
+                        CornerRadius="4" 
+                        Padding="12,8" 
+                        Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock x:Name="StatusText" 
+                                       Text="Ready" 
+                                       FontSize="12"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock x:Name="TotalCount" 
+                                       Text="0 entries" 
+                                       FontSize="12"
+                                       Margin="0,0,12,0"/>
+                            <TextBlock x:Name="OverrideCount" 
+                                       Text="0 overrides" 
+                                       FontSize="12"
+                                       Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Translation Editor -->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Translation List -->
+                    <Border Grid.Column="0" 
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                            CornerRadius="8" 
+                            Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" 
+                                       Text="Translation Keys" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="16"
+                                       Margin="0,0,0,12"/>
+                            
+                            <ScrollViewer Grid.Row="1">
+                                <ListBox x:Name="TranslationsList" 
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         SelectionChanged="TranslationsList_SelectionChanged">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="Transparent" 
+                                                    Padding="8,6" 
+                                                    Margin="0,1">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                                <Setter Property="Background" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                                                <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                                               Text="{Binding Key}" 
+                                                               FontFamily="Consolas" 
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"/>
+                                                    
+                                                    <Border Grid.Row="0" Grid.Column="1"
+                                                            Background="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                            CornerRadius="3"
+                                                            Padding="4,2"
+                                                            Visibility="{Binding HasOverride, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                        <TextBlock Text="CUSTOM" 
+                                                                   FontSize="8" 
+                                                                   FontWeight="Bold" 
+                                                                   Foreground="White"/>
+                                                    </Border>
+                                                    
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                                               Text="{Binding PreviewValue}" 
+                                                               FontSize="11"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               MaxWidth="200"
+                                                               Margin="0,2,0,0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+
+                    <!-- Splitter -->
+                    <GridSplitter Grid.Column="1" 
+                                  Width="4" 
+                                  Background="Transparent" 
+                                  HorizontalAlignment="Center"
+                                  Margin="8,0"/>
+
+                    <!-- Translation Editor Panel -->
+                    <Border Grid.Column="2" 
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                            CornerRadius="8" 
+                            Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Editor Header -->
+                            <TextBlock Grid.Row="0" 
+                                       Text="Translation Editor" 
+                                       FontWeight="SemiBold" 
+                                       FontSize="16"
+                                       Margin="0,0,0,12"/>
+                            
+                            <!-- Selected Key Info -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                                <TextBlock Text="Translation Key:" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBox x:Name="KeyTextBox" 
+                                         FontFamily="Consolas" 
+                                         FontSize="11"
+                                         IsReadOnly="True"
+                                         Margin="0,4,0,8"/>
+                                
+                                <TextBlock Text="Category:" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="CategoryTextBlock" 
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                            
+                            <!-- Original Translation -->
+                            <StackPanel Grid.Row="2" Margin="0,0,0,12">
+                                <TextBlock Text="Original (English):" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBox x:Name="OriginalTextBox" 
+                                         IsReadOnly="True"
+                                         TextWrapping="Wrap"
+                                         MinHeight="60"
+                                         VerticalScrollBarVisibility="Auto"
+                                         Background="{DynamicResource ControlFillColorTertiaryBrush}"
+                                         Margin="0,4,0,0"/>
+                            </StackPanel>
+                            
+                            <!-- Custom Translation Editor -->
+                            <StackPanel Grid.Row="3" Margin="0,0,0,12">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Text="Custom Translation:" FontSize="12" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="LanguageLabel" 
+                                               Text="(en_us)" 
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               Margin="8,0,0,0"/>
+                                </StackPanel>
+                                <TextBox x:Name="CustomTranslationTextBox" 
+                                         TextWrapping="Wrap"
+                                         MinHeight="100"
+                                         VerticalScrollBarVisibility="Auto"
+                                         AcceptsReturn="True"
+                                         TextChanged="CustomTranslationTextBox_TextChanged"/>
+                                
+                                <!-- Character count and validation -->
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock x:Name="CharacterCount" 
+                                               Text="0 characters" 
+                                               FontSize="10"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock x:Name="ValidationMessage" 
+                                               Text=""
+                                               FontSize="10"
+                                               Foreground="Red"
+                                               Margin="16,0,0,0"
+                                               Visibility="Collapsed"/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <!-- Action Buttons -->
+                            <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+                                <ui:Button Content="Reset" 
+                                           Icon="{ui:SymbolIcon ArrowUndo24}"
+                                           Margin="0,0,8,0"
+                                           Click="ResetTranslation_Click"
+                                           ToolTip="Reset to original translation"/>
+                                <ui:Button Content="Save" 
+                                           Icon="{ui:SymbolIcon Save24}"
+                                           Appearance="Primary"
+                                           Click="SaveTranslation_Click"
+                                           IsEnabled="{Binding HasChanges}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+                
+                <!-- Loading/Empty States -->
+                <StackPanel x:Name="LoadingState" 
+                            Grid.Row="2"
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <ui:ProgressRing Width="48" Height="48" IsIndeterminate="True" Margin="0,0,0,16"/>
+                    <TextBlock Text="Loading translations..." 
+                               FontSize="16" 
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+                
+                <StackPanel x:Name="EmptyState" 
+                            Grid.Row="2"
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed">
+                    <ui:SymbolIcon Symbol="LocalLanguageOff24" 
+                                   Width="64" 
+                                   Height="64" 
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   Margin="0,0,0,16"/>
+                    <TextBlock Text="No translations loaded" 
+                               FontSize="20" 
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="Click 'Load Default' to load Minecraft translations" 
+                               FontSize="14" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               TextAlignment="Center"
+                               Margin="0,0,0,16"/>
+                    <ui:Button Content="Load Default Translations" 
+                               Icon="{ui:SymbolIcon Archive24}" 
+                               Appearance="Primary"
+                               Click="LoadDefault_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

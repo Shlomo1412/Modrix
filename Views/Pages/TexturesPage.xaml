@@ -1,0 +1,318 @@
+﻿<Page x:Class="Modrix.Views.Pages.TexturesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:Modrix.Views.Controls"
+      mc:Ignorable="d"
+      Title="TexturesPage">
+
+    <Page.Resources>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.10"/>
+        <Style x:Key="TextureCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Page Header -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                CornerRadius="12,12,0,0" 
+                Padding="24,16,24,12" 
+                Margin="32,0,32,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="Image20" Width="32" Height="32" Margin="0,0,16,0"/>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Minecraft Textures" FontSize="24" FontWeight="Bold"/>
+                        <controls:WikiTooltip 
+                            WikiId="minecraft-textures"
+                            Title="Minecraft Textures"
+                            Category="ResourcePacks"
+                            Keywords="textures,minecraft,assets,override,16x16"
+                            Description="Browse all Minecraft textures and create custom overrides. Default textures are extracted automatically based on your Minecraft version. Click any texture to create an override and customize it with your own artwork."
+                            Margin="8,2,0,0"
+                            VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Browse and create texture overrides for your resource pack" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Border Grid.Row="1" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                CornerRadius="12" 
+                Padding="24" 
+                Margin="32,0,32,32" 
+                Effect="{StaticResource CardShadow}">
+            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Toolbar -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                    <ui:Button Content="Create Override" 
+                               Icon="{ui:SymbolIcon Add24}" 
+                               Appearance="Primary"
+                               Click="CreateOverride_Click"
+                               IsEnabled="{Binding HasSelectedTexture}"/>
+                    <ui:Button Content="Import Texture" 
+                               Icon="{ui:SymbolIcon ArrowDownload24}" 
+                               Margin="8,0,0,0"
+                               Click="ImportTexture_Click"/>
+                    <ui:Button Content="Extract All" 
+                               Icon="{ui:SymbolIcon Archive24}" 
+                               Margin="8,0,0,0"
+                               Click="ExtractAll_Click"
+                               ToolTip="Extract all Minecraft textures for this version"/>
+                    <ui:Button Content="Refresh" 
+                               Icon="{ui:SymbolIcon ArrowClockwise24}" 
+                               Margin="8,0,0,0"
+                               Click="Refresh_Click"/>
+                    
+                    <!-- Search and Filters -->
+                    <ui:TextBox x:Name="SearchBox"
+                                PlaceholderText="Search textures..."
+                                Width="250"
+                                Margin="16,0,8,0"
+                                Icon="{ui:SymbolIcon Search24}"
+                                TextChanged="SearchBox_TextChanged"/>
+                    
+                    <ComboBox x:Name="CategoryFilter" 
+                              Width="120" 
+                              Margin="8,0,0,0"
+                              SelectionChanged="CategoryFilter_SelectionChanged">
+                        <ComboBoxItem Content="All" IsSelected="True"/>
+                        <ComboBoxItem Content="Block"/>
+                        <ComboBoxItem Content="Item"/>
+                        <ComboBoxItem Content="Entity"/>
+                        <ComboBoxItem Content="GUI"/>
+                        <ComboBoxItem Content="Particle"/>
+                        <ComboBoxItem Content="Environment"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Status Bar -->
+                <Border Grid.Row="1" 
+                        Background="{DynamicResource ControlFillColorTertiaryBrush}" 
+                        CornerRadius="4" 
+                        Padding="12,8" 
+                        Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock x:Name="StatusText" 
+                                       Text="Loading textures..." 
+                                       FontSize="12"
+                                       VerticalAlignment="Center"/>
+                            <ProgressBar x:Name="LoadingProgress" 
+                                         Width="100" 
+                                         Height="4"
+                                         Margin="12,0,0,0"
+                                         VerticalAlignment="Center"
+                                         Visibility="Collapsed"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock x:Name="TextureCount" 
+                                       Text="0 textures" 
+                                       FontSize="12"
+                                       Margin="0,0,12,0"/>
+                            <TextBlock x:Name="OverrideCount" 
+                                       Text="0 overrides" 
+                                       FontSize="12"
+                                       Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Texture Grid -->
+                <Grid Grid.Row="2">
+                    <ScrollViewer x:Name="TextureScrollViewer" 
+                                  HorizontalScrollBarVisibility="Disabled" 
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="TexturesGrid">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource TextureCardStyle}" 
+                                            Width="120" 
+                                            Height="140"
+                                            Tag="{Binding}"
+                                            MouseLeftButtonDown="TextureCard_MouseLeftButtonDown"
+                                            MouseRightButtonDown="TextureCard_MouseRightButtonDown"
+                                            ToolTip="{Binding Path}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="64"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            
+                                            <!-- Override indicator -->
+                                            <Border Grid.Row="0" 
+                                                    Background="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                                    CornerRadius="3"
+                                                    Padding="4,2"
+                                                    HorizontalAlignment="Right"
+                                                    Visibility="{Binding HasOverride, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="OVERRIDE" 
+                                                           FontSize="8" 
+                                                           FontWeight="Bold" 
+                                                           Foreground="White"/>
+                                            </Border>
+                                            
+                                            <!-- Texture Preview -->
+                                            <Border Grid.Row="1" 
+                                                    Background="White" 
+                                                    CornerRadius="4" 
+                                                    Padding="4"
+                                                    Margin="8,4">
+                                                <Image Source="{Binding PreviewImage}" 
+                                                       Stretch="Uniform"
+                                                       RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                            </Border>
+                                            
+                                            <!-- Texture Info -->
+                                            <StackPanel Grid.Row="2" Margin="8,4">
+                                                <TextBlock Text="{Binding Name}" 
+                                                           FontSize="11" 
+                                                           FontWeight="SemiBold"
+                                                           TextWrapping="Wrap"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           MaxHeight="32"/>
+                                                <TextBlock Text="{Binding Category}" 
+                                                           FontSize="10" 
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                           Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Action Buttons -->
+                                            <StackPanel Grid.Row="3" 
+                                                        Orientation="Horizontal" 
+                                                        HorizontalAlignment="Center"
+                                                        Margin="4"
+                                                        Visibility="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <ui:Button Width="24" 
+                                                           Height="24"
+                                                           Icon="{ui:SymbolIcon Add16}"
+                                                           ToolTip="Create Override"
+                                                           Tag="{Binding}"
+                                                           Click="CreateTextureOverride_Click"
+                                                           Margin="0,0,2,0"/>
+                                                <ui:Button Width="24" 
+                                                           Height="24"
+                                                           Icon="{ui:SymbolIcon Eye16}"
+                                                           ToolTip="Preview"
+                                                           Tag="{Binding}"
+                                                           Click="PreviewTexture_Click"
+                                                           Margin="2,0,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    
+                    <!-- Loading State -->
+                    <StackPanel x:Name="LoadingState" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center"
+                                Visibility="Collapsed">
+                        <ui:ProgressRing Width="48" Height="48" IsIndeterminate="True" Margin="0,0,0,16"/>
+                        <TextBlock Text="Loading Minecraft textures..." 
+                                   FontSize="16" 
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="This may take a moment..." 
+                                   FontSize="12" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    
+                    <!-- Empty State -->
+                    <StackPanel x:Name="EmptyState" 
+                                HorizontalAlignment="Center" 
+                                VerticalAlignment="Center"
+                                Visibility="Collapsed">
+                        <ui:SymbolIcon Symbol="ImageOff24" 
+                                       Width="64" 
+                                       Height="64" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                       Margin="0,0,0,16"/>
+                        <TextBlock Text="No textures found" 
+                                   FontSize="20" 
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,8"/>
+                        <TextBlock Text="Click 'Extract All' to download Minecraft textures for your version" 
+                                   FontSize="14" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="400"/>
+                        
+                        <ui:Button Content="Extract All Textures" 
+                                   Icon="{ui:SymbolIcon Archive24}" 
+                                   Appearance="Primary"
+                                   Margin="0,16,0,0"
+                                   Click="ExtractAll_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+        
+        <!-- Context Menu for texture items -->
+        <Grid.Resources>
+            <ContextMenu x:Key="TextureContextMenu">
+                <MenuItem Header="Create Override" 
+                          Icon="{ui:SymbolIcon Add16}"
+                          Click="CreateOverrideMenuItem_Click"/>
+                <MenuItem Header="Preview Full Size" 
+                          Icon="{ui:SymbolIcon Zoom16}"
+                          Click="PreviewMenuItem_Click"/>
+                <Separator/>
+                <MenuItem Header="Copy Path" 
+                          Icon="{ui:SymbolIcon Copy16}"
+                          Click="CopyPathMenuItem_Click"/>
+                <MenuItem Header="Open in Explorer" 
+                          Icon="{ui:SymbolIcon FolderOpen16}"
+                          Click="OpenInExplorerMenuItem_Click"/>
+            </ContextMenu>
+        </Grid.Resources>
+    </Grid>
+</Page>

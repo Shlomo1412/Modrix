@@ -1,0 +1,363 @@
+﻿<Page x:Class="Modrix.Views.Pages.PropertiesPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+      xmlns:controls="clr-namespace:Modrix.Views.Controls"
+      mc:Ignorable="d"
+      Title="PropertiesPage">
+
+    <Page.Resources>
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="10" ShadowDepth="2" Opacity="0.10"/>
+    </Page.Resources>
+
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Page Header -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                CornerRadius="12,12,0,0" 
+                Padding="24,16,24,12" 
+                Margin="32,0,32,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="Settings20" Width="32" Height="32" Margin="0,0,16,0"/>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Resource Pack Properties" FontSize="24" FontWeight="Bold"/>
+                        <controls:WikiTooltip 
+                            WikiId="resourcepack-properties"
+                            Title="Resource Pack Properties"
+                            Category="ResourcePacks"
+                            Keywords="properties,metadata,pack.mcmeta,pack format,description"
+                            Description="Configure your resource pack's metadata including name, description, pack format, and compatibility settings. These properties determine how your pack appears in Minecraft's resource pack menu and which versions it supports."
+                            Margin="8,2,0,0"
+                            VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Configure resource pack metadata and settings" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="32,0,32,32" MaxWidth="800">
+                
+                <!-- Basic Properties Card -->
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                        CornerRadius="12" 
+                        Padding="24" 
+                        Margin="0,0,0,16" 
+                        Effect="{StaticResource CardShadow}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0"/>
+                            <TextBlock Text="Basic Information" FontSize="18" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Pack Name -->
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <TextBlock Text="Pack Name" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <ui:TextBox x:Name="PackNameTextBox" 
+                                            PlaceholderText="Enter pack name"
+                                            TextChanged="PropertyChanged"/>
+                            </StackPanel>
+                            
+                            <!-- Pack ID -->
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="Pack ID" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <ui:TextBox x:Name="PackIdTextBox" 
+                                            PlaceholderText="pack_id"
+                                            IsReadOnly="True"
+                                            Background="{DynamicResource ControlFillColorTertiaryBrush}"/>
+                            </StackPanel>
+                            
+                            <!-- Description -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                                <TextBlock Text="Description" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <ui:TextBox x:Name="DescriptionTextBox" 
+                                            PlaceholderText="Enter pack description"
+                                            TextWrapping="Wrap"
+                                            Height="80"
+                                            VerticalContentAlignment="Top"
+                                            AcceptsReturn="True"
+                                            TextChanged="PropertyChanged"/>
+                            </StackPanel>
+                            
+                            <!-- Authors -->
+                            <StackPanel Grid.Row="4" Grid.Column="0">
+                                <TextBlock Text="Authors" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <ui:TextBox x:Name="AuthorsTextBox" 
+                                            PlaceholderText="Author names (comma-separated)"
+                                            TextChanged="PropertyChanged"/>
+                            </StackPanel>
+                            
+                            <!-- Version -->
+                            <StackPanel Grid.Row="4" Grid.Column="2">
+                                <TextBlock Text="Version" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <ui:TextBox x:Name="VersionTextBox" 
+                                            PlaceholderText="1.0.0"
+                                            TextChanged="PropertyChanged"/>
+                            </StackPanel>
+                            
+                            <!-- License -->
+                            <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3">
+                                <TextBlock Text="License" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <ComboBox x:Name="LicenseComboBox" 
+                                          IsEditable="True"
+                                          SelectionChanged="PropertyChanged">
+                                    <ComboBoxItem Content="MIT License"/>
+                                    <ComboBoxItem Content="GNU General Public License v3.0"/>
+                                    <ComboBoxItem Content="Apache License 2.0"/>
+                                    <ComboBoxItem Content="Creative Commons"/>
+                                    <ComboBoxItem Content="All Rights Reserved"/>
+                                    <ComboBoxItem Content="Custom License"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Technical Properties Card -->
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                        CornerRadius="12" 
+                        Padding="24" 
+                        Margin="0,0,0,16" 
+                        Effect="{StaticResource CardShadow}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="Code24" Margin="0,0,8,0"/>
+                            <TextBlock Text="Technical Settings" FontSize="18" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="16"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Minecraft Version -->
+                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Text="Minecraft Version" FontWeight="SemiBold"/>
+                                    <controls:WikiTooltip 
+                                        WikiId="pack-format-versions"
+                                        Title="Pack Format Versions"
+                                        Category="ResourcePacks"
+                                        Keywords="pack format,version,compatibility,minecraft"
+                                        Description="Each Minecraft version requires a specific pack format number. Changing this affects which Minecraft versions can use your resource pack. Higher format numbers support more features but work with fewer versions."
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ComboBox x:Name="MinecraftVersionComboBox" 
+                                          SelectionChanged="MinecraftVersionChanged"/>
+                            </StackPanel>
+                            
+                            <!-- Pack Format -->
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <TextBlock Text="Pack Format" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <ui:TextBox x:Name="PackFormatTextBox" 
+                                            IsReadOnly="True"
+                                            Background="{DynamicResource ControlFillColorTertiaryBrush}"
+                                            ToolTip="Automatically determined by Minecraft version"/>
+                            </StackPanel>
+                            
+                            <!-- Supported Features -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
+                                <TextBlock Text="Supported Features" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                <StackPanel x:Name="SupportedFeatures" Orientation="Horizontal">
+                                    <Border Background="{DynamicResource SystemAccentColorPrimaryBrush}" 
+                                            CornerRadius="12" 
+                                            Padding="8,4" 
+                                            Margin="0,0,8,4">
+                                        <TextBlock Text="Textures" FontSize="11" Foreground="White" FontWeight="SemiBold"/>
+                                    </Border>
+                                    <Border Background="{DynamicResource SystemAccentColorPrimaryBrush}" 
+                                            CornerRadius="12" 
+                                            Padding="8,4" 
+                                            Margin="0,0,8,4">
+                                        <TextBlock Text="Models" FontSize="11" Foreground="White" FontWeight="SemiBold"/>
+                                    </Border>
+                                    <Border Background="{DynamicResource SystemAccentColorPrimaryBrush}" 
+                                            CornerRadius="12" 
+                                            Padding="8,4" 
+                                            Margin="0,0,8,4">
+                                        <TextBlock Text="Sounds" FontSize="11" Foreground="White" FontWeight="SemiBold"/>
+                                    </Border>
+                                    <Border Background="{DynamicResource SystemAccentColorPrimaryBrush}" 
+                                            CornerRadius="12" 
+                                            Padding="8,4" 
+                                            Margin="0,0,8,4">
+                                        <TextBlock Text="Languages" FontSize="11" Foreground="White" FontWeight="SemiBold"/>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <!-- Compatibility Notes -->
+                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+                                <TextBlock Text="Compatibility" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                <Border Background="{DynamicResource ControlFillColorTertiaryBrush}" 
+                                        CornerRadius="6" 
+                                        Padding="12,8">
+                                    <TextBlock x:Name="CompatibilityText" 
+                                               Text="This resource pack is compatible with Minecraft 1.20.1 and above."
+                                               FontSize="12"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               TextWrapping="Wrap"/>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Pack Icon Card -->
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                        CornerRadius="12" 
+                        Padding="24" 
+                        Margin="0,0,0,16" 
+                        Effect="{StaticResource CardShadow}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="Image24" Margin="0,0,8,0"/>
+                            <TextBlock Text="Pack Icon" FontSize="18" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Icon Preview -->
+                            <Border Grid.Column="0" 
+                                    Width="128" 
+                                    Height="128" 
+                                    Background="{DynamicResource ControlFillColorTertiaryBrush}" 
+                                    CornerRadius="8"
+                                    BorderThickness="2"
+                                    BorderBrush="{DynamicResource ControlStrokeColorSecondaryBrush}">
+                                <Grid>
+                                    <Image x:Name="IconPreview" 
+                                           Stretch="Uniform"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <StackPanel x:Name="NoIconPlaceholder" 
+                                                HorizontalAlignment="Center" 
+                                                VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="ImageOff24" 
+                                                       Width="32" 
+                                                       Height="32" 
+                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                       Margin="0,0,0,8"/>
+                                        <TextBlock Text="No Icon" 
+                                                   FontSize="12" 
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Icon Controls -->
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <ui:Button Content="Change Icon" 
+                                               Icon="{ui:SymbolIcon ArrowRepeatAll24}"
+                                               Click="ChangeIcon_Click"
+                                               Margin="0,0,8,0"/>
+                                    <ui:Button Content="Remove Icon" 
+                                               Icon="{ui:SymbolIcon Delete24}"
+                                               Appearance="Danger"
+                                               Click="RemoveIcon_Click"
+                                               IsEnabled="{Binding HasIcon}"/>
+                                </StackPanel>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="Icon Requirements:" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4"/>
+                                    <TextBlock Text="• PNG format recommended" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="• 64x64 pixels for best quality" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="• Will be saved as pack.png" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Export Settings Card -->
+                <Border Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                        CornerRadius="12" 
+                        Padding="24" 
+                        Margin="0,0,0,16" 
+                        Effect="{StaticResource CardShadow}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <ui:SymbolIcon Symbol="ArrowExport24" Margin="0,0,8,0"/>
+                            <TextBlock Text="Export Settings" FontSize="18" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        
+                        <StackPanel>
+                            <CheckBox x:Name="IncludeReadmeCheckBox" 
+                                      Content="Include README file in export" 
+                                      IsChecked="True"
+                                      Margin="0,0,0,8"/>
+                            <CheckBox x:Name="OptimizeTexturesCheckBox" 
+                                      Content="Optimize textures for smaller file size" 
+                                      IsChecked="False"
+                                      Margin="0,0,0,8"/>
+                            <CheckBox x:Name="ValidateBeforeExportCheckBox" 
+                                      Content="Validate resource pack before export" 
+                                      IsChecked="True"
+                                      Margin="0,0,0,16"/>
+                                      
+                            <ui:Button Content="Export Resource Pack" 
+                                       Icon="{ui:SymbolIcon Box24}"
+                                       Appearance="Primary"
+                                       Click="ExportResourcePack_Click"
+                                       HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Action Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                    <ui:Button Content="Reset to Defaults" 
+                               Icon="{ui:SymbolIcon ArrowUndo24}"
+                               Click="ResetToDefaults_Click"
+                               Margin="0,0,12,0"/>
+                    <ui:Button Content="Save Changes" 
+                               Icon="{ui:SymbolIcon Save24}"
+                               Appearance="Primary"
+                               Click="SaveChanges_Click"
+                               x:Name="SaveButton"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
