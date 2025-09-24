@@ -20,6 +20,26 @@
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
 
+    <ui:FluentWindow.Resources>
+        <!-- Style for step items with visual indication -->
+        <Style x:Key="StepItemStyle" TargetType="Border">
+            <Setter Property="Padding" Value="15,10" />
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="Transparent" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}" />
+                    <Setter Property="BorderThickness" Value="2,0,0,0" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                    <Setter Property="Opacity" Value="0.7" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </ui:FluentWindow.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -74,10 +94,7 @@
                                   Margin="10,0,10,20">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Padding="15,10" 
-                                        Margin="0,2"
-                                        CornerRadius="4"
-                                        Background="{Binding IsActive, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Border Style="{StaticResource StepItemStyle}">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="{Binding Icon}" 
                                                        Margin="0,0,12,0"

@@ -1,5 +1,7 @@
 using ModrixInstaller.ViewModels.Windows;
 using ModrixInstaller.Views.Pages;
+using ModrixInstaller.Services;
+using ModrixInstaller.ViewModels.Pages;
 using System.Windows;
 using System.Windows.Controls;
 using Wpf.Ui.Controls;
@@ -9,10 +11,17 @@ namespace ModrixInstaller.Views.Windows
     public partial class MainWindow : FluentWindow
     {
         public MainWindowViewModel ViewModel { get; }
+        private readonly ConfigurationService _configurationService;
+        private readonly LicenseService _licenseService;
+        private readonly InstallationService _installationService;
 
-        public MainWindow(MainWindowViewModel viewModel)
+        public MainWindow(MainWindowViewModel viewModel, ConfigurationService configurationService, LicenseService licenseService, InstallationService installationService)
         {
             ViewModel = viewModel;
+            _configurationService = configurationService;
+            _licenseService = licenseService;
+            _installationService = installationService;
+            
             DataContext = ViewModel;
 
             InitializeComponent();
@@ -38,11 +47,11 @@ namespace ModrixInstaller.Views.Windows
             {
                 Page? page = ViewModel.CurrentStep.PageType.Name switch
                 {
-                    nameof(WelcomePage) => new WelcomePage(new ModrixInstaller.ViewModels.Pages.WelcomePageViewModel()),
-                    nameof(LicensePage) => new LicensePage(new ModrixInstaller.ViewModels.Pages.LicensePageViewModel(new ModrixInstaller.Services.LicenseService())),
-                    nameof(InstallationOptionsPage) => new InstallationOptionsPage(new ModrixInstaller.ViewModels.Pages.InstallationOptionsViewModel(new ModrixInstaller.Services.ConfigurationService())),
-                    nameof(InstallationProgressPage) => new InstallationProgressPage(new ModrixInstaller.ViewModels.Pages.InstallationProgressViewModel(new ModrixInstaller.Services.InstallationService(), new ModrixInstaller.Services.ConfigurationService())),
-                    nameof(CompletePage) => new CompletePage(new ModrixInstaller.ViewModels.Pages.CompletePageViewModel(new ModrixInstaller.Services.ConfigurationService())),
+                    nameof(WelcomePage) => new WelcomePage(new WelcomePageViewModel()),
+                    nameof(LicensePage) => CreateLicensePage(),
+                    nameof(InstallationOptionsPage) => CreateInstallationOptionsPage(),
+                    nameof(InstallationProgressPage) => new InstallationProgressPage(new InstallationProgressViewModel(_installationService, _configurationService)),
+                    nameof(CompletePage) => new CompletePage(new CompletePageViewModel(_configurationService)),
                     _ => null
                 };
 
@@ -51,6 +60,41 @@ namespace ModrixInstaller.Views.Windows
                     MainFrame.Navigate(page);
                 }
             }
+        }
+
+        private LicensePage CreateLicensePage()
+        {
+            var viewModel = new LicensePageViewModel(_licenseService);
+            var page = new LicensePage(viewModel);
+            
+            // Subscribe to license changes to refresh main navigation
+            viewModel.PropertyChanged += (s, e) => 
+            {
+                if (e.PropertyName == nameof(LicensePageViewModel.IsLicenseAccepted))
+                {
+                    ViewModel.RefreshNavigationState();
+                }
+            };
+            
+            return page;
+        }
+
+        private InstallationOptionsPage CreateInstallationOptionsPage()
+        {
+            var viewModel = new InstallationOptionsViewModel(_configurationService);
+            var page = new InstallationOptionsPage(viewModel);
+            
+            // Subscribe to configuration changes to refresh main navigation
+            viewModel.PropertyChanged += (s, e) => 
+            {
+                if (e.PropertyName == nameof(InstallationOptionsViewModel.IsInstallPathValid) || 
+                    e.PropertyName == nameof(InstallationOptionsViewModel.HasEnoughSpace))
+                {
+                    ViewModel.RefreshNavigationState();
+                }
+            };
+            
+            return page;
         }
 
         protected override void OnClosed(EventArgs e)

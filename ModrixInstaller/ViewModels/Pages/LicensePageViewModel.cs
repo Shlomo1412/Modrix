@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ModrixInstaller.Services;
+using System.ComponentModel;
 
 namespace ModrixInstaller.ViewModels.Pages
 {
@@ -25,6 +26,17 @@ namespace ModrixInstaller.ViewModels.Pages
             _licenseService = licenseService;
             _licenseText = _licenseService.GetLicenseText();
             _isLicenseAccepted = _licenseService.IsLicenseAccepted;
+            
+            // Subscribe to license service changes
+            _licenseService.PropertyChanged += OnLicenseServicePropertyChanged;
+        }
+
+        private void OnLicenseServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LicenseService.IsLicenseAccepted))
+            {
+                IsLicenseAccepted = _licenseService.IsLicenseAccepted;
+            }
         }
 
         [RelayCommand]
@@ -38,7 +50,7 @@ namespace ModrixInstaller.ViewModels.Pages
         private void RejectLicense()
         {
             IsLicenseAccepted = false;
-            _licenseService.RejectLicense();
+            _licenseService.DeclineLicense();
         }
 
         partial void OnIsLicenseAcceptedChanged(bool value)
@@ -46,7 +58,7 @@ namespace ModrixInstaller.ViewModels.Pages
             if (value)
                 _licenseService.AcceptLicense();
             else
-                _licenseService.RejectLicense();
+                _licenseService.DeclineLicense();
         }
     }
 }

@@ -33,7 +33,7 @@ namespace ModrixInstaller
 
         private void ConfigureServices(IServiceCollection services)
         {
-            // Services
+            // Services (as singletons to share state)
             services.AddSingleton<InstallationService>();
             services.AddSingleton<ConfigurationService>();
             services.AddSingleton<LicenseService>();
@@ -47,11 +47,10 @@ namespace ModrixInstaller
             services.AddTransient<CompletePageViewModel>();
 
             // Views
-            services.AddSingleton<MainWindow>();
+            services.AddTransient<MainWindow>();
             services.AddTransient<WelcomePage>();
             services.AddTransient<LicensePage>();
-            services.AddTransient<InstallationOptionsPage>
-();
+            services.AddTransient<InstallationOptionsPage>();
             services.AddTransient<InstallationProgressPage>();
             services.AddTransient<CompletePage>();
         }

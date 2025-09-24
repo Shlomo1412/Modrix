@@ -4,6 +4,7 @@ using ModrixInstaller.Models;
 using ModrixInstaller.Services;
 using ModrixInstaller.Views.Pages;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -82,10 +83,21 @@ namespace ModrixInstaller.ViewModels.Windows
             _configurationService = configurationService;
             _licenseService = licenseService;
 
+            // Subscribe to license service changes
+            _licenseService.PropertyChanged += OnLicenseServicePropertyChanged;
+
             InitializeInstallationSteps();
             CurrentStep = InstallationSteps.FirstOrDefault();
             CurrentStepIndex = 0;
             UpdateNavigationState();
+        }
+
+        private void OnLicenseServicePropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LicenseService.IsLicenseAccepted))
+            {
+                UpdateNavigationState();
+            }
         }
 
         private void InitializeInstallationSteps()
@@ -149,6 +161,11 @@ namespace ModrixInstaller.ViewModels.Windows
                     UpdateNavigationState();
                 }
             }
+            else if (CurrentStepIndex == InstallationSteps.Count - 1)
+            {
+                // Finish button on last step
+                Application.Current.Shutdown();
+            }
         }
 
         [RelayCommand]
@@ -179,7 +196,7 @@ namespace ModrixInstaller.ViewModels.Windows
             return CurrentStep?.Title switch
             {
                 "License" => _licenseService.IsLicenseAccepted,
-                "Options" => _configurationService.IsValidInstallPath(_configurationService.Configuration.InstallPath),
+                "Options" => ValidateOptionsStep(),
                 _ => true
             };
         }
@@ -187,7 +204,6 @@ namespace ModrixInstaller.ViewModels.Windows
         private void UpdateNavigationState()
         {
             CanGoBack = CurrentStepIndex > 0 && CurrentStepIndex < 3; // Can't go back during install or from complete
-            CanGoNext = CurrentStepIndex < InstallationSteps.Count - 1;
             CanCancel = CurrentStepIndex < 3; // Can't cancel during install
 
             NextButtonText = CurrentStepIndex switch
@@ -207,10 +223,30 @@ namespace ModrixInstaller.ViewModels.Windows
                 _ => SymbolRegular.ChevronRight24
             };
 
-            // Disable next button during installation
-            if (CurrentStepIndex == 3)
+            // Update CanGoNext based on current step validation
+            CanGoNext = CurrentStepIndex switch
             {
-                CanGoNext = false; // Will be enabled when installation completes
+                0 => true, // Welcome step - always allow next
+                1 => _licenseService.IsLicenseAccepted, // License step - only if accepted
+                2 => ValidateOptionsStep(), // Options step - validate configuration
+                3 => false, // Installing step - disabled until complete
+                4 => true, // Complete step - allow finish
+                _ => false
+            };
+        }
+
+        private bool ValidateOptionsStep()
+        {
+            try
+            {
+                var config = _configurationService.Configuration;
+                return !string.IsNullOrWhiteSpace(config.InstallPath) &&
+                       _configurationService.IsValidInstallPath(config.InstallPath) &&
+                       _configurationService.HasSufficientDiskSpace(config.InstallPath);
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -229,10 +265,13 @@ namespace ModrixInstaller.ViewModels.Windows
                 step.IsEnabled = isValid;
             }
             
-            if (CurrentStep?.Title == stepTitle)
-            {
-                CanGoNext = isValid && CurrentStepIndex < InstallationSteps.Count - 1;
-            }
+            UpdateNavigationState();
+        }
+
+        // Method to refresh navigation state from external sources
+        public void RefreshNavigationState()
+        {
+            UpdateNavigationState();
         }
     }
 }

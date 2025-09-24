@@ -5,14 +5,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    xmlns:viewModels="clr-namespace:ModrixInstaller.ViewModels.Pages"
     Title="CompletePage"
-    d:DataContext="{d:DesignInstance Type=viewModels:CompletePageViewModel}"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
-    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
     <Grid Margin="40">
@@ -27,7 +22,7 @@
             <Grid Height="120" Margin="0,0,0,30">
                 <Ellipse Width="100" Height="100"
                          Fill="{DynamicResource SystemAccentColorPrimary}"
-                         Opacity="0.1"
+                         Opacity="0.3"
                          HorizontalAlignment="Center"
                          VerticalAlignment="Center" />
                 
@@ -35,27 +30,7 @@
                                FontSize="64"
                                Foreground="{DynamicResource SystemAccentColorPrimary}"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center">
-                    <ui:SymbolIcon.RenderTransform>
-                        <ScaleTransform x:Name="CheckmarkScale" ScaleX="0" ScaleY="0" />
-                    </ui:SymbolIcon.RenderTransform>
-                    <ui:SymbolIcon.Triggers>
-                        <EventTrigger RoutedEvent="Loaded">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="CheckmarkScale"
-                                                     Storyboard.TargetProperty="ScaleX"
-                                                     From="0" To="1" Duration="0:0:0.5"
-                                                     EasingFunction="{StaticResource {x:Type BounceEase}}" />
-                                    <DoubleAnimation Storyboard.TargetName="CheckmarkScale"
-                                                     Storyboard.TargetProperty="ScaleY"
-                                                     From="0" To="1" Duration="0:0:0.5"
-                                                     EasingFunction="{StaticResource {x:Type BounceEase}}" />
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                    </ui:SymbolIcon.Triggers>
-                </ui:SymbolIcon>
+                               VerticalAlignment="Center" />
             </Grid>
 
             <!-- Completion Title -->
@@ -63,7 +38,6 @@
                 Text="{Binding CompletionTitle}"
                 FontSize="32"
                 FontWeight="Bold"
-                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                 TextAlignment="Center"
                 Margin="0,0,0,20" />
 
@@ -74,7 +48,6 @@
                 LineHeight="24"
                 TextWrapping="Wrap"
                 TextAlignment="Center"
-                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                 Margin="0,0,0,30" />
 
             <!-- Launch Option -->
@@ -114,14 +87,20 @@
             <StackPanel Orientation="Horizontal" 
                         HorizontalAlignment="Center"
                         Margin="0,20,0,0">
-                <ui:HyperlinkButton Content="🌐 Visit Website" 
-                                    Command="{Binding OpenWebsiteCommand}"
-                                    Margin="0,0,20,0" />
-                <ui:HyperlinkButton Content="📋 Release Notes" 
-                                    Command="{Binding ViewReleaseNotesCommand}"
-                                    Margin="0,0,20,0" />
-                <ui:HyperlinkButton Content="💬 Join Discord" 
-                                    NavigateUri="https://discord.gg/modrix" />
+                <ui:Button Content="Visit Website"
+                           Command="{Binding OpenWebsiteCommand}"
+                           Appearance="Secondary"
+                           Icon="{ui:SymbolIcon Globe24}"
+                           Margin="0,0,15,0" />
+                <ui:Button Content="Release Notes"
+                           Command="{Binding ViewReleaseNotesCommand}"
+                           Appearance="Secondary"
+                           Icon="{ui:SymbolIcon Document24}"
+                           Margin="0,0,15,0" />
+                <ui:Button Content="Join Discord"
+                           Appearance="Secondary"
+                           Icon="{ui:SymbolIcon Chat24}"
+                           Click="JoinDiscord_Click" />
             </StackPanel>
         </StackPanel>
 
@@ -134,12 +113,13 @@
                 Padding="20">
             <StackPanel>
                 <!-- Installation Summary -->
-                <TextBlock
-                    Text="📋 Installation Summary"
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Margin="0,0,0,15" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                    <ui:SymbolIcon Symbol="Clipboard24" FontSize="16" Margin="0,0,8,0" />
+                    <TextBlock
+                        Text="Installation Summary"
+                        FontSize="16"
+                        FontWeight="SemiBold" />
+                </StackPanel>
 
                 <TextBlock
                     Text="{Binding InstallationSummary}"
@@ -150,12 +130,13 @@
                     Margin="0,0,0,20" />
 
                 <!-- Next Steps -->
-                <TextBlock
-                    Text="🚀 Next Steps"
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Margin="0,0,0,15" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                    <ui:SymbolIcon Symbol="Rocket24" FontSize="16" Margin="0,0,8,0" />
+                    <TextBlock
+                        Text="Next Steps"
+                        FontSize="16"
+                        FontWeight="SemiBold" />
+                </StackPanel>
 
                 <StackPanel>
                     <TextBlock Text="1. Launch Modrix and explore the interface" 
@@ -177,26 +158,33 @@
                 </StackPanel>
 
                 <!-- Support Info -->
-                <TextBlock
-                    Text="🆘 Need Help?"
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                    Margin="0,20,0,15" />
+                <StackPanel Orientation="Horizontal" Margin="0,20,0,15">
+                    <ui:SymbolIcon Symbol="Question24" FontSize="16" Margin="0,0,8,0" />
+                    <TextBlock
+                        Text="Need Help?"
+                        FontSize="16"
+                        FontWeight="SemiBold" />
+                </StackPanel>
 
                 <StackPanel>
-                    <TextBlock Text="- Documentation: github.com/Shlomo1412/Modrix/wiki" 
-                               FontSize="11" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                               Margin="0,2" />
-                    <TextBlock Text="- Issues: github.com/Shlomo1412/Modrix/issues" 
-                               FontSize="11" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                               Margin="0,2" />
-                    <TextBlock Text="- Discord: discord.gg/modrix" 
-                               FontSize="11" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                               Margin="0,2" />
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <ui:SymbolIcon Symbol="Book24" FontSize="12" Margin="0,0,5,0" />
+                        <TextBlock Text="Documentation: github.com/Shlomo1412/Modrix/wiki" 
+                                   FontSize="11" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <ui:SymbolIcon Symbol="Bug24" FontSize="12" Margin="0,0,5,0" />
+                        <TextBlock Text="Issues: github.com/Shlomo1412/Modrix/issues" 
+                                   FontSize="11" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <ui:SymbolIcon Symbol="Chat24" FontSize="12" Margin="0,0,5,0" />
+                        <TextBlock Text="Discord: discord.gg/modrix" 
+                                   FontSize="11" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </Border>
