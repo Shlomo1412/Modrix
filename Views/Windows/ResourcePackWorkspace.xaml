@@ -1,0 +1,136 @@
+﻿<ui:FluentWindow
+    x:Class="Modrix.Views.Windows.ResourcePackWorkspace"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Modrix.Views.Windows"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:converters="clr-namespace:Modrix.Converters"
+    Title="{Binding ViewModel.ApplicationTitle}"
+    Width="1200"
+    Height="800"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    ExtendsContentIntoTitleBar="True"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+
+    <ui:FluentWindow.Resources>
+        <converters:ProjectIconConverter x:Key="ProjectIconConverter"/>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <!-- Title Bar -->
+        <ui:TitleBar
+            x:Name="TitleBar"
+            Title="{Binding ViewModel.ApplicationTitle}"
+            Grid.Row="0"
+            CloseWindowByDoubleClickOnIcon="True">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon>
+                    <ui:ImageIcon.Source>
+                        <MultiBinding Converter="{StaticResource ProjectIconConverter}">
+                            <Binding Path="ViewModel.CurrentProject.Location"/>
+                            <Binding Path="ViewModel.CurrentProject.ModId"/>
+                        </MultiBinding>
+                    </ui:ImageIcon.Source>
+                </ui:ImageIcon>
+            </ui:TitleBar.Icon>
+            <!-- Toolbar Buttons for ResourcePack -->
+            <ui:TitleBar.Header>
+                <StackPanel Orientation="Horizontal" Margin="8,0,0,0">
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon Eye16}"
+                        ToolTip="Preview resource pack in Minecraft"
+                        Margin="4,0"
+                        Click="PreviewButton_Click"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon Box16}"
+                        ToolTip="Export resource pack as ZIP file"
+                        Margin="4,0"
+                        Click="ExportButton_Click"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon ArrowDownload16}"
+                        ToolTip="Import textures or assets from external sources"
+                        Margin="4,0"
+                        Click="ImportButton_Click"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon Checkmark16}"
+                        ToolTip="Validate resource pack structure and assets"
+                        Margin="4,0"
+                        Click="ValidateButton_Click"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon FolderOpen24}"
+                        ToolTip="Open resource pack folder in file explorer"
+                        Margin="4,0"
+                        Click="OpenProjectFolder_Click"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon ArrowClockwise24}"
+                        ToolTip="Refresh project files and scan for changes"
+                        Margin="4,0"
+                        Click="RefreshButton_Click"/>
+                    <ui:Button
+                        Appearance="Secondary"
+                        Icon="{ui:SymbolIcon Share24}"
+                        ToolTip="Share resource pack or upload to platforms"
+                        Margin="4,0"
+                        Click="ShareButton_Click"/>
+                </StackPanel>
+            </ui:TitleBar.Header>
+        </ui:TitleBar>
+
+        <!-- Navigation View -->
+        <ui:NavigationView
+            x:Name="RootNavigation"
+            Padding="42,0,42,0"
+            BreadcrumbBar="{Binding ElementName=BreadcrumbBar}"
+            IsBackButtonVisible="Collapsed"
+            IsPaneToggleVisible="True"
+            OpenPaneLength="250"
+            PaneDisplayMode="Left"
+            TitleBar="{Binding ElementName=TitleBar}"
+            MenuItemsSource="{Binding ViewModel.MenuItems, Mode=OneWay}"
+            FooterMenuItemsSource="{Binding ViewModel.FooterMenuItems}">
+
+            <!-- Navigation Header with Breadcrumb -->
+            <ui:NavigationView.Header>
+                <ui:BreadcrumbBar x:Name="BreadcrumbBar" Margin="42,32,42,20" />
+            </ui:NavigationView.Header>
+
+            <!-- Search Box -->
+            <ui:NavigationView.AutoSuggestBox>
+                <ui:AutoSuggestBox 
+                    x:Name="AutoSuggestBox" 
+                    PlaceholderText="Search overrides, textures...">
+                    <ui:AutoSuggestBox.Icon>
+                        <ui:IconSourceElement>
+                            <ui:SymbolIconSource Symbol="Search24" />
+                        </ui:IconSourceElement>
+                    </ui:AutoSuggestBox.Icon>
+                </ui:AutoSuggestBox>
+            </ui:NavigationView.AutoSuggestBox>
+
+            <!-- Snackbar Support -->
+            <ui:NavigationView.ContentOverlay>
+                <Grid>
+                    <ui:SnackbarPresenter x:Name="SnackbarPresenter" />
+                </Grid>
+            </ui:NavigationView.ContentOverlay>
+        </ui:NavigationView>
+
+        <!-- Content Dialog Support -->
+        <ContentPresenter x:Name="RootContentDialog" Grid.Row="0" />
+    </Grid>
+</ui:FluentWindow>

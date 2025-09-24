@@ -136,9 +136,9 @@ namespace Modrix.Views.Windows
                 
                 AreFieldsValid = !string.IsNullOrWhiteSpace(ProjectNameBox?.Text) &&
                                !string.IsNullOrWhiteSpace(ModIdBox?.Text) &&
-                               (!isResourcePack || string.IsNullOrWhiteSpace(PackageBox?.Text)) &&
+                               (isResourcePack || !string.IsNullOrWhiteSpace(PackageBox?.Text)) &&
                                ModTypeComboBox?.SelectedItem != null &&
-                               (isResourcePack || MinecraftVersionComboBox?.SelectedItem != null) &&
+                               MinecraftVersionComboBox?.SelectedItem != null &&
                                LicenseComboBox?.SelectedItem != null;
             }
         }
@@ -159,15 +159,13 @@ namespace Modrix.Views.Windows
 
                 if (Directory.Exists(ProjectData.Location))
                 {
-                    var checkFile = Path.Combine(ProjectData.Location, "build.gradle");
+                    // Check for different project types
+                    string checkFile = ProjectData.ModType == "Resource Pack" 
+                        ? Path.Combine(ProjectData.Location, "pack.mcmeta")
+                        : Path.Combine(ProjectData.Location, "build.gradle");
+                        
                     if (File.Exists(checkFile))
                     {
-                        //MessageBox.Show(
-                        //    $"Project created successfully at:\n{ProjectData.Location}",
-                        //    "Success",
-                        //    MessageBoxButton.OK,
-                        //    MessageBoxImage.Information
-                        //);
                         Close();
                     }
                     else
@@ -197,11 +195,14 @@ namespace Modrix.Views.Windows
 
         private async Task CreateModProjectAsync(LoadingProjectWindow loadingWindow)
         {
+            var modType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString();
+            var isResourcePack = modType == "Resource Pack";
+
             ProjectData = new ModProjectData
             {
                 Name = ProjectNameBox.Text,
                 ModId = ModIdBox.Text,
-                Package = PackageBox.Text,
+                Package = isResourcePack ? "" : PackageBox.Text, // ResourcePacks don't use packages
                 Location = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "Modrix",
@@ -210,7 +211,7 @@ namespace Modrix.Views.Windows
                 ),
                 IncludeReadme = IncludeReadmeCheckbox.IsChecked ?? false,
                 IconPath = _selectedIconPath,
-                ModType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString(),
+                ModType = modType,
                 MinecraftVersion = ((ComboBoxItem)MinecraftVersionComboBox.SelectedItem).Content.ToString(),
                 Description = DescriptionBox.Text,
                 Authors = AuthorsBox.Text,
@@ -232,6 +233,11 @@ namespace Modrix.Views.Windows
             {
                 var manager = new ForgeTemplateManager();
                 await manager.FullSetupWithGradle(ProjectData, progress);
+            }
+            else if (ProjectData.ModType == "Resource Pack")
+            {
+                var manager = new ResourcePackTemplateManager();
+                await manager.FullSetup(ProjectData, progress);
             }
             else
             {

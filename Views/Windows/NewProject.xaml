@@ -212,16 +212,28 @@
                                         x:Name="MinecraftVersionComboBox"
                                         Width="Auto"
                                         MinWidth="390">
-                                        <ComboBoxItem Content="1.21.4" />
                                         <ComboBoxItem Content="1.21.5" />
+                                        <ComboBoxItem Content="1.21.4" />
                                         <ComboBoxItem Content="1.21.3" />
                                         <ComboBoxItem Content="1.21.2" />
                                         <ComboBoxItem Content="1.21.1" />
                                         <ComboBoxItem Content="1.21" />
+                                        <ComboBoxItem Content="1.20.6" />
+                                        <ComboBoxItem Content="1.20.5" />
                                         <ComboBoxItem Content="1.20.4" />
                                         <ComboBoxItem Content="1.20.3" />
                                         <ComboBoxItem Content="1.20.2" />
                                         <ComboBoxItem Content="1.20.1" />
+                                        <ComboBoxItem Content="1.19.4" />
+                                        <ComboBoxItem Content="1.19.3" />
+                                        <ComboBoxItem Content="1.19.2" />
+                                        <ComboBoxItem Content="1.18.2" />
+                                        <ComboBoxItem Content="1.18.1" />
+                                        <ComboBoxItem Content="1.17.1" />
+                                        <ComboBoxItem Content="1.16.5" />
+                                        <ComboBoxItem Content="1.15.2" />
+                                        <ComboBoxItem Content="1.14.4" />
+                                        <ComboBoxItem Content="1.13.2" />
                                     </ComboBox>
                                 </ui:CardControl.Content>
                             </ui:CardControl>
