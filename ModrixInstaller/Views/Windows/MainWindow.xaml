@@ -30,8 +30,7 @@
         <!-- Title Bar -->
         <ui:TitleBar
             Grid.Row="0"
-            Title="{Binding ApplicationTitle}"
-            Icon="{ui:ImageIcon Source='/Assets/wpfui-icon-256.png'}" />
+            Title="{Binding ApplicationTitle}" />
 
         <!-- Main Content -->
         <Grid Grid.Row="1">
@@ -128,7 +127,7 @@
                     <ui:Button Content="Cancel"
                                Command="{Binding CancelCommand}"
                                Appearance="Secondary"
-                               Icon="{ui:SymbolIcon X24}"
+                               Icon="{ui:SymbolIcon Dismiss24}"
                                IsEnabled="{Binding CanCancel}" />
                 </StackPanel>
 
