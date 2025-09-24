@@ -1,55 +1,65 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.IO;
-using System.Reflection;
+using ModrixInstaller.Services;
+using ModrixInstaller.ViewModels.Pages;
+using ModrixInstaller.ViewModels.Windows;
+using ModrixInstaller.Views.Pages;
+using ModrixInstaller.Views.Windows;
 using System.Windows;
 using System.Windows.Threading;
-using Wpf.Ui;
 
 namespace ModrixInstaller
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App
+    public partial class App : Application
     {
-        // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
-        // https://docs.microsoft.com/dotnet/core/extensions/generic-host
-        // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
-        // https://docs.microsoft.com/dotnet/core/extensions/configuration
-        // https://docs.microsoft.com/dotnet/core/extensions/logging
-        private static readonly IHost _host = Host
-            .CreateDefaultBuilder()
-            .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory)); })
-            .ConfigureServices((context, services) =>
-            {
-                throw new NotImplementedException("No service or window was registered.");
-            }).Build();
+        private ServiceProvider? _serviceProvider;
 
-        /// <summary>
-        /// Gets services.
-        /// </summary>
-        public static IServiceProvider Services
+        protected override void OnStartup(StartupEventArgs e)
         {
-            get { return _host.Services; }
+            base.OnStartup(e);
+
+            // Setup dependency injection
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            _serviceProvider = services.BuildServiceProvider();
+
+            // Show main window
+            var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
         }
 
-        /// <summary>
-        /// Occurs when the application is loading.
-        /// </summary>
-        private async void OnStartup(object sender, StartupEventArgs e)
+        private void ConfigureServices(IServiceCollection services)
         {
-            await _host.StartAsync();
+            // Services
+            services.AddSingleton<InstallationService>();
+            services.AddSingleton<ConfigurationService>();
+            services.AddSingleton<LicenseService>();
+
+            // ViewModels
+            services.AddSingleton<MainWindowViewModel>();
+            services.AddTransient<WelcomePageViewModel>();
+            services.AddTransient<LicensePageViewModel>();
+            services.AddTransient<InstallationOptionsViewModel>();
+            services.AddTransient<InstallationProgressViewModel>();
+            services.AddTransient<CompletePageViewModel>();
+
+            // Views
+            services.AddSingleton<MainWindow>();
+            services.AddTransient<WelcomePage>();
+            services.AddTransient<LicensePage>();
+            services.AddTransient<InstallationOptionsPage>
+();
+            services.AddTransient<InstallationProgressPage>();
+            services.AddTransient<CompletePage>();
         }
 
-        /// <summary>
-        /// Occurs when the application is closing.
-        /// </summary>
-        private async void OnExit(object sender, ExitEventArgs e)
+        protected override void OnExit(ExitEventArgs e)
         {
-            await _host.StopAsync();
-
-            _host.Dispose();
+            _serviceProvider?.Dispose();
+            base.OnExit(e);
         }
 
         /// <summary>
@@ -58,6 +68,16 @@ namespace ModrixInstaller
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
+        }
+
+        private void OnStartup(object sender, StartupEventArgs e)
+        {
+            // This method is called by the XAML event handler
+        }
+
+        private void OnExit(object sender, ExitEventArgs e)
+        {
+            // This method is called by the XAML event handler
         }
     }
 }
