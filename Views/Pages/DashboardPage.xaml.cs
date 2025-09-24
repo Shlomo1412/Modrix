@@ -55,6 +55,43 @@ namespace Modrix.Views.Pages
         {
             if (sender is ProjectCard card && card.ProjectData is ModProjectData project)
             {
+                // Check if it's a ResourcePack project
+                if (project.ModType == "Resource Pack")
+                {
+                    // Try to find an existing ResourcePackWorkspace window for this project
+                    var existingResourcePackWindow = Application.Current.Windows.OfType<ResourcePackWorkspace>()
+                        .FirstOrDefault(w => w.ViewModel.CurrentProject?.Location == project.Location);
+
+                    if (existingResourcePackWindow != null)
+                    {
+                        existingResourcePackWindow.Activate();
+                        return;
+                    }
+
+                    // Get required services for ResourcePackWorkspace
+                    var resourcePackViewModel = _serviceProvider.GetRequiredService<ResourcePackWorkspaceViewModel>();
+                    var navigationViewPageProvider = _serviceProvider.GetRequiredService<INavigationViewPageProvider>();
+                    var navigationService = _serviceProvider.GetRequiredService<INavigationService>();
+
+                    // Create a new ResourcePack workspace window
+                    var resourcePackWorkspaceWindow = new ResourcePackWorkspace(
+                        resourcePackViewModel,
+                        navigationViewPageProvider,
+                        navigationService
+                    );
+
+                    // Load the project into the workspace VM
+                    resourcePackWorkspaceWindow.LoadProject(project);
+
+                    // Show the new workspace window
+                    resourcePackWorkspaceWindow.Show();
+                    resourcePackWorkspaceWindow.Activate();
+
+                    ViewModel.RefreshProjectsCommand.Execute(null);
+                    return;
+                }
+
+                // Handle regular mod projects
                 // Try to find an existing window for this project
                 var existingWindow = Application.Current.Windows.OfType<ProjectWorkspace>()
                     .FirstOrDefault(w => w.ViewModel.CurrentProject?.Location == project.Location);

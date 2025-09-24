@@ -5,9 +5,11 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using Microsoft.Extensions.DependencyInjection;
 using Modrix.Services;
 using Modrix.Models;
-
+using Modrix.ViewModels.Windows;
+using Wpf.Ui;
 using Wpf.Ui.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
 
@@ -166,6 +168,16 @@ namespace Modrix.Views.Windows
                         
                     if (File.Exists(checkFile))
                     {
+                        // Automatically open the appropriate workspace
+                        if (ProjectData.ModType == "Resource Pack")
+                        {
+                            OpenResourcePackWorkspace(ProjectData);
+                        }
+                        else
+                        {
+                            OpenModWorkspace(ProjectData);
+                        }
+                        
                         Close();
                     }
                     else
@@ -370,6 +382,52 @@ namespace Modrix.Views.Windows
 
                     await msgBox.ShowDialogAsync();
                 }
+            }
+        }
+
+        private void OpenResourcePackWorkspace(ModProjectData projectData)
+        {
+            try
+            {
+                var viewModel = App.Services.GetService<ResourcePackWorkspaceViewModel>();
+                var navigationViewPageProvider = App.Services.GetService<INavigationViewPageProvider>();
+                var navigationService = App.Services.GetService<INavigationService>();
+                
+                if (viewModel != null && navigationViewPageProvider != null && navigationService != null)
+                {
+                    var workspaceWindow = new ResourcePackWorkspace(viewModel, navigationViewPageProvider, navigationService);
+                    workspaceWindow.LoadProject(projectData);
+                    workspaceWindow.Show();
+                    workspaceWindow.Activate();
+                }
+            }
+            catch (Exception ex)
+            {
+                // If opening workspace fails, just close the NewProject window
+                // User can manually open the project from Dashboard
+            }
+        }
+
+        private void OpenModWorkspace(ModProjectData projectData)
+        {
+            try
+            {
+                var viewModel = App.Services.GetService<ProjectWorkspaceViewModel>();
+                var navigationViewPageProvider = App.Services.GetService<INavigationViewPageProvider>();
+                var navigationService = App.Services.GetService<INavigationService>();
+                
+                if (viewModel != null && navigationViewPageProvider != null && navigationService != null)
+                {
+                    var workspaceWindow = new ProjectWorkspace(viewModel, navigationViewPageProvider, navigationService);
+                    workspaceWindow.LoadProject(projectData);
+                    workspaceWindow.Show();
+                    workspaceWindow.Activate();
+                }
+            }
+            catch (Exception ex)
+            {
+                // If opening workspace fails, just close the NewProject window
+                // User can manually open the project from Dashboard
             }
         }
     }

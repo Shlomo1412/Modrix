@@ -74,9 +74,19 @@ namespace Modrix
                 services.AddSingleton<ProjectWorkspace>();
                 services.AddSingleton<ProjectWorkspaceViewModel>();
 
+                // ResourcePack Workspace
+                services.AddSingleton<ResourcePackWorkspace>();
+                services.AddSingleton<ResourcePackWorkspaceViewModel>();
+
                 //Resources Page
                 services.AddTransient<ResourcesPageViewModel>();
                 services.AddTransient<ResourcesPage>();
+
+                // ResourcePack Pages
+                services.AddTransient<OverridesPage>();
+                services.AddTransient<TexturesPage>();
+                services.AddTransient<TranslationsPage>();
+                services.AddTransient<PropertiesPage>();
 
                 // Console Page
                 services.AddSingleton<ConsolePage>();
@@ -158,14 +168,29 @@ namespace Modrix
                     var project = allProjects.FirstOrDefault(p => p.Location == projectPath);
                     if (project != null)
                     {
-                        var viewModel = Services.GetRequiredService<ProjectWorkspaceViewModel>();
-                        var navigationViewPageProvider = Services.GetRequiredService<INavigationViewPageProvider>();
-                        var navigationService = Services.GetRequiredService<INavigationService>();
-                        var workspaceWindow = new ProjectWorkspace(viewModel, navigationViewPageProvider, navigationService);
-                        workspaceWindow.LoadProject(project);
-                        workspaceWindow.Show();
-                        workspaceWindow.Activate();
-                        return;
+                        // Check if it's a ResourcePack project
+                        if (project.ModType == "Resource Pack")
+                        {
+                            var resourcePackViewModel = Services.GetRequiredService<ResourcePackWorkspaceViewModel>();
+                            var navigationViewPageProvider = Services.GetRequiredService<INavigationViewPageProvider>();
+                            var navigationService = Services.GetRequiredService<INavigationService>();
+                            var workspaceWindow = new ResourcePackWorkspace(resourcePackViewModel, navigationViewPageProvider, navigationService);
+                            workspaceWindow.LoadProject(project);
+                            workspaceWindow.Show();
+                            workspaceWindow.Activate();
+                            return;
+                        }
+                        else
+                        {
+                            var viewModel = Services.GetRequiredService<ProjectWorkspaceViewModel>();
+                            var navigationViewPageProvider = Services.GetRequiredService<INavigationViewPageProvider>();
+                            var navigationService = Services.GetRequiredService<INavigationService>();
+                            var workspaceWindow = new ProjectWorkspace(viewModel, navigationViewPageProvider, navigationService);
+                            workspaceWindow.LoadProject(project);
+                            workspaceWindow.Show();
+                            workspaceWindow.Activate();
+                            return;
+                        }
                     }
                 }
             }

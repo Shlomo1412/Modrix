@@ -49,11 +49,12 @@ namespace Modrix.Views.Windows
         {
             base.OnClosed(e);
 
-            // Make sure that closing this window will begin the process of closing the application, Unless ProjectWorkspace.xaml is open.
+            // Make sure that closing this window will begin the process of closing the application, Unless ProjectWorkspace.xaml or ResourcePackWorkspace.xaml is open.
             bool hasOpenWorkspace = false;
             foreach (Window window in Application.Current.Windows)
             {
-                if (window is ProjectWorkspace workspaceWindow && workspaceWindow.IsLoaded)
+                if ((window is ProjectWorkspace workspaceWindow && workspaceWindow.IsLoaded) ||
+                    (window is ResourcePackWorkspace resourcePackWindow && resourcePackWindow.IsLoaded))
                 {
                     hasOpenWorkspace = true;
                     break;
