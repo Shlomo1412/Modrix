@@ -368,14 +368,25 @@ namespace Modrix.Views.Pages.ResourcePack
 
             try
             {
-                // Open texture comparison editor
-                var comparisonWindow = new TextureComparisonWindow(item, _currentPack);
-                comparisonWindow.Owner = Window.GetWindow(this);
-                comparisonWindow.Show();
+                // Open texture in texture editor
+                var editorVm = new ViewModels.Pages.TextureEditorViewModel();
+                var editorPage = new TextureEditorPage(editorVm);
+                editorVm.SetPngPath(item.OverridePath);
+
+                var editorWindow = new Window
+                {
+                    Title = $"Edit Texture - {item.Name}",
+                    Content = editorPage,
+                    Width = 800,
+                    Height = 600,
+                    Owner = Window.GetWindow(this)
+                };
+                
+                editorWindow.Show();
             }
             catch (Exception ex)
             {
-                ShowMessage($"Failed to open texture comparison: {ex.Message}", "Error");
+                ShowMessage($"Failed to open texture editor: {ex.Message}", "Error");
             }
         }
 
@@ -478,6 +489,116 @@ namespace Modrix.Views.Pages.ResourcePack
             await msgBox.ShowDialogAsync();
         }
 
+        // --- New: Open override viewer handlers ---
+        private void TextureOverride_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2 && sender is Border b && b.DataContext is TextureOverrideItem item)
+            {
+                OpenTextureOverrideViewer(item);
+            }
+        }
+
+        private void OpenTextureOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.MenuItem mi && mi.Tag is TextureOverrideItem item)
+                OpenTextureOverrideViewer(item);
+            else if (sender is WpfButton btn && btn.Tag is TextureOverrideItem item2)
+                OpenTextureOverrideViewer(item2);
+        }
+
+        private void OpenTranslationOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.MenuItem mi && mi.Tag is TranslationOverrideItem tr)
+            {
+                try { Process.Start(new ProcessStartInfo { FileName = tr.OverridePath, UseShellExecute = true }); } catch { }
+            }
+            else if (sender is WpfButton btn && btn.Tag is TranslationOverrideItem tr2)
+            {
+                try { Process.Start(new ProcessStartInfo { FileName = tr2.OverridePath, UseShellExecute = true }); } catch { }
+            }
+        }
+
+        private void OpenTextureOverrideViewer(TextureOverrideItem item)
+        {
+            try
+            {
+                var originalAbs = string.Empty;
+                if (_currentPack != null)
+                {
+                    originalAbs = Path.Combine(_currentPack.Location, item.OriginalPath.Replace('/', Path.DirectorySeparatorChar));
+                    if (!File.Exists(originalAbs))
+                    {
+                        var extracted = Path.Combine(_currentPack.Location, ".minecraft_assets");
+                        if (Directory.Exists(extracted))
+                        {
+                            var alt = Path.Combine(extracted, item.OriginalPath.Replace('/', Path.DirectorySeparatorChar));
+                            if (File.Exists(alt)) originalAbs = alt;
+                        }
+                    }
+                }
+                var viewer = new OverrideViewerWindow(item.OverridePath, originalAbs)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                viewer.Show();
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Failed to open viewer: {ex.Message}", "Error");
+            }
+        }
+
+        // --- Inline viewer window class ---
+        private class OverrideViewerWindow : FluentWindow
+        {
+            public OverrideViewerWindow(string overridePath, string originalPath)
+            {
+                // Initialize viewer window
+                Title = "Override Viewer";
+                Width = 800;
+                Height = 600;
+                WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+                var grid = new Grid();
+                Content = grid;
+
+                // Add image control
+                var image = new System.Windows.Controls.Image();
+                image.HorizontalAlignment = HorizontalAlignment.Center;
+                image.VerticalAlignment = VerticalAlignment.Center;
+                grid.Children.Add(image);
+
+                // --- File open handling ---
+                Loaded += (s, e) =>
+                {
+                    try
+                    {
+                        // Try to load the override file directly
+                        image.Source = new BitmapImage(new Uri(overridePath));
+                    }
+                    catch
+                    {
+                        // If it fails, try to load the original file
+                        try
+                        {
+                            image.Source = new BitmapImage(new Uri(originalPath));
+                        }
+                        catch
+                        {
+                            // If both fail, show a placeholder or error image
+                            // image.Source = new BitmapImage(new Uri("pack://application:,,,/Images/error.png"));
+                        }
+                    }
+                };
+
+                // --- Close handling ---
+                Closing += (s, e) =>
+                {
+                    // Handle any cleanup if necessary
+                };
+            }
+        }
+        
         // Helper classes
         public class TextureOverrideItem
         {

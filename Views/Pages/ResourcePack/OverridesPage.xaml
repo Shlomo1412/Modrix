@@ -20,7 +20,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Background="LightGray" 
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" 
                 CornerRadius="0,0,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
             <Grid Margin="32,24,32,0">
                 <Grid.ColumnDefinitions>
@@ -40,7 +40,7 @@
                             VerticalAlignment="Center"/>
                     </StackPanel>
                     <TextBlock Margin="0,2,0,0" FontSize="13" 
-                               Foreground="Gray" 
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                Text="Manage your custom texture and translation overrides" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
@@ -58,7 +58,7 @@
                         BorderThickness="0">
 
                 <!-- Textures Tab -->
-                <TabItem>
+                <TabItem x:Name="TexturesTab">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Image24" Margin="0,0,8,0"/>
@@ -66,7 +66,7 @@
                         </StackPanel>
                     </TabItem.Header>
                     
-                    <Border Background="White" 
+                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}" 
                             CornerRadius="12" Padding="24">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -102,8 +102,17 @@
                                 <ItemsControl x:Name="TextureOverridesList">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="LightGray" 
-                                                    CornerRadius="8" Margin="0,0,0,8" Padding="12">
+                                            <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                                                    CornerRadius="8" Margin="0,0,0,8" Padding="12"
+                                                    MouseLeftButtonDown="TextureOverride_MouseLeftButtonDown">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Open" Tag="{Binding}" Click="OpenTextureOverride_Click"/>
+                                                        <MenuItem Header="Edit (Open Editor)" Tag="{Binding}" Click="EditTextureOverride_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem Header="Remove" Tag="{Binding}" Click="RemoveTextureOverride_Click"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="48"/>
@@ -123,13 +132,18 @@
                                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
                                                         <TextBlock Text="{Binding Category}" FontSize="11" 
-                                                                   Foreground="Gray"/>
+                                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                                         <TextBlock Text="{Binding OriginalPath}" FontSize="10" 
-                                                                   Foreground="DarkGray"/>
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
                                                     </StackPanel>
 
                                                     <!-- Actions -->
                                                     <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                        <ui:Button Content="Open" 
+                                                                  Appearance="Secondary"
+                                                                  Click="OpenTextureOverride_Click"
+                                                                  Tag="{Binding}"
+                                                                  Margin="0,0,8,0"/>
                                                         <ui:Button Content="Edit" 
                                                                   Icon="{ui:SymbolIcon Edit24}"
                                                                   Appearance="Secondary"
@@ -154,19 +168,19 @@
                                        Grid.Row="1" HorizontalAlignment="Center" 
                                        VerticalAlignment="Center" Visibility="Collapsed">
                                 <ui:SymbolIcon Symbol="Image48" FontSize="48" 
-                                              Foreground="Gray"/>
+                                              Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                 <TextBlock Text="No texture overrides yet" FontSize="16" FontWeight="SemiBold" 
                                           Margin="0,8,0,4" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Import textures to override default Minecraft assets" 
-                                          FontSize="14" Foreground="Gray" 
-                                          HorizontalAlignment="Center"/>
+                                <TextBlock Text="Import or create overrides to customize Minecraft textures" 
+                                          FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                          HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Grid>
                     </Border>
                 </TabItem>
 
                 <!-- Translations Tab -->
-                <TabItem>
+                <TabItem x:Name="TranslationsTab">
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="LocalLanguage24" Margin="0,0,8,0"/>
@@ -174,7 +188,7 @@
                         </StackPanel>
                     </TabItem.Header>
                     
-                    <Border Background="White" 
+                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}" 
                             CornerRadius="12" Padding="24">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -210,8 +224,14 @@
                                 <ItemsControl x:Name="TranslationOverridesList">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="LightGray" 
+                                            <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
                                                     CornerRadius="8" Margin="0,0,0,8" Padding="12">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Open" Tag="{Binding}" Click="OpenTranslationOverride_Click"/>
+                                                        <MenuItem Header="Remove" Tag="{Binding}" Click="RemoveTranslationOverride_Click"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="48"/>
@@ -221,28 +241,27 @@
 
                                                     <!-- Language Icon -->
                                                     <Border Grid.Column="0" Width="40" Height="40" 
-                                                            Background="Blue" 
+                                                            Background="{DynamicResource AccentFillColorDefaultBrush}" 
                                                             CornerRadius="4">
                                                         <ui:SymbolIcon Symbol="LocalLanguage24" 
-                                                                      Foreground="White"/>
+                                                                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                     </Border>
 
                                                     <!-- Translation Info -->
                                                     <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
                                                         <TextBlock Text="{Binding Language}" FontSize="11" 
-                                                                   Foreground="Gray"/>
+                                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                                         <TextBlock Text="{Binding KeyCount, StringFormat=\{0\} keys}" 
                                                                    FontSize="12" 
-                                                                   Foreground="DarkGray"/>
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                     </StackPanel>
 
                                                     <!-- Actions -->
                                                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                                                        <ui:Button Content="Edit" 
-                                                                  Icon="{ui:SymbolIcon Edit24}"
+                                                        <ui:Button Content="Open" 
                                                                   Appearance="Secondary"
-                                                                  Click="EditTranslationOverride_Click"
+                                                                  Click="OpenTranslationOverride_Click"
                                                                   Tag="{Binding}"
                                                                   Margin="0,0,8,0"/>
                                                         <ui:Button Content="Remove" 
@@ -262,11 +281,11 @@
                             <StackPanel x:Name="TranslationEmptyState" HorizontalAlignment="Center" 
                                        VerticalAlignment="Center" Visibility="Collapsed">
                                 <ui:SymbolIcon Symbol="Document48" FontSize="48" 
-                                              Foreground="Gray"/>
+                                              Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                 <TextBlock Text="No translation overrides" FontSize="16" FontWeight="SemiBold" 
                                           Margin="0,8,0,4" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Create custom translation files to override Minecraft's text" 
-                                          FontSize="14" Foreground="Gray" 
+                                          FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                           HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Grid>

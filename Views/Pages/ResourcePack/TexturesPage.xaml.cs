@@ -297,78 +297,53 @@ namespace Modrix.Views.Pages.ResourcePack
 
         public void TextureItem_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Context menu is handled automatically by the XAML context menu
+            // Context menu for texture operations - TODO: Implement texture override creation
         }
 
-        public async void CreateTextureOverride_Click(object sender, RoutedEventArgs e)
+        public void RefreshTextures_Click(object sender, RoutedEventArgs e)
         {
-            if (_currentPack == null) return;
+            LoadTextures();
+            FilterTextures();
+        }
 
-            TextureItem? textureItem = null;
+        public async void ExtractAssets_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null || _assetExtractor == null) return;
+
+            var minecraftVersion = _currentPack.MinecraftVersion ?? "1.20.1";
             
-            // Get the texture item from the tag
-            if (sender is System.Windows.Controls.MenuItem menuItem)
+            // Show progress dialog
+            var progressDialog = new AssetExtractionProgressDialog();
+            progressDialog.Owner = Window.GetWindow(this);
+            
+            var progress = new Progress<string>(status => 
             {
-                textureItem = menuItem.Tag as TextureItem;
-            }
-            
-            if (textureItem == null) return;
+                progressDialog.UpdateStatus(status);
+            });
+
+            progressDialog.Show();
 
             try
             {
-                // Create override directory structure
-                var overrideDir = Path.Combine(_currentPack.Location, "overrides", "textures", textureItem.Category);
-                Directory.CreateDirectory(overrideDir);
-
-                // Create the override file path
-                var overrideFileName = $"{textureItem.Name}.png";
-                var overridePath = Path.Combine(overrideDir, overrideFileName);
-
-                // Copy the original texture to create the override
-                File.Copy(textureItem.FilePath, overridePath, true);
-
-                // Update the resource pack data
-                var manager = new ResourcePackTemplateManager();
-                _currentPack = manager.ReadResourcePack(_currentPack.Location);
-
-                ShowMessage($"Override created for '{textureItem.Name}'.\nYou can now edit it in the Overrides tab.", "Override Created");
+                var success = await _assetExtractor.ExtractAssetsForVersion(minecraftVersion, progress);
+                
+                if (success)
+                {
+                    progressDialog.Close();
+                    LoadTextures();
+                    FilterTextures();
+                    ShowMessage($"Successfully extracted assets for Minecraft {minecraftVersion}!", "Extraction Complete");
+                }
+                else
+                {
+                    progressDialog.Close();
+                    ShowMessage($"Failed to extract assets for Minecraft {minecraftVersion}. Please check your internet connection and try again.", "Extraction Failed");
+                }
             }
             catch (Exception ex)
             {
-                ShowMessage($"Failed to create override: {ex.Message}", "Error");
-            }
-        }
-
-        public void ViewOriginalTexture_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is System.Windows.Controls.MenuItem menuItem && menuItem.Tag is TextureItem textureItem)
-            {
-                try
-                {
-                    var viewerWindow = new TextureViewerWindow(textureItem);
-                    viewerWindow.Owner = Window.GetWindow(this);
-                    viewerWindow.Show();
-                }
-                catch (Exception ex)
-                {
-                    ShowMessage($"Failed to open texture viewer: {ex.Message}", "Error");
-                }
-            }
-        }
-
-        public void OpenTextureInExplorer_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is System.Windows.Controls.MenuItem menuItem && menuItem.Tag is TextureItem textureItem)
-            {
-                try
-                {
-                    // Open the folder containing the texture file
-                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{textureItem.FilePath}\"");
-                }
-                catch (Exception ex)
-                {
-                    ShowMessage($"Failed to open in explorer: {ex.Message}", "Error");
-                }
+                progressDialog.Close();
+                ShowMessage($"Error during asset extraction: {ex.Message}", "Error");
             }
         }
 
@@ -408,6 +383,33 @@ namespace Modrix.Views.Pages.ResourcePack
             public string RelativePath { get; set; } = "";
             public string Size { get; set; } = "";
             public BitmapImage? PreviewImage { get; set; }
+        }
+
+        public async void CreateOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null) return;
+            if (sender is not System.Windows.Controls.MenuItem mi || mi.Tag is not TextureItem item) return;
+
+            try
+            {
+                var overridesRoot = Path.Combine(_currentPack.Location, "overrides", "textures");
+                var relative = item.RelativePath.Replace('\\','/');
+                var parts = relative.Split('/');
+                string category = parts.Length > 1 ? parts[0] : "misc";
+                var targetDir = Path.Combine(overridesRoot, category);
+                Directory.CreateDirectory(targetDir);
+                var targetPath = Path.Combine(targetDir, Path.GetFileName(item.FilePath));
+                File.Copy(item.FilePath, targetPath, true);
+
+                var manager = new ResourcePackTemplateManager();
+                _currentPack = manager.ReadResourcePack(_currentPack.Location);
+
+                ShowMessage($"Created override for {item.Name}", "Override Created");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Failed creating override: {ex.Message}", "Error");
+            }
         }
     }
 }

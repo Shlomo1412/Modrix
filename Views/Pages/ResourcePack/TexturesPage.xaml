@@ -150,32 +150,10 @@
                                         <DataTemplate>
                                             <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
                                                     CornerRadius="8" Margin="4" Padding="8" Width="120" Height="140"
-                                                    MouseRightButtonDown="TextureItem_MouseRightButtonDown"
-                                                    ToolTip="{Binding Name}">
+                                                    ToolTip="{Binding Name}" >
                                                 <Border.ContextMenu>
                                                     <ContextMenu>
-                                                        <MenuItem Header="Create Override" 
-                                                                  Click="CreateTextureOverride_Click"
-                                                                  Tag="{Binding}">
-                                                            <MenuItem.Icon>
-                                                                <ui:SymbolIcon Symbol="Copy24"/>
-                                                            </MenuItem.Icon>
-                                                        </MenuItem>
-                                                        <MenuItem Header="View Original" 
-                                                                  Click="ViewOriginalTexture_Click"
-                                                                  Tag="{Binding}">
-                                                            <MenuItem.Icon>
-                                                                <ui:SymbolIcon Symbol="Eye24"/>
-                                                            </MenuItem.Icon>
-                                                        </MenuItem>
-                                                        <Separator/>
-                                                        <MenuItem Header="Open in Explorer" 
-                                                                  Click="OpenTextureInExplorer_Click"
-                                                                  Tag="{Binding}">
-                                                            <MenuItem.Icon>
-                                                                <ui:SymbolIcon Symbol="FolderOpen24"/>
-                                                            </MenuItem.Icon>
-                                                        </MenuItem>
+                                                        <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateOverride_Click"/>
                                                     </ContextMenu>
                                                 </Border.ContextMenu>
                                                 <Grid>
@@ -210,39 +188,8 @@
                             <Grid x:Name="ListView" Visibility="Collapsed">
                                 <ListView x:Name="TexturesList" 
                                          Background="Transparent" 
-                                         BorderThickness="0">
-                                    <ListView.ItemContainerStyle>
-                                        <Style TargetType="ListViewItem">
-                                            <Setter Property="ContextMenu">
-                                                <Setter.Value>
-                                                    <ContextMenu>
-                                                        <MenuItem Header="Create Override" 
-                                                                  Click="CreateTextureOverride_Click"
-                                                                  Tag="{Binding}">
-                                                            <MenuItem.Icon>
-                                                                <ui:SymbolIcon Symbol="Copy24"/>
-                                                            </MenuItem.Icon>
-                                                        </MenuItem>
-                                                        <MenuItem Header="View Original" 
-                                                                  Click="ViewOriginalTexture_Click"
-                                                                  Tag="{Binding}">
-                                                            <MenuItem.Icon>
-                                                                <ui:SymbolIcon Symbol="Eye24"/>
-                                                            </MenuItem.Icon>
-                                                        </MenuItem>
-                                                        <Separator/>
-                                                        <MenuItem Header="Open in Explorer" 
-                                                                  Click="OpenTextureInExplorer_Click"
-                                                                  Tag="{Binding}">
-                                                            <MenuItem.Icon>
-                                                                <ui:SymbolIcon Symbol="FolderOpen24"/>
-                                                            </MenuItem.Icon>
-                                                        </MenuItem>
-                                                    </ContextMenu>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </ListView.ItemContainerStyle>
+                                         BorderThickness="0"
+                                         MouseRightButtonDown="TextureItem_MouseRightButtonDown">
                                     <ListView.View>
                                         <GridView>
                                             <GridViewColumn Header="Preview" Width="60">

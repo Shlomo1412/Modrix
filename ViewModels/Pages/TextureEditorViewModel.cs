@@ -137,53 +137,87 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         if (!File.Exists(PngPath))
             return;
 
-        var image = new BitmapImage();
-        image.BeginInit();
-        image.CacheOption = BitmapCacheOption.OnLoad;
-        image.UriSource = new Uri(PngPath);
-        image.EndInit();
+        try
+        {
+            var bitmapImage = new BitmapImage();
+            bitmapImage.BeginInit();
+            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapImage.UriSource = new Uri(PngPath);
+            bitmapImage.EndInit();
+            bitmapImage.Freeze();
 
-        ImageWidth = image.PixelWidth;
-        ImageHeight = image.PixelHeight;
-        FileName = Path.GetFileName(PngPath);
-        HasUnsavedChanges = false;
+            // Ensure BGRA32 format
+            BitmapSource src = bitmapImage;
+            if (bitmapImage.Format != PixelFormats.Bgra32)
+            {
+                var converted = new FormatConvertedBitmap(bitmapImage, PixelFormats.Bgra32, null, 0);
+                converted.Freeze();
+                src = converted;
+            }
 
-        // Create writable bitmap for editing
-        _bitmap = new WriteableBitmap(image);
-        CurrentImage = _bitmap;
-        UpdatePixelData();
+            ImageWidth = src.PixelWidth;
+            ImageHeight = src.PixelHeight;
+            FileName = Path.GetFileName(PngPath);
+            HasUnsavedChanges = false;
 
-        _undoStack.Clear();
-        _redoStack.Clear();
-        UndoCommand.NotifyCanExecuteChanged();
-        RedoCommand.NotifyCanExecuteChanged();
+            _bitmap = new WriteableBitmap(src);
+            _bitmap.Freeze(); // temp freeze for thread safety then clone for write
+            _bitmap = new WriteableBitmap(_bitmap); // writable instance
+            CurrentImage = _bitmap;
+            UpdatePixelData();
+
+            _undoStack.Clear();
+            _redoStack.Clear();
+            UndoCommand.NotifyCanExecuteChanged();
+            RedoCommand.NotifyCanExecuteChanged();
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Load error: {ex.Message}";
+        }
     }
 
     private void UpdatePixelData()
     {
         if (_bitmap == null) return;
 
-        _pixelData = new Color[_bitmap.PixelWidth, _bitmap.PixelHeight];
-        var stride = _bitmap.PixelWidth * (_bitmap.Format.BitsPerPixel / 8);
-        var pixelData = new byte[stride * _bitmap.PixelHeight];
-        _bitmap.CopyPixels(pixelData, stride, 0);
-
-        // Convert the bitmap to a format we can work with
-        var convertedBitmap = new FormatConvertedBitmap(_bitmap, PixelFormats.Bgra32, null, 0);
-        var convertedPixelData = new byte[_bitmap.PixelWidth * _bitmap.PixelHeight * 4];
-        convertedBitmap.CopyPixels(convertedPixelData, _bitmap.PixelWidth * 4, 0);
-
-        for (int y = 0; y < _bitmap.PixelHeight; y++)
+        try
         {
-            for (int x = 0; x < _bitmap.PixelWidth; x++)
+            // Guarantee BGRA32 pixel format for predictable layout
+            BitmapSource src = _bitmap;
+            if (_bitmap.Format != PixelFormats.Bgra32)
             {
-                int index = (y * _bitmap.PixelWidth + x) * 4;
-                _pixelData[x, y] = Color.FromArgb(
-                    convertedPixelData[index + 3],
-                    convertedPixelData[index + 2],
-                    convertedPixelData[index + 1],
-                    convertedPixelData[index]);
+                var converted = new FormatConvertedBitmap(_bitmap, PixelFormats.Bgra32, null, 0);
+                converted.Freeze();
+                src = converted;
             }
+
+            int bytesPerPixel = (src.Format.BitsPerPixel + 7) / 8; // should be 4
+            int stride = src.PixelWidth * bytesPerPixel;
+            var raw = new byte[stride * src.PixelHeight];
+            src.CopyPixels(raw, stride, 0);
+
+            _pixelData = new Color[src.PixelWidth, src.PixelHeight];
+
+            for (int y = 0; y < src.PixelHeight; y++)
+            {
+                int rowStart = y * stride;
+                for (int x = 0; x < src.PixelWidth; x++)
+                {
+                    int index = rowStart + x * bytesPerPixel;
+                    if (index + 3 >= raw.Length) // safety guard
+                        continue;
+                    byte b = raw[index];
+                    byte g = raw[index + 1];
+                    byte r = raw[index + 2];
+                    byte a = raw[index + 3];
+                    _pixelData[x, y] = Color.FromArgb(a, r, g, b);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Pixel decode error: {ex.Message}";
         }
     }
 
