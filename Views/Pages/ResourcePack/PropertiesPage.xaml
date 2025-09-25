@@ -1,0 +1,319 @@
+<Page
+    x:Class="Modrix.Views.Pages.ResourcePack.PropertiesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Modrix.Views.Pages.ResourcePack"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:controls="clr-namespace:Modrix.Views.Controls"
+    Title="Resource Pack Properties"
+    d:DataContext="{d:DesignInstance Type=local:PropertiesPage, IsDesignTimeCreatable=False}"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <Grid Margin="0,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                CornerRadius="0,0,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+            <Grid Margin="32,24,32,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="22" FontWeight="Bold" Text="Resource Pack Properties" />
+                        <controls:WikiTooltip 
+                            WikiId="resource-pack-properties"
+                            Title="Resource Pack Properties"
+                            Category="Textures"
+                            Keywords="resource pack,properties,metadata,pack.mcmeta,pack format,description"
+                            Description="Configure your resource pack's metadata including name, description, pack format, and icon. These properties are displayed in Minecraft's resource pack selection menu."
+                            Margin="8,5,0,0"
+                            VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Margin="0,2,0,0" FontSize="13" 
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                               Text="Edit resource pack metadata and configuration" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Margin="32,0,32,0" VerticalScrollBarVisibility="Auto">
+            <Grid MaxWidth="800">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="200" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Main Properties -->
+                <Border Grid.Column="0" Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                        CornerRadius="12" Padding="24" 
+                        Effect="{DynamicResource CardShadow}">
+                    <StackPanel>
+                        <!-- Pack Name -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="Pack Name" FontWeight="SemiBold"/>
+                            <controls:WikiTooltip 
+                                WikiId="pack-name"
+                                Title="Pack Name"
+                                Category="Textures"
+                                Keywords="name,display,title,resource pack"
+                                Description="The display name of your resource pack as it appears in Minecraft's resource pack menu. This should be descriptive and unique."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ui:TextBox x:Name="PackNameBox" 
+                                   PlaceholderText="Enter pack name..."
+                                   Icon="{ui:SymbolIcon DocumentEdit24}"
+                                   Margin="0,0,0,16"/>
+
+                        <!-- Pack ID -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="Pack ID" FontWeight="SemiBold"/>
+                            <controls:WikiTooltip 
+                                WikiId="pack-id"
+                                Title="Pack ID"
+                                Category="Textures"
+                                Keywords="id,identifier,namespace,unique"
+                                Description="A unique identifier for your resource pack. Use lowercase letters, numbers, and underscores only. This is used internally by Modrix."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ui:TextBox x:Name="PackIdBox" 
+                                   PlaceholderText="pack_id"
+                                   Icon="{ui:SymbolIcon Document24}"
+                                   Margin="0,0,0,16"/>
+
+                        <!-- Description -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="Description" FontWeight="SemiBold"/>
+                            <controls:WikiTooltip 
+                                WikiId="pack-description"
+                                Title="Pack Description"
+                                Category="Textures"
+                                Keywords="description,summary,tooltip,hover"
+                                Description="A short description that appears when hovering over your resource pack in Minecraft's menu. Keep it concise and descriptive."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ui:TextBox x:Name="DescriptionBox" 
+                                   PlaceholderText="Describe your resource pack..."
+                                   Icon="{ui:SymbolIcon Comment24}"
+                                   TextWrapping="Wrap"
+                                   AcceptsReturn="True"
+                                   Height="80"
+                                   VerticalContentAlignment="Top"
+                                   Margin="0,0,0,16"/>
+
+                        <!-- Pack Format -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="Pack Format" FontWeight="SemiBold"/>
+                            <controls:WikiTooltip 
+                                WikiId="pack-format"
+                                Title="Pack Format"
+                                Category="Textures"
+                                Keywords="format,version,compatibility,minecraft"
+                                Description="The pack format determines which Minecraft versions your resource pack is compatible with. Each major Minecraft version typically has its own pack format number."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ui:CardControl Margin="0,0,0,16">
+                            <ui:CardControl.Content>
+                                <ComboBox x:Name="PackFormatBox" MinWidth="200">
+                                    <ComboBoxItem Content="22 (Minecraft 1.21.4-1.21.5)" Tag="22"/>
+                                    <ComboBoxItem Content="21 (Minecraft 1.20.6)" Tag="21"/>
+                                    <ComboBoxItem Content="20 (Minecraft 1.20.4)" Tag="20"/>
+                                    <ComboBoxItem Content="18 (Minecraft 1.20.1-1.21.1)" Tag="18"/>
+                                    <ComboBoxItem Content="13 (Minecraft 1.19.4)" Tag="13"/>
+                                    <ComboBoxItem Content="9 (Minecraft 1.18.2)" Tag="9"/>
+                                    <ComboBoxItem Content="8 (Minecraft 1.17.1)" Tag="8"/>
+                                    <ComboBoxItem Content="7 (Minecraft 1.16.5)" Tag="7"/>
+                                    <ComboBoxItem Content="6 (Minecraft 1.15.2)" Tag="6"/>
+                                    <ComboBoxItem Content="4 (Minecraft 1.13.2)" Tag="4"/>
+                                </ComboBox>
+                            </ui:CardControl.Content>
+                        </ui:CardControl>
+
+                        <!-- Minecraft Version -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="Target Minecraft Version" FontWeight="SemiBold"/>
+                            <controls:WikiTooltip 
+                                WikiId="target-version"
+                                Title="Target Minecraft Version"
+                                Category="Textures"
+                                Keywords="version,target,compatibility,minecraft"
+                                Description="The specific Minecraft version this resource pack was created for. This helps with asset extraction and compatibility checking."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ui:CardControl Margin="0,0,0,16">
+                            <ui:CardControl.Content>
+                                <ComboBox x:Name="MinecraftVersionBox" MinWidth="200">
+                                    <ComboBoxItem Content="1.21.5"/>
+                                    <ComboBoxItem Content="1.21.4"/>
+                                    <ComboBoxItem Content="1.21.3"/>
+                                    <ComboBoxItem Content="1.21.2"/>
+                                    <ComboBoxItem Content="1.21.1"/>
+                                    <ComboBoxItem Content="1.21"/>
+                                    <ComboBoxItem Content="1.20.6"/>
+                                    <ComboBoxItem Content="1.20.4"/>
+                                    <ComboBoxItem Content="1.20.3"/>
+                                    <ComboBoxItem Content="1.20.2"/>
+                                    <ComboBoxItem Content="1.20.1"/>
+                                </ComboBox>
+                            </ui:CardControl.Content>
+                        </ui:CardControl>
+
+                        <!-- Authors -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="Authors (Optional)" FontWeight="SemiBold"/>
+                            <controls:WikiTooltip 
+                                WikiId="pack-authors"
+                                Title="Pack Authors"
+                                Category="Textures"
+                                Keywords="authors,creators,credits,attribution"
+                                Description="List the creators and contributors of this resource pack. This is stored in the pack's configuration file for reference and credits."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ui:TextBox x:Name="AuthorsBox" 
+                                   PlaceholderText="Author names, comma separated..."
+                                   Icon="{ui:SymbolIcon People24}"
+                                   Margin="0,0,0,16"/>
+
+                        <!-- License -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <TextBlock Text="License (Optional)" FontWeight="SemiBold"/>
+                            <controls:WikiTooltip 
+                                WikiId="pack-license"
+                                Title="Pack License"
+                                Category="Textures"
+                                Keywords="license,copyright,permissions,distribution"
+                                Description="Specify the license terms for your resource pack. This determines how others can use, modify, and distribute your work."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ui:CardControl>
+                            <ui:CardControl.Content>
+                                <ComboBox x:Name="LicenseBox" IsEditable="True" MinWidth="200">
+                                    <ComboBoxItem Content="All Rights Reserved"/>
+                                    <ComboBoxItem Content="MIT License"/>
+                                    <ComboBoxItem Content="Creative Commons BY 4.0"/>
+                                    <ComboBoxItem Content="Creative Commons BY-SA 4.0"/>
+                                    <ComboBoxItem Content="Creative Commons BY-NC 4.0"/>
+                                    <ComboBoxItem Content="Public Domain"/>
+                                    <ComboBoxItem Content="Custom License"/>
+                                </ComboBox>
+                            </ui:CardControl.Content>
+                        </ui:CardControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Pack Icon -->
+                <Border Grid.Column="2" Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                        CornerRadius="12" Padding="16" 
+                        Effect="{DynamicResource CardShadow}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <TextBlock Text="Pack Icon" FontWeight="SemiBold" FontSize="14"/>
+                            <controls:WikiTooltip 
+                                WikiId="pack-icon"
+                                Title="Pack Icon"
+                                Category="Textures"
+                                Keywords="icon,pack.png,image,thumbnail,preview"
+                                Description="The pack icon appears in Minecraft's resource pack menu. It should be a square PNG image, typically 128x128 or 256x256 pixels for best quality."
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Icon Preview -->
+                        <Border Width="128" Height="128" 
+                                Background="{DynamicResource ControlFillColorTertiaryBrush}" 
+                                CornerRadius="8" Margin="0,0,0,12">
+                            <Grid>
+                                <Image x:Name="IconPreview" 
+                                       Stretch="Uniform" 
+                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                       Visibility="Collapsed"/>
+                                <StackPanel x:Name="IconPlaceholder" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center">
+                                    <ui:SymbolIcon Symbol="Image48" FontSize="32" 
+                                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="No Icon" FontSize="10" 
+                                              Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                              HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Icon Controls -->
+                        <StackPanel>
+                            <ui:Button x:Name="ChangeIconButton" 
+                                      Content="Change Icon" 
+                                      Icon="{ui:SymbolIcon Image24}"
+                                      HorizontalAlignment="Stretch"
+                                      Click="ChangeIcon_Click"
+                                      Margin="0,0,0,8"/>
+                            <ui:Button x:Name="RemoveIconButton" 
+                                      Content="Remove Icon" 
+                                      Icon="{ui:SymbolIcon Delete24}"
+                                      Appearance="Secondary"
+                                      HorizontalAlignment="Stretch"
+                                      Click="RemoveIcon_Click"
+                                      Visibility="Collapsed"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Margin="32,18,32,0" Padding="16" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                CornerRadius="12" Effect="{DynamicResource CardShadow}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ui:SymbolIcon Grid.Column="0" Symbol="Info24" 
+                              Foreground="{DynamicResource AccentFillColorDefaultBrush}"
+                              Margin="0,0,8,0" VerticalAlignment="Center"/>
+                
+                <TextBlock Grid.Column="1" 
+                          Text="Changes will be saved automatically. Remember to test your resource pack in Minecraft!" 
+                          VerticalAlignment="Center"
+                          TextWrapping="Wrap"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <ui:Button Content="Reset to Defaults" 
+                              Icon="{ui:SymbolIcon ArrowReset24}"
+                              Appearance="Secondary"
+                              Click="ResetDefaults_Click"
+                              Margin="0,0,8,0"/>
+                    <ui:Button Content="Save Properties" 
+                              Icon="{ui:SymbolIcon Save24}"
+                              Appearance="Primary"
+                              Click="SaveProperties_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

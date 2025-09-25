@@ -114,17 +114,56 @@ namespace Modrix.Views.Windows
             ModTypeComboBox.SelectionChanged += ModTypeComboBox_SelectionChanged;
             MinecraftVersionComboBox.SelectionChanged += (s, e) => ValidateFields();
             LicenseComboBox.SelectionChanged += (s, e) => ValidateFields();
+            
+            // Resource pack specific handlers
+            var resourcePackVersionCombo = this.FindName("ResourcePackMinecraftVersionComboBox") as ComboBox;
+            if (resourcePackVersionCombo != null)
+            {
+                resourcePackVersionCombo.SelectionChanged += ResourcePackMinecraftVersionComboBox_SelectionChanged;
+                resourcePackVersionCombo.SelectionChanged += (s, e) => ValidateFields();
+            }
         }
 
         private void ModTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ModTypeComboBox?.SelectedItem is ComboBoxItem selectedItem && ModSpecificFields != null)
+            if (ModTypeComboBox?.SelectedItem is ComboBoxItem selectedItem)
             {
                 bool isResourcePack = selectedItem.Content.ToString() == "Resource Pack";
-                ModSpecificFields.Visibility = isResourcePack ? Visibility.Collapsed : Visibility.Visible;
+                
+                if (ModSpecificFields != null)
+                    ModSpecificFields.Visibility = isResourcePack ? Visibility.Collapsed : Visibility.Visible;
 
-                // Update the ModIdBox label through binding
+                if (ResourcePackSpecificFields != null)
+                    ResourcePackSpecificFields.Visibility = isResourcePack ? Visibility.Visible : Visibility.Collapsed;
+
+                // Auto-select pack format based on Minecraft version for resource packs
+                if (isResourcePack)
+                {
+                    var resourcePackVersionCombo = this.FindName("ResourcePackMinecraftVersionComboBox") as ComboBox;
+                    var packFormatDisplay = this.FindName("PackFormatDisplayBox") as Wpf.Ui.Controls.TextBox;
+
+                    if (resourcePackVersionCombo != null)
+                    {
+                        resourcePackVersionCombo.SelectedIndex = 0; // Default to latest version
+                        ResourcePackMinecraftVersionComboBox_SelectionChanged(resourcePackVersionCombo, null);
+                    }
+                }
+
                 ValidateFields();
+            }
+        }
+
+        private void ResourcePackMinecraftVersionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var comboBox = sender as ComboBox;
+            var packFormatDisplay = this.FindName("PackFormatDisplayBox") as Wpf.Ui.Controls.TextBox;
+
+            if (comboBox?.SelectedItem is ComboBoxItem selectedItem && packFormatDisplay != null)
+            {
+                var packFormat = selectedItem.Tag?.ToString();
+                var version = selectedItem.Content?.ToString();
+                
+                packFormatDisplay.Text = $"Pack Format {packFormat} (Minecraft {version})";
             }
         }
 
@@ -134,12 +173,24 @@ namespace Modrix.Views.Windows
             {
                 bool isResourcePack = selectedItem.Content.ToString() == "Resource Pack";
                 
-                AreFieldsValid = !string.IsNullOrWhiteSpace(ProjectNameBox?.Text) &&
-                               !string.IsNullOrWhiteSpace(ModIdBox?.Text) &&
-                               (!isResourcePack || string.IsNullOrWhiteSpace(PackageBox?.Text)) &&
-                               ModTypeComboBox?.SelectedItem != null &&
-                               (isResourcePack || MinecraftVersionComboBox?.SelectedItem != null) &&
-                               LicenseComboBox?.SelectedItem != null;
+                if (isResourcePack)
+                {
+                    // Resource pack validation
+                    var resourcePackVersionCombo = this.FindName("ResourcePackMinecraftVersionComboBox") as ComboBox;
+                    
+                    AreFieldsValid = !string.IsNullOrWhiteSpace(ProjectNameBox?.Text) &&
+                                   !string.IsNullOrWhiteSpace(ModIdBox?.Text) &&
+                                   resourcePackVersionCombo?.SelectedItem != null;
+                }
+                else
+                {
+                    // Regular mod validation
+                    AreFieldsValid = !string.IsNullOrWhiteSpace(ProjectNameBox?.Text) &&
+                                   !string.IsNullOrWhiteSpace(ModIdBox?.Text) &&
+                                   !string.IsNullOrWhiteSpace(PackageBox?.Text) &&
+                                   MinecraftVersionComboBox?.SelectedItem != null &&
+                                   LicenseComboBox?.SelectedItem != null;
+                }
             }
         }
 
@@ -157,17 +208,25 @@ namespace Modrix.Views.Windows
                 loadingWindow.Show();
                 await CreateModProjectAsync(loadingWindow);
 
-                if (Directory.Exists(ProjectData.Location))
+                var projectType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString();
+                if (projectType == "Resource Pack")
+                {
+                    // For resource packs, check for pack.mcmeta instead of build.gradle
+                    var checkFile = Path.Combine(ProjectData.Location, "pack.mcmeta");
+                    if (File.Exists(checkFile))
+                    {
+                        Close();
+                    }
+                    else
+                    {
+                        throw new Exception("Critical files missing - resource pack creation failed");
+                    }
+                }
+                else if (Directory.Exists(ProjectData.Location))
                 {
                     var checkFile = Path.Combine(ProjectData.Location, "build.gradle");
                     if (File.Exists(checkFile))
                     {
-                        //MessageBox.Show(
-                        //    $"Project created successfully at:\n{ProjectData.Location}",
-                        //    "Success",
-                        //    MessageBoxButton.OK,
-                        //    MessageBoxImage.Information
-                        //);
                         Close();
                     }
                     else
@@ -188,6 +247,13 @@ namespace Modrix.Views.Windows
                     }
                 }
                 catch { }
+                
+                var msgBox = new MessageBox
+                {
+                    Title = "Error",
+                    Content = $"Failed to create project: {ex.Message}"
+                };
+                await msgBox.ShowDialogAsync();
             }
             finally
             {
@@ -197,11 +263,24 @@ namespace Modrix.Views.Windows
 
         private async Task CreateModProjectAsync(LoadingProjectWindow loadingWindow)
         {
+            var projectType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString();
+            
+            string minecraftVersion;
+            if (projectType == "Resource Pack")
+            {
+                var resourcePackVersionCombo = this.FindName("ResourcePackMinecraftVersionComboBox") as ComboBox;
+                minecraftVersion = ((ComboBoxItem)resourcePackVersionCombo.SelectedItem).Content.ToString();
+            }
+            else
+            {
+                minecraftVersion = ((ComboBoxItem)MinecraftVersionComboBox.SelectedItem).Content.ToString();
+            }
+            
             ProjectData = new ModProjectData
             {
                 Name = ProjectNameBox.Text,
                 ModId = ModIdBox.Text,
-                Package = PackageBox.Text,
+                Package = projectType == "Resource Pack" ? "" : PackageBox.Text,
                 Location = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "Modrix",
@@ -210,11 +289,15 @@ namespace Modrix.Views.Windows
                 ),
                 IncludeReadme = IncludeReadmeCheckbox.IsChecked ?? false,
                 IconPath = _selectedIconPath,
-                ModType = ((ComboBoxItem)ModTypeComboBox.SelectedItem).Content.ToString(),
-                MinecraftVersion = ((ComboBoxItem)MinecraftVersionComboBox.SelectedItem).Content.ToString(),
-                Description = DescriptionBox.Text,
-                Authors = AuthorsBox.Text,
-                License = ((ComboBoxItem)LicenseComboBox.SelectedItem).Content.ToString(),
+                ModType = projectType,
+                MinecraftVersion = minecraftVersion,
+                Description = projectType == "Resource Pack" ? 
+                    (this.FindName("ResourcePackDescriptionBox") as Wpf.Ui.Controls.TextBox)?.Text ?? DescriptionBox.Text : 
+                    DescriptionBox.Text,
+                Authors = projectType == "Resource Pack" ? 
+                    (this.FindName("ResourcePackAuthorsBox") as Wpf.Ui.Controls.TextBox)?.Text ?? AuthorsBox.Text : 
+                    AuthorsBox.Text,
+                License = projectType == "Resource Pack" ? "All Rights Reserved" : ((ComboBoxItem)LicenseComboBox.SelectedItem).Content.ToString(),
                 Version = "1.0.0"
             };
 
@@ -233,9 +316,40 @@ namespace Modrix.Views.Windows
                 var manager = new ForgeTemplateManager();
                 await manager.FullSetupWithGradle(ProjectData, progress);
             }
+            else if (ProjectData.ModType == "Resource Pack")
+            {
+                var manager = new ResourcePackTemplateManager();
+                await manager.FullSetup(ProjectData, progress);
+
+                // Auto-extract assets for the selected Minecraft version
+                try
+                {
+                    ((IProgress<(string Message, int Progress)>)progress).Report(("Preparing to extract Minecraft assets...", 90));
+                    
+                    var assetExtractor = new MinecraftAssetExtractor();
+                    var extractProgress = new Progress<string>(status => 
+                    {
+                        ((IProgress<(string Message, int Progress)>)progress).Report((status, 95));
+                    });
+                    
+                    // Start asset extraction in background (don't wait for completion to avoid blocking UI)
+                    _ = Task.Run(async () =>
+                    {
+                        await assetExtractor.ExtractAssetsForVersion(minecraftVersion, extractProgress);
+                    });
+                    
+                    ((IProgress<(string Message, int Progress)>)progress).Report(("Resource pack created successfully! Assets will be extracted in the background.", 100));
+                }
+                catch (Exception ex)
+                {
+                    // Don't fail the entire project creation if asset extraction fails
+                    System.Diagnostics.Debug.WriteLine($"Asset extraction failed: {ex.Message}");
+                    ((IProgress<(string Message, int Progress)>)progress).Report(("Resource pack created successfully! You can extract assets later from the Textures page.", 100));
+                }
+            }
             else
             {
-                throw new ArgumentException($"Unsupported mod type: {ProjectData.ModType}");
+                throw new ArgumentException($"Unsupported project type: {ProjectData.ModType}");
             }
         }
 

@@ -54,6 +54,9 @@ namespace Modrix
                 services.AddSingleton<ITaskBarService, TaskBarService>();
                 services.AddSingleton<Modrix.Services.IModrixTaskBarService, Modrix.Services.ModrixTaskBarService>();
 
+                // Minecraft Asset Extraction
+                services.AddSingleton<MinecraftAssetExtractor>();
+
                 // Service containing navigation, same as INavigationWindow... but without window
                 services.AddSingleton<INavigationService, NavigationService>();
 
@@ -73,6 +76,14 @@ namespace Modrix
                     sp.GetRequiredService<IConfiguration>()));
                 services.AddSingleton<ProjectWorkspace>();
                 services.AddSingleton<ProjectWorkspaceViewModel>();
+
+                // Resource Pack Workspace and Pages
+                services.AddTransient<ResourcePackWorkspace>();
+                services.AddTransient<ResourcePackWorkspaceViewModel>();
+                services.AddTransient<Views.Pages.ResourcePack.OverridesPage>();
+                services.AddTransient<Views.Pages.ResourcePack.TexturesPage>();
+                services.AddTransient<Views.Pages.ResourcePack.TranslationsPage>();
+                services.AddTransient<Views.Pages.ResourcePack.PropertiesPage>();
 
                 //Resources Page
                 services.AddTransient<ResourcesPageViewModel>();
@@ -154,17 +165,35 @@ namespace Modrix
                 var projectPath = openArg.Substring("--open-project=".Length).Trim('"');
                 if (!string.IsNullOrEmpty(projectPath) && System.IO.Directory.Exists(projectPath))
                 {
-                    // Try to open the project workspace window
+                    // Try to open the project workspace
                     var project = allProjects.FirstOrDefault(p => p.Location == projectPath);
                     if (project != null)
                     {
-                        var viewModel = Services.GetRequiredService<ProjectWorkspaceViewModel>();
-                        var navigationViewPageProvider = Services.GetRequiredService<INavigationViewPageProvider>();
-                        var navigationService = Services.GetRequiredService<INavigationService>();
-                        var workspaceWindow = new ProjectWorkspace(viewModel, navigationViewPageProvider, navigationService);
-                        workspaceWindow.LoadProject(project);
-                        workspaceWindow.Show();
-                        workspaceWindow.Activate();
+                        if (project.ModType == "Resource Pack")
+                        {
+                            // Open ResourcePack workspace
+                            var packManager = new ResourcePackTemplateManager();
+                            var packData = packManager.ReadResourcePack(project.Location);
+                            
+                            var viewModel = new ResourcePackWorkspaceViewModel();
+                            var navigationViewPageProvider = Services.GetRequiredService<INavigationViewPageProvider>();
+                            var navigationService = Services.GetRequiredService<INavigationService>();
+                            var workspaceWindow = new ResourcePackWorkspace(viewModel, navigationViewPageProvider, navigationService);
+                            workspaceWindow.LoadPack(packData);
+                            workspaceWindow.Show();
+                            workspaceWindow.Activate();
+                        }
+                        else
+                        {
+                            // Open regular project workspace
+                            var viewModel = Services.GetRequiredService<ProjectWorkspaceViewModel>();
+                            var navigationViewPageProvider = Services.GetRequiredService<INavigationViewPageProvider>();
+                            var navigationService = Services.GetRequiredService<INavigationService>();
+                            var workspaceWindow = new ProjectWorkspace(viewModel, navigationViewPageProvider, navigationService);
+                            workspaceWindow.LoadProject(project);
+                            workspaceWindow.Show();
+                            workspaceWindow.Activate();
+                        }
                         return;
                     }
                 }

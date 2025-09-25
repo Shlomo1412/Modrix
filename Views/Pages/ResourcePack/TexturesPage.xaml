@@ -1,0 +1,288 @@
+<Page
+    x:Class="Modrix.Views.Pages.ResourcePack.TexturesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Modrix.Views.Pages.ResourcePack"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:controls="clr-namespace:Modrix.Views.Controls"
+    Title="Minecraft Textures"
+    d:DataContext="{d:DesignInstance Type=local:TexturesPage, IsDesignTimeCreatable=False}"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <Grid Margin="0,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                CornerRadius="0,0,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+            <Grid Margin="32,24,32,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontSize="22" FontWeight="Bold" Text="Minecraft Textures" />
+                        <controls:WikiTooltip 
+                            WikiId="minecraft-textures"
+                            Title="Minecraft Textures"
+                            Category="Textures"
+                            Keywords="minecraft,textures,vanilla,assets,browse,original"
+                            Description="Browse all original Minecraft textures organized by category. You can view, copy, and create overrides from these base textures. Use these as reference when creating your custom resource pack."
+                            Margin="8,5,0,0"
+                            VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Margin="0,2,0,0" FontSize="13" 
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                               Text="Browse and create overrides from original Minecraft textures" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
+                    <ui:Button Appearance="Primary" Content="Extract Assets" 
+                               Icon="{ui:SymbolIcon ArrowDownload24}" Height="40" 
+                               ToolTip="Extract/Update Minecraft Assets" 
+                               Click="ExtractAssets_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1" Margin="32,0,32,32">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Categories Sidebar -->
+            <Border Grid.Column="0" Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                    CornerRadius="12" Padding="16" Margin="0,0,18,0" 
+                    Effect="{DynamicResource CardShadow}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="Categories" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+
+                    <ListBox x:Name="CategoriesList" Grid.Row="1" 
+                             Background="Transparent" BorderThickness="0"
+                             SelectionChanged="CategoriesList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0" Symbol="{Binding Icon}" 
+                                                  Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" 
+                                              VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Count}" 
+                                              FontSize="10" 
+                                              Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                              VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Main Content Area -->
+            <Border Grid.Column="1" Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                    CornerRadius="12" Padding="24" 
+                    Effect="{DynamicResource CardShadow}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Search and Controls -->
+                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ui:TextBox x:Name="SearchBox" 
+                                   PlaceholderText="Search textures..."
+                                   Icon="{ui:SymbolIcon Search24}"
+                                   TextChanged="SearchBox_TextChanged"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                            <ui:Button x:Name="ViewModeButton" 
+                                      Icon="{ui:SymbolIcon GridDots24}"
+                                      ToolTip="Toggle view mode"
+                                      Click="ViewModeButton_Click"
+                                      Margin="0,0,8,0"/>
+                            <ui:Button Content="Refresh" 
+                                      Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                      Click="RefreshTextures_Click"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Textures Display -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <!-- Grid View (Default) -->
+                            <Grid x:Name="GridView">
+                                <ItemsControl x:Name="TexturesGrid">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                                                    CornerRadius="8" Margin="4" Padding="8" Width="120" Height="140"
+                                                    MouseRightButtonDown="TextureItem_MouseRightButtonDown"
+                                                    ToolTip="{Binding Name}">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Create Override" 
+                                                                  Click="CreateTextureOverride_Click"
+                                                                  Tag="{Binding}">
+                                                            <MenuItem.Icon>
+                                                                <ui:SymbolIcon Symbol="Copy24"/>
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                        <MenuItem Header="View Original" 
+                                                                  Click="ViewOriginalTexture_Click"
+                                                                  Tag="{Binding}">
+                                                            <MenuItem.Icon>
+                                                                <ui:SymbolIcon Symbol="Eye24"/>
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                        <Separator/>
+                                                        <MenuItem Header="Open in Explorer" 
+                                                                  Click="OpenTextureInExplorer_Click"
+                                                                  Tag="{Binding}">
+                                                            <MenuItem.Icon>
+                                                                <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="80"/>
+                                                        <RowDefinition Height="*"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Texture Preview -->
+                                                    <Border Grid.Row="0" Background="White" CornerRadius="4" 
+                                                            Width="64" Height="64" HorizontalAlignment="Center">
+                                                        <Image Source="{Binding PreviewImage}" 
+                                                               RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                                               Stretch="Uniform"/>
+                                                    </Border>
+
+                                                    <!-- Texture Name -->
+                                                    <TextBlock Grid.Row="1" Text="{Binding Name}" 
+                                                              FontSize="10" TextWrapping="Wrap"
+                                                              HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"
+                                                              TextAlignment="Center"
+                                                              Margin="0,4,0,0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <!-- List View -->
+                            <Grid x:Name="ListView" Visibility="Collapsed">
+                                <ListView x:Name="TexturesList" 
+                                         Background="Transparent" 
+                                         BorderThickness="0">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="ContextMenu">
+                                                <Setter.Value>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Create Override" 
+                                                                  Click="CreateTextureOverride_Click"
+                                                                  Tag="{Binding}">
+                                                            <MenuItem.Icon>
+                                                                <ui:SymbolIcon Symbol="Copy24"/>
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                        <MenuItem Header="View Original" 
+                                                                  Click="ViewOriginalTexture_Click"
+                                                                  Tag="{Binding}">
+                                                            <MenuItem.Icon>
+                                                                <ui:SymbolIcon Symbol="Eye24"/>
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                        <Separator/>
+                                                        <MenuItem Header="Open in Explorer" 
+                                                                  Click="OpenTextureInExplorer_Click"
+                                                                  Tag="{Binding}">
+                                                            <MenuItem.Icon>
+                                                                <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                                            </MenuItem.Icon>
+                                                        </MenuItem>
+                                                    </ContextMenu>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Preview" Width="60">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="White" CornerRadius="2" 
+                                                                Width="32" Height="32">
+                                                            <Image Source="{Binding PreviewImage}" 
+                                                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                                                   Stretch="Uniform"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+                                            <GridViewColumn Header="Name" Width="200" 
+                                                           DisplayMemberBinding="{Binding Name}"/>
+                                            <GridViewColumn Header="Category" Width="100" 
+                                                           DisplayMemberBinding="{Binding Category}"/>
+                                            <GridViewColumn Header="Size" Width="80" 
+                                                           DisplayMemberBinding="{Binding Size}"/>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                            </Grid>
+
+                            <!-- Empty State -->
+                            <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" Visibility="Collapsed">
+                                <ui:SymbolIcon Symbol="Image48" FontSize="48" 
+                                              Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="No textures found" FontSize="16" FontWeight="SemiBold" 
+                                          Margin="0,8,0,4" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Extract Minecraft assets or check your installation" 
+                                          FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                          HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

@@ -371,6 +371,109 @@
                             </StackPanel>
                         </Grid>
 
+                        <!-- Resource Pack specific fields -->
+                        <StackPanel x:Name="ResourcePackSpecificFields">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedItem.Content, ElementName=ModTypeComboBox}" Value="Resource Pack">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <!-- Minecraft Version for Resource Pack -->
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Margin="0,0,0,4"
+                                    FontWeight="SemiBold" 
+                                    Text="Target Minecraft Version" />
+                                <controls:WikiTooltip 
+                                    WikiId="minecraft-version-resource-pack"
+                                    Title="Minecraft Version for Resource Packs"
+                                    Category="Textures"
+                                    Keywords="minecraft,version,resource pack,compatibility,assets,extraction"
+                                    Description="Select the Minecraft version to target for your resource pack. This determines which textures and assets will be extracted for creating overrides. Different versions may have different pack formats and available textures."
+                                    Margin="8,0,0,4"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ui:CardControl
+                                ToolTip="Select Minecraft version for texture extraction"
+                                Margin="0,0,0,16">
+                                <ui:CardControl.Content>
+                                    <ComboBox
+                                        x:Name="ResourcePackMinecraftVersionComboBox"
+                                        Width="Auto"
+                                        MinWidth="390">
+                                        <ComboBoxItem Content="1.21.5" Tag="22"/>
+                                        <ComboBoxItem Content="1.21.4" Tag="22"/>
+                                        <ComboBoxItem Content="1.21.3" Tag="18"/>
+                                        <ComboBoxItem Content="1.21.2" Tag="18"/>
+                                        <ComboBoxItem Content="1.21.1" Tag="18"/>
+                                        <ComboBoxItem Content="1.21" Tag="18"/>
+                                        <ComboBoxItem Content="1.20.6" Tag="21"/>
+                                        <ComboBoxItem Content="1.20.4" Tag="20"/>
+                                        <ComboBoxItem Content="1.20.3" Tag="18"/>
+                                        <ComboBoxItem Content="1.20.2" Tag="18"/>
+                                        <ComboBoxItem Content="1.20.1" Tag="18"/>
+                                    </ComboBox>
+                                </ui:CardControl.Content>
+                            </ui:CardControl>
+
+                            <!-- Pack Format (auto-selected based on MC version) -->
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock 
+                                    Margin="0,0,0,4"
+                                    FontWeight="SemiBold" 
+                                    Text="Pack Format" />
+                                <controls:WikiTooltip 
+                                    WikiId="pack-format-auto"
+                                    Title="Pack Format (Auto-selected)"
+                                    Category="Textures"
+                                    Keywords="pack format,compatibility,minecraft version,automatic"
+                                    Description="The pack format is automatically determined based on your selected Minecraft version. This ensures compatibility with the target Minecraft version."
+                                    Margin="8,0,0,4"
+                                    VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ui:TextBox
+                                x:Name="PackFormatDisplayBox"
+                                Margin="0,0,0,16"
+                                IsReadOnly="True"
+                                PlaceholderText="Auto-selected based on Minecraft version"
+                                Icon="{ui:SymbolIcon Info24}"
+                                ToolTip="Pack format is automatically determined"/>
+
+                            <!-- Description -->
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Description (Optional)" />
+                            <ui:TextBox
+                                x:Name="ResourcePackDescriptionBox"
+                                Margin="0,0,0,16"
+                                PlaceholderText="A brief description of your resource pack"
+                                Icon="{ui:SymbolIcon Comment24}"
+                                ToolTip="Describe what your resource pack changes"
+                                TextWrapping="Wrap"
+                                AcceptsReturn="True"
+                                Height="80"
+                                VerticalContentAlignment="Top"/>
+
+                            <!-- Authors -->
+                            <TextBlock 
+                                Margin="0,0,0,4"
+                                FontWeight="SemiBold" 
+                                Text="Authors (Optional)" />
+                            <ui:TextBox
+                                x:Name="ResourcePackAuthorsBox"
+                                Margin="0,0,0,16"
+                                PlaceholderText="Comma-separated list of authors"
+                                Icon="{ui:SymbolIcon People24}"
+                                ToolTip="List the authors of the resource pack"/>
+                        </StackPanel>
+
                         <!-- Advanced Options -->
                         <ui:CardExpander Margin="0,8,0,0" Header="Advanced Options" CornerRadius="8">
                             <StackPanel Margin="8,12,8,8">

@@ -126,6 +126,61 @@ namespace Modrix.Services
                 Keywords = new[] { "resource pack", "textures", "models", "sounds", "appearance", "visual" }
             });
 
+            // ResourcePack-specific entries
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "resource-pack-overrides",
+                Title = "Resource Pack Overrides",
+                Category = "Textures",
+                Description = "Overrides allow you to replace default Minecraft assets with your custom versions. Place textures in overrides/textures/ and translations in overrides/translations/ to override the vanilla Minecraft files.",
+                Keywords = new[] { "resource pack", "overrides", "textures", "translations", "minecraft", "custom", "replace" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "minecraft-textures",
+                Title = "Minecraft Textures",
+                Category = "Textures",
+                Description = "Browse all original Minecraft textures organized by category. You can view, copy, and create overrides from these base textures. Use these as reference when creating your custom resource pack.",
+                Keywords = new[] { "minecraft", "textures", "vanilla", "assets", "browse", "original", "reference" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "minecraft-translations",
+                Title = "Minecraft Translations",
+                Category = "Textures",
+                Description = "Browse and edit Minecraft's language files to create custom translations. Each language file contains key-value pairs that define text shown in the game interface, items, blocks, and more.",
+                Keywords = new[] { "minecraft", "translations", "language", "localization", "lang", "json", "interface" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "resource-pack-properties",
+                Title = "Resource Pack Properties",
+                Category = "Textures",
+                Description = "Configure your resource pack's metadata including name, description, pack format, and icon. These properties are displayed in Minecraft's resource pack selection menu.",
+                Keywords = new[] { "resource pack", "properties", "metadata", "pack.mcmeta", "pack format", "description", "configuration" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "pack-format",
+                Title = "Pack Format",
+                Category = "Textures",
+                Description = "The pack format determines which Minecraft versions your resource pack is compatible with. Each major Minecraft version typically has its own pack format number.",
+                Keywords = new[] { "format", "version", "compatibility", "minecraft", "pack format", "versions" }
+            });
+
+            RegisterWikiEntry(new WikiEntry
+            {
+                Id = "pack-icon",
+                Title = "Pack Icon",
+                Category = "Textures",
+                Description = "The pack icon appears in Minecraft's resource pack menu. It should be a square PNG image, typically 128x128 or 256x256 pixels for best quality.",
+                Keywords = new[] { "icon", "pack.png", "image", "thumbnail", "preview", "128x128", "256x256" }
+            });
+
             RegisterWikiEntry(new WikiEntry
             {
                 Id = "debugging",

@@ -105,6 +105,7 @@ namespace Modrix.Views.Controls
             {
                 "Fabric Mod" => "Fabric Mod",
                 "Forge Mod" => "Forge Mod",
+                "Resource Pack" => "Resource Pack",
                 _ => "Unknown Mod Type"
             };
             VersionText.Text = data.MinecraftVersion;

@@ -10,6 +10,7 @@ using System.Linq;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Modrix.ViewModels.Windows;
+using Modrix.Services;
 
 namespace Modrix.Views.Pages
 {
@@ -34,7 +35,7 @@ namespace Modrix.Views.Pages
             {
                 var messageBox = new Wpf.Ui.Controls.MessageBox
                 {
-                    Title = "Delete Project",
+                    Title = project.ModType == "Resource Pack" ? "Delete Resource Pack" : "Delete Project",
                     Content = $"Are you sure you want to delete {project.Name}?",
                     PrimaryButtonText = "Delete",
                     CloseButtonText = "Cancel"
@@ -55,37 +56,87 @@ namespace Modrix.Views.Pages
         {
             if (sender is ProjectCard card && card.ProjectData is ModProjectData project)
             {
-                // Try to find an existing window for this project
-                var existingWindow = Application.Current.Windows.OfType<ProjectWorkspace>()
-                    .FirstOrDefault(w => w.ViewModel.CurrentProject?.Location == project.Location);
-
-                if (existingWindow != null)
+                if (project.ModType == "Resource Pack")
                 {
-                    existingWindow.Activate();
-                    return;
+                    OpenResourcePackWorkspace(project);
                 }
-
-                // Get required services for ProjectWorkspace
-                var viewModel = _serviceProvider.GetRequiredService<ProjectWorkspaceViewModel>();
-                var navigationViewPageProvider = _serviceProvider.GetRequiredService<INavigationViewPageProvider>();
-                var navigationService = _serviceProvider.GetRequiredService<INavigationService>();
-
-                // Create a new workspace window with fresh dependencies
-                var workspaceWindow = new ProjectWorkspace(
-                    viewModel,
-                    navigationViewPageProvider,
-                    navigationService
-                );
-
-                // Load the project into the workspace VM
-                workspaceWindow.LoadProject(project);
-
-                // Show the new workspace window
-                workspaceWindow.Show();
-                workspaceWindow.Activate();
-
-                ViewModel.RefreshProjectsCommand.Execute(null);
+                else
+                {
+                    OpenProjectWorkspace(project);
+                }
             }
+        }
+
+        private void OpenResourcePackWorkspace(ModProjectData project)
+        {
+            // Try to find an existing window for this resource pack
+            var existingWindow = Application.Current.Windows.OfType<ResourcePackWorkspace>()
+                .FirstOrDefault(w => w.ViewModel.CurrentPack?.Location == project.Location);
+
+            if (existingWindow != null)
+            {
+                existingWindow.Activate();
+                return;
+            }
+
+            // Load the resource pack data
+            var manager = new ResourcePackTemplateManager();
+            var packData = manager.ReadResourcePack(project.Location);
+
+            // Get required services for ResourcePackWorkspace
+            var viewModel = new ResourcePackWorkspaceViewModel();
+            var navigationViewPageProvider = _serviceProvider.GetRequiredService<INavigationViewPageProvider>();
+            var navigationService = _serviceProvider.GetRequiredService<INavigationService>();
+
+            // Create a new workspace window
+            var workspaceWindow = new ResourcePackWorkspace(
+                viewModel,
+                navigationViewPageProvider,
+                navigationService
+            );
+
+            // Load the pack into the workspace VM
+            workspaceWindow.LoadPack(packData);
+
+            // Show the new workspace window
+            workspaceWindow.Show();
+            workspaceWindow.Activate();
+
+            ViewModel.RefreshProjectsCommand.Execute(null);
+        }
+
+        private void OpenProjectWorkspace(ModProjectData project)
+        {
+            // Try to find an existing window for this project
+            var existingWindow = Application.Current.Windows.OfType<ProjectWorkspace>()
+                .FirstOrDefault(w => w.ViewModel.CurrentProject?.Location == project.Location);
+
+            if (existingWindow != null)
+            {
+                existingWindow.Activate();
+                return;
+            }
+
+            // Get required services for ProjectWorkspace
+            var viewModel = _serviceProvider.GetRequiredService<ProjectWorkspaceViewModel>();
+            var navigationViewPageProvider = _serviceProvider.GetRequiredService<INavigationViewPageProvider>();
+            var navigationService = _serviceProvider.GetRequiredService<INavigationService>();
+
+            // Create a new workspace window with fresh dependencies
+            var workspaceWindow = new ProjectWorkspace(
+                viewModel,
+                navigationViewPageProvider,
+                navigationService
+            );
+
+            // Load the project into the workspace VM
+            workspaceWindow.LoadProject(project);
+
+            // Show the new workspace window
+            workspaceWindow.Show();
+            workspaceWindow.Activate();
+
+            ViewModel.RefreshProjectsCommand.Execute(null);
         }
 
         private void ProjectCard_OpenFolderClicked(object sender, RoutedEventArgs e)
