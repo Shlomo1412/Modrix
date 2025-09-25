@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Modrix.Services;
@@ -123,6 +124,10 @@ namespace Modrix.Views.Windows
 
             try
             {
+                // Re-read pack to ensure overrides list is current
+                var manager = new ResourcePackTemplateManager();
+                var packData = manager.ReadResourcePack(ViewModel.CurrentPack.Location);
+
                 var minecraftDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".minecraft");
                 var resourcePacksDir = Path.Combine(minecraftDir, "resourcepacks");
                 
@@ -132,14 +137,19 @@ namespace Modrix.Views.Windows
                     return;
                 }
 
-                var targetPath = Path.Combine(resourcePacksDir, Path.GetFileName(ViewModel.CurrentPack.Location));
-                
+                if (packData.Overrides == null || packData.Overrides.Count == 0)
+                {
+                    ShowSnackbar("No overrides to install", "Create overrides first", ControlAppearance.Secondary);
+                    return;
+                }
+
+                var targetPath = Path.Combine(resourcePacksDir, packData.Name);
                 if (Directory.Exists(targetPath))
                 {
                     var result = await new Wpf.Ui.Controls.MessageBox
                     {
                         Title = "Resource Pack Exists",
-                        Content = $"A resource pack with the same name already exists in Minecraft. Do you want to replace it?",
+                        Content = $"A resource pack named '{packData.Name}' already exists. Replace it?",
                         PrimaryButtonText = "Replace",
                         CloseButtonText = "Cancel"
                     }.ShowDialogAsync();
@@ -150,10 +160,16 @@ namespace Modrix.Views.Windows
                     Directory.Delete(targetPath, true);
                 }
 
-                // Copy the resource pack
-                CopyDirectory(ViewModel.CurrentPack.Location, targetPath);
-                
-                ShowSnackbar("Resource pack installed", "Successfully installed to Minecraft", ControlAppearance.Success);
+                var stagingDir = BuildStagingDirectory(packData);
+                try
+                {
+                    CopyDirectory(stagingDir, targetPath);
+                    ShowSnackbar("Resource pack installed", "Overrides deployed", ControlAppearance.Success);
+                }
+                finally
+                {
+                    TryDeleteDirectory(stagingDir);
+                }
             }
             catch (Exception ex)
             {
@@ -176,20 +192,90 @@ namespace Modrix.Views.Windows
             {
                 try
                 {
-                    ShowSnackbar("Exporting resource pack...", "Please wait");
-                    
-                    // Create ZIP file from resource pack directory
+                    // Re-read pack metadata to get latest overrides
+                    var manager = new ResourcePackTemplateManager();
+                    var packData = manager.ReadResourcePack(ViewModel.CurrentPack.Location);
+
+                    if (packData.Overrides == null || packData.Overrides.Count == 0)
+                    {
+                        ShowSnackbar("Nothing to export", "No overrides created yet", ControlAppearance.Secondary);
+                        return;
+                    }
+
+                    ShowSnackbar("Exporting resource pack...", "Building archive");
+
                     if (File.Exists(dialog.FileName))
                         File.Delete(dialog.FileName);
-                        
-                    ZipFile.CreateFromDirectory(ViewModel.CurrentPack.Location, dialog.FileName);
-                    
-                    ShowSnackbar("Export successful", $"Resource pack exported to {Path.GetFileName(dialog.FileName)}", ControlAppearance.Success);
+
+                    var stagingDir = BuildStagingDirectory(packData);
+                    try
+                    {
+                        ZipFile.CreateFromDirectory(stagingDir, dialog.FileName, CompressionLevel.Optimal, includeBaseDirectory: false);
+                        ShowSnackbar("Export successful", Path.GetFileName(dialog.FileName), ControlAppearance.Success);
+                    }
+                    finally
+                    {
+                        TryDeleteDirectory(stagingDir);
+                    }
                 }
                 catch (Exception ex)
                 {
                     ShowSnackbar("Export failed", $"Error: {ex.Message}", ControlAppearance.Danger);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Builds a minimal staging directory for export / install containing only override files
+        /// in their final asset paths plus pack.mcmeta / pack.png.
+        /// </summary>
+        private string BuildStagingDirectory(ResourcePackData pack)
+        {
+            var stagingRoot = Path.Combine(Path.GetTempPath(), "ModrixPack_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(stagingRoot);
+
+            // Copy metadata files
+            var mcMetaSrc = Path.Combine(pack.Location, "pack.mcmeta");
+            if (File.Exists(mcMetaSrc))
+                File.Copy(mcMetaSrc, Path.Combine(stagingRoot, "pack.mcmeta"), true);
+
+            var iconSrc = Path.Combine(pack.Location, "pack.png");
+            if (File.Exists(iconSrc))
+                File.Copy(iconSrc, Path.Combine(stagingRoot, "pack.png"), true);
+
+            // Process overrides -> final location under stagingRoot
+            foreach (var ov in pack.Overrides)
+            {
+                if (string.IsNullOrWhiteSpace(ov.OriginalPath) || string.IsNullOrWhiteSpace(ov.OverridePath))
+                    continue;
+                if (!File.Exists(ov.OverridePath))
+                    continue;
+
+                // OriginalPath already like: assets/minecraft/textures/... or assets/minecraft/lang/... 
+                var normalized = ov.OriginalPath.Replace('/', Path.DirectorySeparatorChar);
+                var destFull = Path.Combine(stagingRoot, normalized);
+                Directory.CreateDirectory(Path.GetDirectoryName(destFull)!);
+                File.Copy(ov.OverridePath, destFull, true);
+            }
+
+            return stagingRoot;
+        }
+
+        private void TryDeleteDirectory(string path)
+        {
+            try { if (Directory.Exists(path)) Directory.Delete(path, true); } catch { /* ignore */ }
+        }
+
+        private void CopyDirectory(string sourceDir, string targetDir)
+        {
+            Directory.CreateDirectory(targetDir);
+
+            foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                var relativePath = Path.GetRelativePath(sourceDir, file);
+                var targetFile = Path.Combine(targetDir, relativePath);
+                Directory.CreateDirectory(Path.GetDirectoryName(targetFile)!);
+                File.Copy(file, targetFile, true);
             }
         }
 
@@ -243,20 +329,6 @@ namespace Modrix.Views.Windows
             System.Diagnostics.Debug.WriteLine($"ResourcePackWorkspace: Navigating to {pageType?.Name}");
             var success = RootNavigation.Navigate(pageType);
             System.Diagnostics.Debug.WriteLine($"ResourcePackWorkspace: Navigation success = {success}");
-        }
-
-        private void CopyDirectory(string sourceDir, string targetDir)
-        {
-            Directory.CreateDirectory(targetDir);
-
-            foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
-            {
-                var relativePath = Path.GetRelativePath(sourceDir, file);
-                var targetFile = Path.Combine(targetDir, relativePath);
-                
-                Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
-                File.Copy(file, targetFile, true);
-            }
         }
     }
 }

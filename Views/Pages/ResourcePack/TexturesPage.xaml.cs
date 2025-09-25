@@ -406,7 +406,7 @@ namespace Modrix.Views.Pages.ResourcePack
 
                 ShowMessage($"Created override for {item.Name}", "Override Created");
             }
-            catch (Exception ex)
+            catch (Exception ex) 
             {
                 ShowMessage($"Failed creating override: {ex.Message}", "Error");
             }
