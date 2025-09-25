@@ -7,8 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Modrix.Models;
 using Modrix.Services;
 using Modrix.ViewModels.Windows;
+using Wpf.Ui;
+using Wpf.Ui.Abstractions;
 using Wpf.Ui.Controls;
-using Wpf.Ui.Common.Interfaces;
 
 namespace Modrix.Views.Windows
 {
@@ -52,6 +53,20 @@ namespace Modrix.Views.Windows
 
         public void ShowWindow() => Show();
         public void CloseWindow() => Close();
+
+        public INavigationView GetNavigation() => RootNavigation;
+
+        public bool Navigate(Type pageType) => RootNavigation.Navigate(pageType);
+
+        public void SetPageService(INavigationViewPageProvider provider)
+        {
+            RootNavigation.SetPageProviderService(provider);
+        }
+
+        public void SetServiceProvider(IServiceProvider serviceProvider)
+        {
+            // Not needed for resource pack workspace
+        }
 
         // Toolbar button handlers
         private void PreviewButton_Click(object sender, RoutedEventArgs e)

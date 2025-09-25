@@ -152,7 +152,7 @@ namespace Modrix.Views.Pages
             return "Other";
         }
 
-        private string GetTexturePreviewPath(string texturePath, string overridePath = null)
+        private string GetTexturePreviewPath(string texturePath, string? overridePath = null)
         {
             // If there's an override, use that
             if (!string.IsNullOrEmpty(overridePath) && File.Exists(overridePath))

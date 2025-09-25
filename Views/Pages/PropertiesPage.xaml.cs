@@ -558,9 +558,7 @@ IncludeReadme={IncludeReadmeCheckBox.IsChecked}";
         private void OnPropertyChanged(string propertyName)
         {
             // Simple property change notification for bindings
-            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            // PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
         }
-
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
     }
 }
