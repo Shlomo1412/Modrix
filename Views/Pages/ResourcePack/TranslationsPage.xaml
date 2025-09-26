@@ -139,83 +139,135 @@
                             <!-- Tab Control for Categories -->
                             <TabControl x:Name="CategoryTabs" Background="Transparent" BorderThickness="0">
                                 <TabItem Header="GUI" x:Name="GuiTab">
-                                    <ListView x:Name="GuiTranslationsList" Background="Transparent" BorderThickness="0">
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
-                                                <GridViewColumn Header="Value" Width="250" DisplayMemberBinding="{Binding Value}"/>
-                                                <GridViewColumn Header="Actions" Width="80">
-                                                    <GridViewColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <ui:Button Content="Override" Tag="{Binding}" 
-                                                                      Click="CreateKeyOverride_Click" 
-                                                                      Padding="8,4" Height="28"/>
-                                                        </DataTemplate>
-                                                    </GridViewColumn.CellTemplate>
-                                                </GridViewColumn>
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
+                                    <ui:DataGrid x:Name="GuiTranslationsList" 
+                                                Background="Transparent" 
+                                                BorderThickness="0"
+                                                MouseLeftButtonDown="TranslationItem_MouseLeftButtonDown"
+                                                AutoGenerateColumns="False"
+                                                CanUserAddRows="False"
+                                                CanUserDeleteRows="False"
+                                                CanUserResizeRows="False"
+                                                GridLinesVisibility="None"
+                                                HeadersVisibility="Column">
+                                        <ui:DataGrid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateKeyOverride_Click"
+                                                          Icon="{ui:SymbolIcon Add24}"/>
+                                            </ContextMenu>
+                                        </ui:DataGrid.ContextMenu>
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}"/>
+                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}"/>
+                                            <DataGridTemplateColumn Header="Actions" Width="80">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ui:Button Content="Override" Tag="{Binding}" 
+                                                                  Click="CreateKeyOverride_Click" 
+                                                                  Padding="8,4" Height="28"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
                                 </TabItem>
 
                                 <TabItem Header="Items" x:Name="ItemsTab">
-                                    <ListView x:Name="ItemsTranslationsList" Background="Transparent" BorderThickness="0">
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
-                                                <GridViewColumn Header="Value" Width="250" DisplayMemberBinding="{Binding Value}"/>
-                                                <GridViewColumn Header="Actions" Width="80">
-                                                    <GridViewColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <ui:Button Content="Override" Tag="{Binding}" 
-                                                                      Click="CreateKeyOverride_Click" 
-                                                                      Padding="8,4" Height="28"/>
-                                                        </DataTemplate>
-                                                    </GridViewColumn.CellTemplate>
-                                                </GridViewColumn>
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
+                                    <ui:DataGrid x:Name="ItemsTranslationsList" 
+                                                Background="Transparent" 
+                                                BorderThickness="0"
+                                                MouseLeftButtonDown="TranslationItem_MouseLeftButtonDown"
+                                                AutoGenerateColumns="False"
+                                                CanUserAddRows="False"
+                                                CanUserDeleteRows="False"
+                                                CanUserResizeRows="False"
+                                                GridLinesVisibility="None"
+                                                HeadersVisibility="Column">
+                                        <ui:DataGrid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateKeyOverride_Click"
+                                                          Icon="{ui:SymbolIcon Add24}"/>
+                                            </ContextMenu>
+                                        </ui:DataGrid.ContextMenu>
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}"/>
+                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}"/>
+                                            <DataGridTemplateColumn Header="Actions" Width="80">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ui:Button Content="Override" Tag="{Binding}" 
+                                                                  Click="CreateKeyOverride_Click" 
+                                                                  Padding="8,4" Height="28"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
                                 </TabItem>
 
                                 <TabItem Header="Blocks" x:Name="BlocksTab">
-                                    <ListView x:Name="BlocksTranslationsList" Background="Transparent" BorderThickness="0">
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
-                                                <GridViewColumn Header="Value" Width="250" DisplayMemberBinding="{Binding Value}"/>
-                                                <GridViewColumn Header="Actions" Width="80">
-                                                    <GridViewColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <ui:Button Content="Override" Tag="{Binding}" 
-                                                                      Click="CreateKeyOverride_Click" 
-                                                                      Padding="8,4" Height="28"/>
-                                                        </DataTemplate>
-                                                    </GridViewColumn.CellTemplate>
-                                                </GridViewColumn>
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
+                                    <ui:DataGrid x:Name="BlocksTranslationsList" 
+                                                Background="Transparent" 
+                                                BorderThickness="0"
+                                                MouseLeftButtonDown="TranslationItem_MouseLeftButtonDown"
+                                                AutoGenerateColumns="False"
+                                                CanUserAddRows="False"
+                                                CanUserDeleteRows="False"
+                                                CanUserResizeRows="False"
+                                                GridLinesVisibility="None"
+                                                HeadersVisibility="Column">
+                                        <ui:DataGrid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateKeyOverride_Click"
+                                                          Icon="{ui:SymbolIcon Add24}"/>
+                                            </ContextMenu>
+                                        </ui:DataGrid.ContextMenu>
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}"/>
+                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}"/>
+                                            <DataGridTemplateColumn Header="Actions" Width="80">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ui:Button Content="Override" Tag="{Binding}" 
+                                                                  Click="CreateKeyOverride_Click" 
+                                                                  Padding="8,4" Height="28"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
                                 </TabItem>
 
                                 <TabItem Header="Other" x:Name="OtherTab">
-                                    <ListView x:Name="OtherTranslationsList" Background="Transparent" BorderThickness="0">
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
-                                                <GridViewColumn Header="Value" Width="250" DisplayMemberBinding="{Binding Value}"/>
-                                                <GridViewColumn Header="Actions" Width="80">
-                                                    <GridViewColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <ui:Button Content="Override" Tag="{Binding}" 
-                                                                      Click="CreateKeyOverride_Click" 
-                                                                      Padding="8,4" Height="28"/>
-                                                        </DataTemplate>
-                                                    </GridViewColumn.CellTemplate>
-                                                </GridViewColumn>
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
+                                    <ui:DataGrid x:Name="OtherTranslationsList" 
+                                                Background="Transparent" 
+                                                BorderThickness="0"
+                                                MouseLeftButtonDown="TranslationItem_MouseLeftButtonDown"
+                                                AutoGenerateColumns="False"
+                                                CanUserAddRows="False"
+                                                CanUserDeleteRows="False"
+                                                CanUserResizeRows="False"
+                                                GridLinesVisibility="None"
+                                                HeadersVisibility="Column">
+                                        <ui:DataGrid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateKeyOverride_Click"
+                                                          Icon="{ui:SymbolIcon Add24}"/>
+                                            </ContextMenu>
+                                        </ui:DataGrid.ContextMenu>
+                                        <ui:DataGrid.Columns>
+                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}"/>
+                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}"/>
+                                            <DataGridTemplateColumn Header="Actions" Width="80">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ui:Button Content="Override" Tag="{Binding}" 
+                                                                  Click="CreateKeyOverride_Click" 
+                                                                  Padding="8,4" Height="28"/>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </ui:DataGrid.Columns>
+                                    </ui:DataGrid>
                                 </TabItem>
                             </TabControl>
 

@@ -247,20 +247,33 @@ namespace Modrix.Views.Pages.ResourcePack
             UpdateDisplayMode();
         }
 
-        public void RefreshModels_Click(object sender, RoutedEventArgs e)
+        public void ModelItem_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            LoadModels();
-            FilterModels();
+            if (e.ClickCount == 2)
+            {
+                ModelItem? item = null;
+                
+                // Handle double-click from grid view
+                if (sender is Border border && border.DataContext is ModelItem gridItem)
+                {
+                    item = gridItem;
+                }
+                // Handle double-click from data grid
+                else if (sender is Wpf.Ui.Controls.DataGrid dataGrid && dataGrid.SelectedItem is ModelItem listItem)
+                {
+                    item = listItem;
+                }
+
+                if (item != null)
+                {
+                    CreateOverrideForItem(item);
+                }
+            }
         }
 
-        public async void CreateOverride_Click(object sender, RoutedEventArgs e)
+        private async void CreateOverrideForItem(ModelItem item)
         {
             if (_currentPack == null) return;
-            System.Windows.Controls.MenuItem? mi = sender as System.Windows.Controls.MenuItem;
-            Wpf.Ui.Controls.Button? btn = sender as Wpf.Ui.Controls.Button;
-            
-            var item = (mi?.Tag ?? btn?.Tag) as ModelItem;
-            if (item == null) return;
 
             try
             {
@@ -281,6 +294,28 @@ namespace Modrix.Views.Pages.ResourcePack
             catch (Exception ex)
             {
                 ShowMessage($"Failed creating override: {ex.Message}", "Error");
+            }
+        }
+
+        public void RefreshModels_Click(object sender, RoutedEventArgs e)
+        {
+            LoadModels();
+            FilterModels();
+        }
+
+        public void CreateOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null) return;
+            ModelItem? item = null;
+            
+            if (sender is System.Windows.Controls.MenuItem mi)
+                item = mi.Tag as ModelItem;
+            else if (sender is Wpf.Ui.Controls.Button btn)
+                item = btn.Tag as ModelItem;
+            
+            if (item != null)
+            {
+                CreateOverrideForItem(item);
             }
         }
 

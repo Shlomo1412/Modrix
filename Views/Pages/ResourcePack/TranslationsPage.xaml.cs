@@ -226,35 +226,28 @@ namespace Modrix.Views.Pages.ResourcePack
             OtherTranslationsList.ItemsSource = otherTranslations;
         }
 
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void TranslationItem_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            FilterTranslationsWithSearch();
+            if (e.ClickCount == 2)
+            {
+                TranslationKeyItem? item = null;
+                
+                // Handle double-click from data grid
+                if (sender is Wpf.Ui.Controls.DataGrid dataGrid && dataGrid.SelectedItem is TranslationKeyItem selectedItem)
+                {
+                    item = selectedItem;
+                }
+
+                if (item != null)
+                {
+                    CreateOverrideForTranslationItem(item);
+                }
+            }
         }
 
-        private void FilterTranslationsWithSearch()
-        {
-            var query = SearchBox?.Text?.ToLowerInvariant() ?? "";
-            var filteredTranslations = string.IsNullOrEmpty(query) ? 
-                _allTranslations : 
-                _allTranslations.Where(t => 
-                    t.Key.ToLowerInvariant().Contains(query) || 
-                    t.Value.ToLowerInvariant().Contains(query)).ToList();
-
-            var guiTranslations = filteredTranslations.Where(t => t.Category == "GUI").ToList();
-            var itemTranslations = filteredTranslations.Where(t => t.Category == "Items").ToList();
-            var blockTranslations = filteredTranslations.Where(t => t.Category == "Blocks").ToList();
-            var otherTranslations = filteredTranslations.Where(t => t.Category == "Other").ToList();
-
-            GuiTranslationsList.ItemsSource = guiTranslations;
-            ItemsTranslationsList.ItemsSource = itemTranslations;
-            BlocksTranslationsList.ItemsSource = blockTranslations;
-            OtherTranslationsList.ItemsSource = otherTranslations;
-        }
-
-        private async void CreateKeyOverride_Click(object sender, RoutedEventArgs e)
+        private async void CreateOverrideForTranslationItem(TranslationKeyItem item)
         {
             if (_currentPack == null || _selectedLanguageCode == null) return;
-            if (sender is not Wpf.Ui.Controls.Button button || button.Tag is not TranslationKeyItem item) return;
 
             try
             {
@@ -289,6 +282,22 @@ namespace Modrix.Views.Pages.ResourcePack
             catch (Exception ex)
             {
                 ShowMessage($"Failed to create override: {ex.Message}", "Error");
+            }
+        }
+
+        private async void CreateKeyOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null || _selectedLanguageCode == null) return;
+            TranslationKeyItem? item = null;
+            
+            if (sender is System.Windows.Controls.MenuItem mi)
+                item = mi.Tag as TranslationKeyItem;
+            else if (sender is Wpf.Ui.Controls.Button button)
+                item = button.Tag as TranslationKeyItem;
+            
+            if (item != null)
+            {
+                CreateOverrideForTranslationItem(item);
             }
         }
 
@@ -350,6 +359,31 @@ namespace Modrix.Views.Pages.ResourcePack
                 PrimaryButtonText = "OK"
             };
             await msgBox.ShowDialogAsync();
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            FilterTranslationsWithSearch();
+        }
+
+        private void FilterTranslationsWithSearch()
+        {
+            var query = SearchBox?.Text?.ToLowerInvariant() ?? "";
+            var filteredTranslations = string.IsNullOrEmpty(query) ? 
+                _allTranslations : 
+                _allTranslations.Where(t => 
+                    t.Key.ToLowerInvariant().Contains(query) || 
+                    t.Value.ToLowerInvariant().Contains(query)).ToList();
+
+            var guiTranslations = filteredTranslations.Where(t => t.Category == "GUI").ToList();
+            var itemTranslations = filteredTranslations.Where(t => t.Category == "Items").ToList();
+            var blockTranslations = filteredTranslations.Where(t => t.Category == "Blocks").ToList();
+            var otherTranslations = filteredTranslations.Where(t => t.Category == "Other").ToList();
+
+            GuiTranslationsList.ItemsSource = guiTranslations;
+            ItemsTranslationsList.ItemsSource = itemTranslations;
+            BlocksTranslationsList.ItemsSource = blockTranslations;
+            OtherTranslationsList.ItemsSource = otherTranslations;
         }
 
         // Helper classes

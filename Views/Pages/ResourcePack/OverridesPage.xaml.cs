@@ -68,6 +68,11 @@ namespace Modrix.Views.Pages.ResourcePack
             UpdateEmptyStates();
         }
 
+        private void RefreshOverrides_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshOverrides();
+        }
+
         private void LoadTextureOverrides()
         {
             _allTextureOverrides.Clear();

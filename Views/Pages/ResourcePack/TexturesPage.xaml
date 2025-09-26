@@ -150,10 +150,12 @@
                                         <DataTemplate>
                                             <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
                                                     CornerRadius="8" Margin="4" Padding="8" Width="120" Height="140"
-                                                    ToolTip="{Binding Name}" >
+                                                    ToolTip="{Binding Name}"
+                                                    MouseLeftButtonDown="TextureItem_MouseLeftButtonDown">
                                                 <Border.ContextMenu>
                                                     <ContextMenu>
-                                                        <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateOverride_Click"/>
+                                                        <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateOverride_Click"
+                                                                  Icon="{ui:SymbolIcon Add24}"/>
                                                     </ContextMenu>
                                                 </Border.ContextMenu>
                                                 <Grid>
@@ -186,33 +188,40 @@
 
                             <!-- List View -->
                             <Grid x:Name="ListView" Visibility="Collapsed">
-                                <ListView x:Name="TexturesList" 
-                                         Background="Transparent" 
-                                         BorderThickness="0"
-                                         MouseRightButtonDown="TextureItem_MouseRightButtonDown">
-                                    <ListView.View>
-                                        <GridView>
-                                            <GridViewColumn Header="Preview" Width="60">
-                                                <GridViewColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Border Background="White" CornerRadius="2" 
-                                                                Width="32" Height="32">
-                                                            <Image Source="{Binding PreviewImage}" 
-                                                                   RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                                                   Stretch="Uniform"/>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </GridViewColumn.CellTemplate>
-                                            </GridViewColumn>
-                                            <GridViewColumn Header="Name" Width="200" 
-                                                           DisplayMemberBinding="{Binding Name}"/>
-                                            <GridViewColumn Header="Category" Width="100" 
-                                                           DisplayMemberBinding="{Binding Category}"/>
-                                            <GridViewColumn Header="Size" Width="80" 
-                                                           DisplayMemberBinding="{Binding Size}"/>
-                                        </GridView>
-                                    </ListView.View>
-                                </ListView>
+                                <ui:DataGrid x:Name="TexturesList" 
+                                            Background="Transparent" 
+                                            BorderThickness="0"
+                                            MouseLeftButtonDown="TextureItem_MouseLeftButtonDown"
+                                            AutoGenerateColumns="False"
+                                            CanUserAddRows="False"
+                                            CanUserDeleteRows="False"
+                                            CanUserResizeRows="False"
+                                            GridLinesVisibility="None"
+                                            HeadersVisibility="Column">
+                                    <ui:DataGrid.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateOverride_Click"
+                                                      Icon="{ui:SymbolIcon Add24}"/>
+                                        </ContextMenu>
+                                    </ui:DataGrid.ContextMenu>
+                                    <ui:DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="Preview" Width="60">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="White" CornerRadius="2" 
+                                                            Width="32" Height="32">
+                                                        <Image Source="{Binding PreviewImage}" 
+                                                               RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                                               Stretch="Uniform"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Name" Width="200" Binding="{Binding Name}"/>
+                                        <DataGridTextColumn Header="Category" Width="100" Binding="{Binding Category}"/>
+                                        <DataGridTextColumn Header="Size" Width="80" Binding="{Binding Size}"/>
+                                    </ui:DataGrid.Columns>
+                                </ui:DataGrid>
                             </Grid>
 
                             <!-- Empty State -->

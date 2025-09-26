@@ -260,7 +260,7 @@ namespace Modrix.Views.Pages.ResourcePack
         private void UpdateTextures()
         {
             var texturesGrid = this.FindName("TexturesGrid") as ItemsControl;
-            var texturesList = this.FindName("TexturesList") as System.Windows.Controls.ListView;
+            var texturesList = this.FindName("TexturesList") as Wpf.Ui.Controls.DataGrid;
 
             if (_isGridView && texturesGrid != null)
             {
@@ -295,12 +295,62 @@ namespace Modrix.Views.Pages.ResourcePack
             UpdateDisplayMode();
         }
 
-        public void TextureItem_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        public void TextureItem_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Context menu for texture operations - TODO: Implement texture override creation
+            if (e.ClickCount == 2)
+            {
+                TextureItem? item = null;
+                
+                // Handle double-click from grid view
+                if (sender is Border border && border.DataContext is TextureItem gridItem)
+                {
+                    item = gridItem;
+                }
+                // Handle double-click from data grid
+                else if (sender is Wpf.Ui.Controls.DataGrid dataGrid && dataGrid.SelectedItem is TextureItem listItem)
+                {
+                    item = listItem;
+                }
+
+                if (item != null)
+                {
+                    CreateOverrideForItem(item);
+                }
+            }
         }
 
-        public void RefreshTextures_Click(object sender, RoutedEventArgs e)
+        public void TextureItem_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            // Context menu for texture operations - handled by XAML context menu
+        }
+
+        private async void CreateOverrideForItem(TextureItem item)
+        {
+            if (_currentPack == null) return;
+
+            try
+            {
+                var overridesRoot = Path.Combine(_currentPack.Location, "overrides", "textures");
+                var relative = item.RelativePath.Replace('\\','/');
+                var parts = relative.Split('/');
+                string category = parts.Length > 1 ? parts[0] : "misc";
+                var targetDir = Path.Combine(overridesRoot, category);
+                Directory.CreateDirectory(targetDir);
+                var targetPath = Path.Combine(targetDir, Path.GetFileName(item.FilePath));
+                File.Copy(item.FilePath, targetPath, true);
+
+                var manager = new ResourcePackTemplateManager();
+                _currentPack = manager.ReadResourcePack(_currentPack.Location);
+
+                ShowMessage($"Created override for {item.Name}", "Override Created");
+            }
+            catch (Exception ex) 
+            {
+                ShowMessage($"Failed creating override: {ex.Message}", "Error");
+            }
+        }
+
+        public async void RefreshTextures_Click(object sender, RoutedEventArgs e)
         {
             LoadTextures();
             FilterTextures();
@@ -388,27 +438,16 @@ namespace Modrix.Views.Pages.ResourcePack
         public async void CreateOverride_Click(object sender, RoutedEventArgs e)
         {
             if (_currentPack == null) return;
-            if (sender is not System.Windows.Controls.MenuItem mi || mi.Tag is not TextureItem item) return;
-
-            try
+            TextureItem? item = null;
+            
+            if (sender is System.Windows.Controls.MenuItem mi)
+                item = mi.Tag as TextureItem;
+            else if (sender is Wpf.Ui.Controls.Button btn)
+                item = btn.Tag as TextureItem;
+            
+            if (item != null)
             {
-                var overridesRoot = Path.Combine(_currentPack.Location, "overrides", "textures");
-                var relative = item.RelativePath.Replace('\\','/');
-                var parts = relative.Split('/');
-                string category = parts.Length > 1 ? parts[0] : "misc";
-                var targetDir = Path.Combine(overridesRoot, category);
-                Directory.CreateDirectory(targetDir);
-                var targetPath = Path.Combine(targetDir, Path.GetFileName(item.FilePath));
-                File.Copy(item.FilePath, targetPath, true);
-
-                var manager = new ResourcePackTemplateManager();
-                _currentPack = manager.ReadResourcePack(_currentPack.Location);
-
-                ShowMessage($"Created override for {item.Name}", "Override Created");
-            }
-            catch (Exception ex) 
-            {
-                ShowMessage($"Failed creating override: {ex.Message}", "Error");
+                CreateOverrideForItem(item);
             }
         }
     }

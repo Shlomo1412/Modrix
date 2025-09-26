@@ -150,11 +150,14 @@
                                         <DataTemplate>
                                             <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
                                                     CornerRadius="8" Margin="4" Padding="8" Width="120" Height="140"
-                                                    ToolTip="{Binding Name}">
+                                                    ToolTip="{Binding Name}"
+                                                    MouseLeftButtonDown="ModelItem_MouseLeftButtonDown">
                                                 <Border.ContextMenu>
                                                     <ContextMenu>
-                                                        <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateOverride_Click"/>
-                                                        <MenuItem Header="View JSON" Tag="{Binding}" Click="ViewJson_Click"/>
+                                                        <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateOverride_Click"
+                                                                  Icon="{ui:SymbolIcon Add24}"/>
+                                                        <MenuItem Header="View JSON" Tag="{Binding}" Click="ViewJson_Click"
+                                                                  Icon="{ui:SymbolIcon DocumentText24}"/>
                                                     </ContextMenu>
                                                 </Border.ContextMenu>
                                                 <Grid>
@@ -185,31 +188,44 @@
 
                             <!-- List View -->
                             <Grid x:Name="ListView" Visibility="Collapsed">
-                                <ListView x:Name="ModelsList" 
-                                         Background="Transparent" 
-                                         BorderThickness="0">
-                                    <ListView.View>
-                                        <GridView>
-                                            <GridViewColumn Header="Name" Width="200" DisplayMemberBinding="{Binding Name}"/>
-                                            <GridViewColumn Header="Category" Width="100" DisplayMemberBinding="{Binding Category}"/>
-                                            <GridViewColumn Header="Size" Width="80" DisplayMemberBinding="{Binding Size}"/>
-                                            <GridViewColumn Header="Actions" Width="120">
-                                                <GridViewColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <ui:Button Content="Override" Tag="{Binding}" 
-                                                                      Click="CreateOverride_Click" 
-                                                                      Padding="8,4" Height="28" Margin="0,0,4,0"/>
-                                                            <ui:Button Content="View" Tag="{Binding}" 
-                                                                      Click="ViewJson_Click" 
-                                                                      Padding="8,4" Height="28"/>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </GridViewColumn.CellTemplate>
-                                            </GridViewColumn>
-                                        </GridView>
-                                    </ListView.View>
-                                </ListView>
+                                <ui:DataGrid x:Name="ModelsList" 
+                                            Background="Transparent" 
+                                            BorderThickness="0"
+                                            MouseLeftButtonDown="ModelItem_MouseLeftButtonDown"
+                                            AutoGenerateColumns="False"
+                                            CanUserAddRows="False"
+                                            CanUserDeleteRows="False"
+                                            CanUserResizeRows="False"
+                                            GridLinesVisibility="None"
+                                            HeadersVisibility="Column">
+                                    <ui:DataGrid.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Create Override" Tag="{Binding}" Click="CreateOverride_Click"
+                                                      Icon="{ui:SymbolIcon Add24}"/>
+                                            <MenuItem Header="View JSON" Tag="{Binding}" Click="ViewJson_Click"
+                                                      Icon="{ui:SymbolIcon DocumentText24}"/>
+                                        </ContextMenu>
+                                    </ui:DataGrid.ContextMenu>
+                                    <ui:DataGrid.Columns>
+                                        <DataGridTextColumn Header="Name" Width="200" Binding="{Binding Name}"/>
+                                        <DataGridTextColumn Header="Category" Width="100" Binding="{Binding Category}"/>
+                                        <DataGridTextColumn Header="Size" Width="80" Binding="{Binding Size}"/>
+                                        <DataGridTemplateColumn Header="Actions" Width="120">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <ui:Button Content="Override" Tag="{Binding}" 
+                                                                  Click="CreateOverride_Click" 
+                                                                  Padding="8,4" Height="28" Margin="0,0,4,0"/>
+                                                        <ui:Button Content="View" Tag="{Binding}" 
+                                                                  Click="ViewJson_Click" 
+                                                                  Padding="8,4" Height="28"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </ui:DataGrid.Columns>
+                                </ui:DataGrid>
                             </Grid>
 
                             <!-- Empty State -->
