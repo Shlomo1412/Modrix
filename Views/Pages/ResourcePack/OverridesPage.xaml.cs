@@ -682,6 +682,14 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
+        private void ModelOverride_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2 && sender is Border b && b.DataContext is ModelOverrideItem item)
+            {
+                OpenModelOverrideEditor(item);
+            }
+        }
+
         private void OpenTextureOverride_Click(object sender, RoutedEventArgs e)
         {
             if (sender is System.Windows.Controls.MenuItem mi && mi.Tag is TextureOverrideItem item)
