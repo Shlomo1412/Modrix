@@ -210,7 +210,7 @@ namespace Modrix.Views.Pages
                 // Create a close button
                 var closeButton = new Button
                 {
-                    Content = "✕",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Dismiss24 },
                     Width = 22,
                     Height = 22,
                     Margin = new Thickness(4, 0, 0, 0),
@@ -979,8 +979,8 @@ namespace Modrix.Views.Pages
                 // Create a close button
                 var closeButton = new Button
                 {
-                    Content = "✕",
-                    Width = 22,
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Dismiss24 },
+                    Width = 22, 
                     Height = 22,
                     Margin = new Thickness(4, 0, 0, 0),
                     Padding = new Thickness(0),

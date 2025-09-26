@@ -5,14 +5,19 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Modrix.Services;
 using Modrix.Views.Windows;
+using Modrix.ViewModels.Pages;
 using Wpf.Ui.Controls;
 using Wpf.Ui.Abstractions.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
 using WpfButton = System.Windows.Controls.Button;
 using UiButton = Wpf.Ui.Controls.Button;
+using SystemMenuItem = System.Windows.Controls.MenuItem;
+using SystemTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Modrix.Views.Pages.ResourcePack
 {
@@ -494,26 +499,14 @@ namespace Modrix.Views.Pages.ResourcePack
 
         private void EditTextureOverride_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not WpfButton button || button.Tag is not TextureOverrideItem item)
-                return;
+            WpfButton? button = sender as WpfButton;
+            SystemMenuItem? mi = sender as SystemMenuItem;
+            var item = (button?.Tag ?? mi?.Tag) as TextureOverrideItem;
+            if (item == null) return;
 
             try
             {
-                // Open texture in texture editor
-                var editorVm = new ViewModels.Pages.TextureEditorViewModel();
-                var editorPage = new TextureEditorPage(editorVm);
-                editorVm.SetPngPath(item.OverridePath);
-
-                var editorWindow = new Window
-                {
-                    Title = $"Edit Texture - {item.Name}",
-                    Content = editorPage,
-                    Width = 800,
-                    Height = 600,
-                    Owner = Window.GetWindow(this)
-                };
-                
-                editorWindow.Show();
+                OpenTextureInEditor(item.OverridePath, item.Name);
             }
             catch (Exception ex)
             {
@@ -521,46 +514,155 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
-        private void EditTranslationOverride_Click(object sender, RoutedEventArgs e)
+        private void OpenTextureInEditor(string filePath, string fileName)
         {
-            if (sender is not WpfButton button || button.Tag is not TranslationOverrideItem item)
-                return;
-
             try
             {
-                // Open translation file in external editor
-                Process.Start(new ProcessStartInfo
+                if (!File.Exists(filePath))
                 {
-                    FileName = item.OverridePath,
-                    UseShellExecute = true
-                });
+                    ShowMessage("Texture file not found.", "Error");
+                    return;
+                }
+
+                // Find the parent TabControl (should be OverrideTabs)
+                var parentTabControl = this.FindName("OverrideTabs") as TabControl;
+                if (parentTabControl == null)
+                {
+                    // Fallback to external editor if we can't find the tab control
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = filePath,
+                        UseShellExecute = true
+                    });
+                    return;
+                }
+
+                // Check if a tab for this texture is already open
+                TabItem existingTab = null;
+                foreach (var item in parentTabControl.Items)
+                {
+                    if (item is TabItem tabItem && tabItem.Header is StackPanel existingHeaderPanel)
+                    {
+                        foreach (var child in existingHeaderPanel.Children)
+                        {
+                            if (child is SystemTextBlock tb && tb.Text == $"Edit: {fileName}")
+                            {
+                                existingTab = tabItem;
+                                break;
+                            }
+                        }
+                    }
+                    if (existingTab != null) break;
+                }
+                
+                if (existingTab != null)
+                {
+                    // Tab already open, just select it
+                    parentTabControl.SelectedItem = existingTab;
+                    return;
+                }
+                
+                // Create the editor page
+                var editorVm = new TextureEditorViewModel();
+                var editorPage = new TextureEditorPage(editorVm);
+                editorVm.SetPngPath(filePath);
+
+                // Create a Frame to host the page
+                var frame = new Frame();
+                frame.Navigate(editorPage);
+
+                // Create a close button
+                var closeButton = new UiButton
+                {
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Dismiss24 },
+                    Width = 22,
+                    Height = 22,
+                    Margin = new Thickness(4, 0, 0, 0),
+                    Padding = new Thickness(0),
+                    Background = Brushes.Transparent,
+                    BorderBrush = Brushes.Transparent,
+                    Cursor = Cursors.Hand,
+                    ToolTip = "Close"
+                };
+
+                // Create the header with icon, text, and close button
+                var headerPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Children =
+                    {
+                        new SymbolIcon
+                        {
+                            Symbol = Wpf.Ui.Controls.SymbolRegular.ImageEdit24,
+                            Margin = new Thickness(0, 0, 4, 0)
+                        },
+                        new SystemTextBlock
+                        {
+                            Text = $"Edit: {fileName}",
+                            VerticalAlignment = VerticalAlignment.Center
+                        },
+                        closeButton
+                    }
+                };
+
+                // Create a new tab
+                var tab = new TabItem
+                {
+                    Header = headerPanel,
+                    Content = frame
+                };
+
+                // ContextMenu for tab
+                var contextMenu = new ContextMenu();
+                var openInWindowMenuItem = new SystemMenuItem
+                {
+                    Header = "Open as a New Window",
+                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Open24)
+                };
+                openInWindowMenuItem.Click += (s, e) => OpenTabAsWindow(tab, parentTabControl);
+                contextMenu.Items.Add(openInWindowMenuItem);
+                tab.ContextMenu = contextMenu;
+
+                // Close button event
+                closeButton.Click += (s, e) =>
+                {
+                    parentTabControl.Items.Remove(tab);
+                };
+
+                // Add and select the new tab
+                parentTabControl.Items.Add(tab);
+                parentTabControl.SelectedItem = tab;
             }
             catch (Exception ex)
             {
-                ShowMessage($"Failed to open translation file: {ex.Message}", "Error");
+                ShowMessage($"Error opening texture editor: {ex.Message}", "Error");
             }
         }
 
-        private void EditModelOverride_Click(object sender, RoutedEventArgs e)
+        private void OpenTabAsWindow(TabItem tabItem, TabControl parentTabControl)
         {
-            WpfButton? button = sender as WpfButton;
-            System.Windows.Controls.MenuItem? mi = sender as System.Windows.Controls.MenuItem;
-            var item = (button?.Tag ?? mi?.Tag) as ModelOverrideItem;
-            if (item == null) return;
-
-            try
+            if (tabItem == null) return;
+            
+            parentTabControl.Items.Remove(tabItem);
+            
+            // Extract the title from the header
+            var title = "Detached Tab";
+            if (tabItem.Header is StackPanel windowHeaderPanel)
             {
-                // Open JSON file in external editor
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = item.OverridePath,
-                    UseShellExecute = true
-                });
+                var textBlock = windowHeaderPanel.Children.OfType<SystemTextBlock>().FirstOrDefault();
+                if (textBlock != null)
+                    title = textBlock.Text;
             }
-            catch (Exception ex)
+            
+            var newWindow = new Window
             {
-                ShowMessage($"Failed to open model editor: {ex.Message}", "Error");
-            }
+                Title = title,
+                Content = tabItem.Content,
+                Width = 800,
+                Height = 600,
+                Owner = Window.GetWindow(this)
+            };
+            newWindow.Show();
         }
 
         private async void RemoveTextureOverride_Click(object sender, RoutedEventArgs e)
@@ -664,6 +766,28 @@ namespace Modrix.Views.Pages.ResourcePack
                 {
                     ShowMessage($"Failed to remove model override: {ex.Message}", "Error");
                 }
+            }
+        }
+
+        private void EditModelOverride_Click(object sender, RoutedEventArgs e)
+        {
+            WpfButton? button = sender as WpfButton;
+            SystemMenuItem? mi = sender as SystemMenuItem;
+            var item = (button?.Tag ?? mi?.Tag) as ModelOverrideItem;
+            if (item == null) return;
+
+            try
+            {
+                // Open JSON file in external editor
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = item.OverridePath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Failed to open model editor: {ex.Message}", "Error");
             }
         }
 

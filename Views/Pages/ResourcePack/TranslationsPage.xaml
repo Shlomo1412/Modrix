@@ -147,6 +147,7 @@
                                                 CanUserAddRows="False"
                                                 CanUserDeleteRows="False"
                                                 CanUserResizeRows="False"
+                                                IsReadOnly="True"
                                                 GridLinesVisibility="None"
                                                 HeadersVisibility="Column">
                                         <ui:DataGrid.ContextMenu>
@@ -156,8 +157,8 @@
                                             </ContextMenu>
                                         </ui:DataGrid.ContextMenu>
                                         <ui:DataGrid.Columns>
-                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}"/>
-                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}"/>
+                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}" IsReadOnly="True"/>
                                             <DataGridTemplateColumn Header="Actions" Width="80">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
@@ -180,6 +181,7 @@
                                                 CanUserAddRows="False"
                                                 CanUserDeleteRows="False"
                                                 CanUserResizeRows="False"
+                                                IsReadOnly="True"
                                                 GridLinesVisibility="None"
                                                 HeadersVisibility="Column">
                                         <ui:DataGrid.ContextMenu>
@@ -189,8 +191,8 @@
                                             </ContextMenu>
                                         </ui:DataGrid.ContextMenu>
                                         <ui:DataGrid.Columns>
-                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}"/>
-                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}"/>
+                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}" IsReadOnly="True"/>
                                             <DataGridTemplateColumn Header="Actions" Width="80">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
@@ -213,6 +215,7 @@
                                                 CanUserAddRows="False"
                                                 CanUserDeleteRows="False"
                                                 CanUserResizeRows="False"
+                                                IsReadOnly="True"
                                                 GridLinesVisibility="None"
                                                 HeadersVisibility="Column">
                                         <ui:DataGrid.ContextMenu>
@@ -222,8 +225,8 @@
                                             </ContextMenu>
                                         </ui:DataGrid.ContextMenu>
                                         <ui:DataGrid.Columns>
-                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}"/>
-                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}"/>
+                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}" IsReadOnly="True"/>
                                             <DataGridTemplateColumn Header="Actions" Width="80">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
@@ -246,6 +249,7 @@
                                                 CanUserAddRows="False"
                                                 CanUserDeleteRows="False"
                                                 CanUserResizeRows="False"
+                                                IsReadOnly="True"
                                                 GridLinesVisibility="None"
                                                 HeadersVisibility="Column">
                                         <ui:DataGrid.ContextMenu>
@@ -255,8 +259,8 @@
                                             </ContextMenu>
                                         </ui:DataGrid.ContextMenu>
                                         <ui:DataGrid.Columns>
-                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}"/>
-                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}"/>
+                                            <DataGridTextColumn Header="Key" Width="200" Binding="{Binding Key}" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="Value" Width="250" Binding="{Binding Value}" IsReadOnly="True"/>
                                             <DataGridTemplateColumn Header="Actions" Width="80">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>

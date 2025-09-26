@@ -19,6 +19,7 @@ using SystemImage = System.Windows.Controls.Image;
 using SystemTextBlock = System.Windows.Controls.TextBlock;
 using SystemButton = System.Windows.Controls.Button;
 using SystemMenuItem = System.Windows.Controls.MenuItem;
+using System.Windows.Media;
 
 namespace Modrix.Views.Pages
 {
@@ -197,8 +198,19 @@ namespace Modrix.Views.Pages
                     new SystemTextBlock { Text = generator.Name, VerticalAlignment = VerticalAlignment.Center }
                 }
             };
-            
-            var closeButton = new SystemButton { Content = "×", Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(4,0,0,0) };
+
+            var closeButton = new Wpf.Ui.Controls.Button
+            {
+                Icon = new SymbolIcon { Symbol = SymbolRegular.Dismiss24 },
+                Width = 22,
+                Height = 22,
+                Margin = new Thickness(4, 0, 0, 0),
+                Padding = new Thickness(0),
+                Background = Brushes.Transparent,
+                BorderBrush = Brushes.Transparent,
+                Cursor = Cursors.Hand,
+                ToolTip = "Close"
+            };
             header.Children.Add(closeButton);
             
             // ContextMenu for tab
@@ -251,8 +263,19 @@ namespace Modrix.Views.Pages
                         new SystemTextBlock { Text = $"Edit: {itemData.Name}", VerticalAlignment = VerticalAlignment.Center }
                     }
                 };
-                
-                var closeButton = new SystemButton { Content = "×", Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(4,0,0,0) };
+
+                var closeButton = new Wpf.Ui.Controls.Button
+                {
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Dismiss24 },
+                    Width = 22,
+                    Height = 22,
+                    Margin = new Thickness(4, 0, 0, 0),
+                    Padding = new Thickness(0),
+                    Background = Brushes.Transparent,
+                    BorderBrush = Brushes.Transparent,
+                    Cursor = Cursors.Hand,
+                    ToolTip = "Close"
+                };
                 header.Children.Add(closeButton);
                 
                 // ContextMenu for tab
