@@ -67,6 +67,13 @@ namespace Modrix.ViewModels.Windows
                 },
                 new NavigationViewItem()
                 {
+                    Content = "Models",
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Cube24 },
+                    TargetPageType = typeof(Views.Pages.ResourcePack.ModelsPage),
+                    ToolTip = "Browse and edit Minecraft models"
+                },
+                new NavigationViewItem()
+                {
                     Content = "Properties",
                     Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
                     TargetPageType = typeof(Views.Pages.ResourcePack.PropertiesPage),

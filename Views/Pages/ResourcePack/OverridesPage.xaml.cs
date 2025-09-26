@@ -23,6 +23,7 @@ namespace Modrix.Views.Pages.ResourcePack
         private ResourcePackData? _currentPack;
         private List<TextureOverrideItem> _allTextureOverrides = new();
         private List<TranslationOverrideItem> _allTranslationOverrides = new();
+        private List<ModelOverrideItem> _allModelOverrides = new();
         
         public OverridesPage()
         {
@@ -63,6 +64,7 @@ namespace Modrix.Views.Pages.ResourcePack
 
             LoadTextureOverrides();
             LoadTranslationOverrides();
+            LoadModelOverrides();
             UpdateEmptyStates();
         }
 
@@ -169,6 +171,44 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
+        private void LoadModelOverrides()
+        {
+            _allModelOverrides.Clear();
+
+            if (_currentPack?.Overrides == null) return;
+
+            var modelOverrides = _currentPack.Overrides
+                .Where(o => o.Type == OverrideType.Model)
+                .ToList();
+
+            foreach (var override_ in modelOverrides)
+            {
+                try
+                {
+                    var item = new ModelOverrideItem
+                    {
+                        Name = Path.GetFileNameWithoutExtension(override_.OverridePath),
+                        Category = override_.Category,
+                        OriginalPath = override_.OriginalPath,
+                        OverridePath = override_.OverridePath
+                    };
+
+                    _allModelOverrides.Add(item);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error loading model override: {ex.Message}");
+                }
+            }
+
+            // Update UI using FindName to avoid null reference
+            var modelOverridesList = this.FindName("ModelOverridesList") as ItemsControl;
+            if (modelOverridesList != null)
+            {
+                modelOverridesList.ItemsSource = _allModelOverrides;
+            }
+        }
+
         private int CountJsonKeys(System.Text.Json.JsonElement element)
         {
             if (element.ValueKind == System.Text.Json.JsonValueKind.Object)
@@ -200,6 +240,7 @@ namespace Modrix.Views.Pages.ResourcePack
             // Find empty state controls by name
             var textureEmptyState = this.FindName("TextureEmptyState") as FrameworkElement;
             var translationEmptyState = this.FindName("TranslationEmptyState") as FrameworkElement;
+            var modelEmptyState = this.FindName("ModelEmptyState") as FrameworkElement;
             
             if (textureEmptyState != null)
                 textureEmptyState.Visibility = _allTextureOverrides.Count == 0 ? 
@@ -207,6 +248,10 @@ namespace Modrix.Views.Pages.ResourcePack
                     
             if (translationEmptyState != null)
                 translationEmptyState.Visibility = _allTranslationOverrides.Count == 0 ? 
+                    Visibility.Visible : Visibility.Collapsed;
+
+            if (modelEmptyState != null)
+                modelEmptyState.Visibility = _allModelOverrides.Count == 0 ? 
                     Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -218,6 +263,11 @@ namespace Modrix.Views.Pages.ResourcePack
         private void TranslationSearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             FilterTranslationOverrides();
+        }
+
+        private void ModelSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            FilterModelOverrides();
         }
 
         private void FilterTextureOverrides()
@@ -264,6 +314,28 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
+        private void FilterModelOverrides()
+        {
+            var searchBox = this.FindName("ModelSearchBox") as Wpf.Ui.Controls.TextBox;
+            var modelOverridesList = this.FindName("ModelOverridesList") as ItemsControl;
+            var query = searchBox?.Text?.ToLowerInvariant() ?? "";
+            
+            if (modelOverridesList == null) return;
+            
+            if (string.IsNullOrEmpty(query))
+            {
+                modelOverridesList.ItemsSource = _allModelOverrides;
+            }
+            else
+            {
+                var filtered = _allModelOverrides.Where(item =>
+                    item.Name.ToLowerInvariant().Contains(query) ||
+                    item.Category.ToLowerInvariant().Contains(query)).ToList();
+                    
+                modelOverridesList.ItemsSource = filtered;
+            }
+        }
+
         private async void ImportTexture_Click(object sender, RoutedEventArgs e)
         {
             if (_currentPack == null) return;
@@ -305,6 +377,51 @@ namespace Modrix.Views.Pages.ResourcePack
                 catch (Exception ex)
                 {
                     ShowMessage($"Failed to import texture: {ex.Message}", "Error");
+                }
+            }
+        }
+
+        private async void ImportModel_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null) return;
+
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Import Model Override",
+                Filter = "JSON Files|*.json|All Files|*.*",
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var sourceFile = dialog.FileName;
+                    var fileName = Path.GetFileName(sourceFile);
+                    
+                    // Let user choose the category/destination
+                    var categoryDialog = new ModelCategoryDialog();
+                    if (categoryDialog.ShowDialog() == true)
+                    {
+                        var category = categoryDialog.SelectedCategory;
+                        var targetDir = Path.Combine(_currentPack.Location, "overrides", "models", category);
+                        Directory.CreateDirectory(targetDir);
+                        
+                        var targetFile = Path.Combine(targetDir, fileName);
+                        File.Copy(sourceFile, targetFile, true);
+                        
+                        // Refresh the pack data
+                        var manager = new ResourcePackTemplateManager();
+                        _currentPack = manager.ReadResourcePack(_currentPack.Location);
+                        
+                        RefreshOverrides();
+                        
+                        ShowMessage("Model imported successfully", "Success");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage($"Failed to import model: {ex.Message}", "Error");
                 }
             }
         }
@@ -361,6 +478,15 @@ namespace Modrix.Views.Pages.ResourcePack
             Process.Start("explorer.exe", translationsDir);
         }
 
+        private void OpenModelsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null) return;
+            
+            var modelsDir = Path.Combine(_currentPack.Location, "overrides", "models");
+            Directory.CreateDirectory(modelsDir);
+            Process.Start("explorer.exe", modelsDir);
+        }
+
         private void EditTextureOverride_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not WpfButton button || button.Tag is not TextureOverrideItem item)
@@ -407,6 +533,28 @@ namespace Modrix.Views.Pages.ResourcePack
             catch (Exception ex)
             {
                 ShowMessage($"Failed to open translation file: {ex.Message}", "Error");
+            }
+        }
+
+        private void EditModelOverride_Click(object sender, RoutedEventArgs e)
+        {
+            WpfButton? button = sender as WpfButton;
+            System.Windows.Controls.MenuItem? mi = sender as System.Windows.Controls.MenuItem;
+            var item = (button?.Tag ?? mi?.Tag) as ModelOverrideItem;
+            if (item == null) return;
+
+            try
+            {
+                // Open JSON file in external editor
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = item.OverridePath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Failed to open model editor: {ex.Message}", "Error");
             }
         }
 
@@ -478,6 +626,42 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
+        private async void RemoveModelOverride_Click(object sender, RoutedEventArgs e)
+        {
+            WpfButton? button = sender as WpfButton;
+            System.Windows.Controls.MenuItem? mi = sender as System.Windows.Controls.MenuItem;
+            var item = (button?.Tag ?? mi?.Tag) as ModelOverrideItem;
+            if (item == null) return;
+
+            var result = await new MessageBox
+            {
+                Title = "Remove Override",
+                Content = $"Are you sure you want to remove the model override '{item.Name}'?",
+                PrimaryButtonText = "Remove",
+                CloseButtonText = "Cancel"
+            }.ShowDialogAsync();
+
+            if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
+            {
+                try
+                {
+                    File.Delete(item.OverridePath);
+                    
+                    // Refresh the pack data
+                    var manager = new ResourcePackTemplateManager();
+                    _currentPack = manager.ReadResourcePack(_currentPack.Location);
+                    
+                    RefreshOverrides();
+                    
+                    ShowMessage("Model override removed", "Success");
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage($"Failed to remove model override: {ex.Message}", "Error");
+                }
+            }
+        }
+
         private async void ShowMessage(string message, string title)
         {
             var msgBox = new MessageBox
@@ -518,6 +702,14 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
+        private void OpenModelOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.MenuItem mi && mi.Tag is ModelOverrideItem item)
+                OpenModelOverrideEditor(item);
+            else if (sender is WpfButton btn && btn.Tag is ModelOverrideItem item2)
+                OpenModelOverrideEditor(item2);
+        }
+
         private void OpenTextureOverrideViewer(TextureOverrideItem item)
         {
             try
@@ -545,6 +737,23 @@ namespace Modrix.Views.Pages.ResourcePack
             catch (Exception ex)
             {
                 ShowMessage($"Failed to open viewer: {ex.Message}", "Error");
+            }
+        }
+
+        private void OpenModelOverrideEditor(ModelOverrideItem item)
+        {
+            try
+            {
+                // For now, just open in external editor
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = item.OverridePath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Failed to open model editor: {ex.Message}", "Error");
             }
         }
 
@@ -616,6 +825,14 @@ namespace Modrix.Views.Pages.ResourcePack
             public string OverridePath { get; set; } = "";
             public int KeyCount { get; set; }
         }
+
+        public class ModelOverrideItem
+        {
+            public string Name { get; set; } = "";
+            public string Category { get; set; } = "";
+            public string OriginalPath { get; set; } = "";
+            public string OverridePath { get; set; } = "";
+        }
     }
 
     // Simple dialog for texture category selection
@@ -667,6 +884,147 @@ namespace Modrix.Views.Pages.ResourcePack
             okButton.Click += (s, e) =>
             {
                 SelectedCategory = comboBox.SelectedItem?.ToString() ?? "item";
+                DialogResult = true;
+            };
+
+            var cancelButton = new Wpf.Ui.Controls.Button 
+            { 
+                Content = "Cancel",
+                Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary
+            };
+            cancelButton.Click += (s, e) => DialogResult = false;
+
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            stackPanel.Children.Add(comboBox);
+            stackPanel.Children.Add(buttonPanel);
+
+            Content = stackPanel;
+        }
+    }
+
+    // New model category dialog
+    public partial class ModelCategoryDialog : FluentWindow
+    {
+        public string SelectedCategory { get; private set; } = "generic";
+
+        public ModelCategoryDialog()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            Title = "Select Model Category";
+            Width = 400;
+            Height = 300;
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            var stackPanel = new StackPanel { Margin = new Thickness(20) };
+            
+            stackPanel.Children.Add(new System.Windows.Controls.TextBlock 
+            { 
+                Text = "Select the category for this model override:",
+                FontSize = 16,
+                Margin = new Thickness(0, 0, 0, 16)
+            });
+
+            var categories = new[] { "generic", "armor", "dungeon", "ship", "vehicle" };
+            var comboBox = new ComboBox 
+            { 
+                ItemsSource = categories,
+                SelectedIndex = 0,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+
+            var buttonPanel = new StackPanel 
+            { 
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+
+            var okButton = new Wpf.Ui.Controls.Button 
+            { 
+                Content = "OK", 
+                Appearance = Wpf.Ui.Controls.ControlAppearance.Primary,
+                Margin = new Thickness(0, 0, 8, 0)
+            };
+            okButton.Click += (s, e) =>
+            {
+                SelectedCategory = comboBox.SelectedItem?.ToString() ?? "generic";
+                DialogResult = true;
+            };
+
+            var cancelButton = new Wpf.Ui.Controls.Button 
+            { 
+                Content = "Cancel",
+                Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary
+            };
+            cancelButton.Click += (s, e) => DialogResult = false;
+
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            stackPanel.Children.Add(comboBox);
+            stackPanel.Children.Add(buttonPanel);
+
+            Content = stackPanel;
+        }
+    }
+
+    // Simple dialog for translation creation
+    public partial class CreateTranslationDialog : FluentWindow
+    {
+        public string LanguageCode { get; private set; } = "en_us";
+
+        public CreateTranslationDialog()
+        {
+            InitializeComponent();
+        }
+
+        private void InitializeComponent()
+        {
+            Title = "Create Translation Override";
+            Width = 400;
+            Height = 300;
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+
+            var stackPanel = new StackPanel { Margin = new Thickness(20) };
+            
+            stackPanel.Children.Add(new System.Windows.Controls.TextBlock 
+            { 
+                Text = "Select the language for this translation override:",
+                FontSize = 16,
+                Margin = new Thickness(0, 0, 0, 16)
+            });
+
+            var languages = new[] { 
+                "en_us", "en_gb", "de_de", "fr_fr", "es_es", "it_it", 
+                "ja_jp", "ko_kr", "zh_cn", "zh_tw", "ru_ru", "pt_br" 
+            };
+            var comboBox = new ComboBox 
+            { 
+                ItemsSource = languages,
+                SelectedIndex = 0,
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+
+            var buttonPanel = new StackPanel 
+            { 
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+
+            var okButton = new Wpf.Ui.Controls.Button 
+            { 
+                Content = "Create", 
+                Appearance = Wpf.Ui.Controls.ControlAppearance.Primary,
+                Margin = new Thickness(0, 0, 8, 0)
+            };
+            okButton.Click += (s, e) =>
+            {
+                LanguageCode = comboBox.SelectedItem?.ToString() ?? "en_us";
                 DialogResult = true;
             };
 

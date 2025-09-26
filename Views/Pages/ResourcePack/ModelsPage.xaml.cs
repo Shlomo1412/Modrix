@@ -1,0 +1,388 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using Modrix.Services;
+using Modrix.Views.Windows;
+using Wpf.Ui.Abstractions.Controls;
+using Wpf.Ui.Controls;
+
+namespace Modrix.Views.Pages.ResourcePack
+{
+    public partial class ModelsPage : System.Windows.Controls.Page, INavigableView<object>
+    {
+        public object ViewModel => this;
+        
+        private ResourcePackData? _currentPack;
+        private List<ModelCategory> _categories = new();
+        private List<ModelItem> _allModels = new();
+        private List<ModelItem> _filteredModels = new();
+        private bool _isGridView = true;
+        private MinecraftAssetExtractor? _assetExtractor;
+
+        public ModelsPage()
+        {
+            try
+            {
+                InitializeComponent();
+                DataContext = this;
+                
+                // Get asset extractor from DI container
+                _assetExtractor = App.Services.GetService(typeof(MinecraftAssetExtractor)) as MinecraftAssetExtractor;
+                
+                LoadCurrentPack();
+                LoadCategories();
+                LoadModels();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ModelsPage constructor error: {ex.Message}");
+                throw;
+            }
+        }
+
+        private void LoadCurrentPack()
+        {
+            var workspace = Application.Current.Windows
+                .OfType<ResourcePackWorkspace>()
+                .FirstOrDefault();
+
+            if (workspace?.ViewModel?.CurrentPack != null)
+            {
+                _currentPack = workspace.ViewModel.CurrentPack;
+            }
+        }
+
+        private void LoadCategories()
+        {
+            _categories = new List<ModelCategory>
+            {
+                new ModelCategory("All", Wpf.Ui.Controls.SymbolRegular.Cube20, ""),
+                new ModelCategory("Blocks", Wpf.Ui.Controls.SymbolRegular.Grid20, "block"),
+                new ModelCategory("Items", Wpf.Ui.Controls.SymbolRegular.Box20, "item")
+            };
+
+            // Update counts with actual model data
+            foreach (var category in _categories)
+            {
+                if (string.IsNullOrEmpty(category.Category))
+                {
+                    category.Count = _allModels.Count;
+                }
+                else
+                {
+                    category.Count = _allModels.Count(m => m.Category == category.Category);
+                }
+            }
+
+            CategoriesList.ItemsSource = _categories;
+            CategoriesList.SelectedIndex = 0; // Select "All" by default
+        }
+
+        private void LoadModels()
+        {
+            _allModels.Clear();
+
+            if (_currentPack == null || _assetExtractor == null) 
+            {
+                UpdateEmptyState();
+                return;
+            }
+
+            try
+            {
+                var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
+                
+                if (_assetExtractor.AreModelsAssetsAvailable(minecraftVersion))
+                {
+                    var modelsPath = _assetExtractor.GetModelsAssetsPath(minecraftVersion);
+                    LoadModelsFromDirectory(modelsPath);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Model assets not available for Minecraft {minecraftVersion}");
+                }
+
+                FilterModels();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading models: {ex.Message}");
+            }
+            finally
+            {
+                UpdateEmptyState();
+            }
+        }
+
+        private void LoadModelsFromDirectory(string modelsDir)
+        {
+            if (!Directory.Exists(modelsDir)) return;
+
+            foreach (var file in Directory.GetFiles(modelsDir, "*.json", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var relativePath = Path.GetRelativePath(modelsDir, file);
+                    var pathParts = relativePath.Split(Path.DirectorySeparatorChar);
+                    var category = pathParts.Length > 0 ? pathParts[0] : "other";
+
+                    var model = new ModelItem
+                    {
+                        Name = Path.GetFileNameWithoutExtension(file),
+                        Category = category,
+                        FilePath = file,
+                        Size = GetFileSize(file),
+                        RelativePath = relativePath.Replace('\\', '/')
+                    };
+
+                    _allModels.Add(model);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error loading model {file}: {ex.Message}");
+                }
+            }
+
+            // Update category counts
+            LoadCategories();
+        }
+
+        private string GetFileSize(string filePath)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(filePath);
+                var bytes = fileInfo.Length;
+                
+                if (bytes < 1024)
+                    return $"{bytes} B";
+                else if (bytes < 1024 * 1024)
+                    return $"{bytes / 1024:F1} KB";
+                else
+                    return $"{bytes / (1024 * 1024):F1} MB";
+            }
+            catch
+            {
+                return "Unknown";
+            }
+        }
+
+        private void UpdateDisplayMode()
+        {
+            if (_isGridView)
+            {
+                GridView.Visibility = Visibility.Visible;
+                ListView.Visibility = Visibility.Collapsed;
+                ViewModeButton.Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.GridDots24);
+                ViewModeButton.ToolTip = "Switch to list view";
+            }
+            else
+            {
+                GridView.Visibility = Visibility.Collapsed;
+                ListView.Visibility = Visibility.Visible;
+                ViewModeButton.Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.List24);
+                ViewModeButton.ToolTip = "Switch to grid view";
+            }
+
+            UpdateModels();
+        }
+
+        private void UpdateEmptyState()
+        {
+            var hasModels = _filteredModels.Count > 0;
+            EmptyState.Visibility = hasModels ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void FilterModels()
+        {
+            var selectedCategory = CategoriesList?.SelectedItem as ModelCategory;
+            var searchQuery = SearchBox?.Text?.ToLowerInvariant() ?? "";
+
+            _filteredModels = _allModels.Where(model =>
+            {
+                var matchesCategory = selectedCategory == null || 
+                                     string.IsNullOrEmpty(selectedCategory.Category) ||
+                                     model.Category == selectedCategory.Category;
+
+                var matchesSearch = string.IsNullOrEmpty(searchQuery) ||
+                                   model.Name.ToLowerInvariant().Contains(searchQuery) ||
+                                   model.Category.ToLowerInvariant().Contains(searchQuery);
+
+                return matchesCategory && matchesSearch;
+            }).ToList();
+
+            UpdateModels();
+            UpdateEmptyState();
+        }
+
+        private void UpdateModels()
+        {
+            if (_isGridView)
+            {
+                ModelsGrid.ItemsSource = _filteredModels;
+            }
+            else
+            {
+                ModelsList.ItemsSource = _filteredModels;
+            }
+        }
+
+        // Event handlers
+        public void CategoriesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            FilterModels();
+        }
+
+        public void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            FilterModels();
+        }
+
+        public void ViewModeButton_Click(object sender, RoutedEventArgs e)
+        {
+            _isGridView = !_isGridView;
+            UpdateDisplayMode();
+        }
+
+        public void RefreshModels_Click(object sender, RoutedEventArgs e)
+        {
+            LoadModels();
+            FilterModels();
+        }
+
+        public async void CreateOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null) return;
+            System.Windows.Controls.MenuItem? mi = sender as System.Windows.Controls.MenuItem;
+            Wpf.Ui.Controls.Button? btn = sender as Wpf.Ui.Controls.Button;
+            
+            var item = (mi?.Tag ?? btn?.Tag) as ModelItem;
+            if (item == null) return;
+
+            try
+            {
+                var overridesRoot = Path.Combine(_currentPack.Location, "overrides", "models");
+                var relative = item.RelativePath.Replace('\\','/');
+                var parts = relative.Split('/');
+                string category = parts.Length > 1 ? parts[0] : "misc";
+                var targetDir = Path.Combine(overridesRoot, category);
+                Directory.CreateDirectory(targetDir);
+                var targetPath = Path.Combine(targetDir, Path.GetFileName(item.FilePath));
+                File.Copy(item.FilePath, targetPath, true);
+
+                var manager = new ResourcePackTemplateManager();
+                _currentPack = manager.ReadResourcePack(_currentPack.Location);
+
+                ShowMessage($"Created override for {item.Name}", "Override Created");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Failed creating override: {ex.Message}", "Error");
+            }
+        }
+
+        public void ViewJson_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Controls.MenuItem? mi = sender as System.Windows.Controls.MenuItem;
+            Wpf.Ui.Controls.Button? btn = sender as Wpf.Ui.Controls.Button;
+            
+            var item = (mi?.Tag ?? btn?.Tag) as ModelItem;
+            if (item == null) return;
+
+            try
+            {
+                // Open JSON file in external editor for now
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = item.FilePath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Failed to open model: {ex.Message}", "Error");
+            }
+        }
+
+        private async void ExtractAssets_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null || _assetExtractor == null) return;
+
+            var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
+            
+            // Show progress dialog
+            var progressDialog = new AssetExtractionProgressDialog();
+            progressDialog.Owner = Window.GetWindow(this);
+            
+            var progress = new Progress<string>(status => 
+            {
+                progressDialog.UpdateStatus(status);
+            });
+
+            progressDialog.Show();
+
+            try
+            {
+                var success = await _assetExtractor.ExtractAssetsForVersion(minecraftVersion, progress);
+                
+                if (success)
+                {
+                    progressDialog.Close();
+                    LoadModels();
+                    FilterModels();
+                    ShowMessage($"Successfully extracted assets for Minecraft {minecraftVersion}!", "Extraction Complete");
+                }
+                else
+                {
+                    progressDialog.Close();
+                    ShowMessage($"Failed to extract assets for Minecraft {minecraftVersion}. Please check your internet connection and try again.", "Extraction Failed");
+                }
+            }
+            catch (Exception ex)
+            {
+                progressDialog.Close();
+                ShowMessage($"Error during asset extraction: {ex.Message}", "Error");
+            }
+        }
+
+        private async void ShowMessage(string message, string title)
+        {
+            var msgBox = new Wpf.Ui.Controls.MessageBox
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = "OK"
+            };
+            await msgBox.ShowDialogAsync();
+        }
+
+        // Helper classes
+        public class ModelCategory
+        {
+            public string Name { get; set; }
+            public Wpf.Ui.Controls.SymbolRegular Icon { get; set; }
+            public string Category { get; set; }
+            public int Count { get; set; }
+
+            public ModelCategory(string name, Wpf.Ui.Controls.SymbolRegular icon, string category)
+            {
+                Name = name;
+                Icon = icon;
+                Category = category;
+                Count = 0;
+            }
+        }
+
+        public class ModelItem
+        {
+            public string Name { get; set; } = "";
+            public string Category { get; set; } = "";
+            public string FilePath { get; set; } = "";
+            public string RelativePath { get; set; } = "";
+            public string Size { get; set; } = "";
+        }
+    }
+}

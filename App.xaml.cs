@@ -86,6 +86,9 @@ namespace Modrix
                 services.AddTransient<Views.Pages.ResourcePack.PropertiesPage>();
 
                 //Resources Page
+                services.AddTransient<Views.Pages.ResourcePack.ModelsPage>();
+
+                // Models Page
                 services.AddTransient<ResourcesPageViewModel>();
                 services.AddTransient<ResourcesPage>();
 

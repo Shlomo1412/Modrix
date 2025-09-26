@@ -496,6 +496,23 @@ Created with Modrix on {DateTime.Now:yyyy-MM-dd}
                 }
             }
 
+            // Scan model overrides
+            var modelsPath = Path.Combine(overridesPath, "models");
+            if (Directory.Exists(modelsPath))
+            {
+                foreach (var file in Directory.GetFiles(modelsPath, "*.json", SearchOption.AllDirectories))
+                {
+                    var relativePath = Path.GetRelativePath(modelsPath, file);
+                    overrides.Add(new ResourceOverride
+                    {
+                        Type = OverrideType.Model,
+                        OriginalPath = $"assets/minecraft/models/{relativePath}",
+                        OverridePath = file,
+                        Category = GetModelCategory(relativePath)
+                    });
+                }
+            }
+
             // Scan translation overrides
             var translationsPath = Path.Combine(overridesPath, "translations");
             if (Directory.Exists(translationsPath))
@@ -531,6 +548,21 @@ Created with Modrix on {DateTime.Now:yyyy-MM-dd}
                 };
             }
             return "Textures";
+        }
+
+        private string GetModelCategory(string relativePath)
+        {
+            var parts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (parts.Length > 0)
+            {
+                return parts[0] switch
+                {
+                    "block" => "Block Models",
+                    "item" => "Item Models",
+                    _ => "Other Models"
+                };
+            }
+            return "Models";
         }
     }
 

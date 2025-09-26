@@ -11,6 +11,9 @@
     d:DataContext="{d:DesignInstance Type=local:TranslationsPage, IsDesignTimeCreatable=False}"
     d:DesignHeight="600"
     d:DesignWidth="900"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
     <Grid Margin="0,0,0,0">
@@ -20,7 +23,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Background="LightGray" 
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" 
                 CornerRadius="0,0,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
             <Grid Margin="32,24,32,0">
                 <Grid.ColumnDefinitions>
@@ -33,21 +36,21 @@
                         <controls:WikiTooltip 
                             WikiId="minecraft-translations"
                             Title="Minecraft Translations"
-                            Category="Textures"
+                            Category="Translations"
                             Keywords="minecraft,translations,language,localization,lang,json"
                             Description="Browse and edit Minecraft's language files to create custom translations. Each language file contains key-value pairs that define text shown in the game interface, items, blocks, and more."
                             Margin="8,5,0,0"
                             VerticalAlignment="Center"/>
                     </StackPanel>
                     <TextBlock Margin="0,2,0,0" FontSize="13" 
-                               Foreground="Gray" 
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                Text="Browse and create overrides from Minecraft language files" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
-                    <ui:Button Appearance="Primary" Content="Create Override" 
-                               Icon="{ui:SymbolIcon Add24}" Height="40" 
-                               ToolTip="Create New Translation Override" 
-                               Click="CreateOverride_Click"/>
+                    <ui:Button Appearance="Primary" Content="Extract Assets" 
+                               Icon="{ui:SymbolIcon ArrowDownload24}" Height="40" 
+                               ToolTip="Extract Minecraft Language Files" 
+                               Click="ExtractAssets_Click"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -60,8 +63,9 @@
             </Grid.ColumnDefinitions>
 
             <!-- Languages Sidebar -->
-            <Border Grid.Column="0" Background="White" 
-                    CornerRadius="12" Padding="16" Margin="0,0,18,0">
+            <Border Grid.Column="0" Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                    CornerRadius="12" Padding="16" Margin="0,0,18,0"
+                    Effect="{DynamicResource CardShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -87,11 +91,11 @@
                                     <StackPanel Grid.Column="1">
                                         <TextBlock Text="{Binding DisplayName}" FontSize="12" FontWeight="SemiBold"/>
                                         <TextBlock Text="{Binding Code}" FontSize="10" 
-                                                  Foreground="Gray"/>
+                                                  Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Grid.Column="2" Text="{Binding KeyCount}" 
                                               FontSize="10" 
-                                              Foreground="Gray"
+                                              Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                               VerticalAlignment="Center"/>
                                 </Grid>
                             </DataTemplate>
@@ -101,8 +105,9 @@
             </Border>
 
             <!-- Main Content Area -->
-            <Border Grid.Column="1" Background="White" 
-                    CornerRadius="12" Padding="24">
+            <Border Grid.Column="1" Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                    CornerRadius="12" Padding="24" 
+                    Effect="{DynamicResource CardShadow}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -122,10 +127,6 @@
                                    TextChanged="SearchBox_TextChanged"/>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
-                            <ui:Button Content="Export Language" 
-                                      Icon="{ui:SymbolIcon ArrowExportLtr24}"
-                                      Click="ExportLanguage_Click"
-                                      Margin="0,0,8,0"/>
                             <ui:Button Content="Refresh" 
                                       Icon="{ui:SymbolIcon ArrowClockwise24}"
                                       Click="RefreshTranslations_Click"/>
@@ -135,41 +136,98 @@
                     <!-- Translations Display -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <Grid>
-                            <!-- Main Content -->
-                            <ListView x:Name="TranslationsGrid" 
-                                     Background="Transparent" 
-                                     BorderThickness="0">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn Header="Key" Width="250" 
-                                                       DisplayMemberBinding="{Binding Key}"/>
-                                        <GridViewColumn Header="Original Value" Width="300" 
-                                                       DisplayMemberBinding="{Binding OriginalValue}"/>
-                                        <GridViewColumn Header="Language" Width="100" 
-                                                       DisplayMemberBinding="{Binding LanguageCode}"/>
-                                        <GridViewColumn Header="Actions" Width="100">
-                                            <GridViewColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <Button Content="Override" 
-                                                           Tag="{Binding}" 
-                                                           Click="CreateKeyOverride_Click" 
-                                                           Padding="8,4"/>
-                                                </DataTemplate>
-                                            </GridViewColumn.CellTemplate>
-                                        </GridViewColumn>
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
+                            <!-- Tab Control for Categories -->
+                            <TabControl x:Name="CategoryTabs" Background="Transparent" BorderThickness="0">
+                                <TabItem Header="GUI" x:Name="GuiTab">
+                                    <ListView x:Name="GuiTranslationsList" Background="Transparent" BorderThickness="0">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
+                                                <GridViewColumn Header="Value" Width="250" DisplayMemberBinding="{Binding Value}"/>
+                                                <GridViewColumn Header="Actions" Width="80">
+                                                    <GridViewColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <ui:Button Content="Override" Tag="{Binding}" 
+                                                                      Click="CreateKeyOverride_Click" 
+                                                                      Padding="8,4" Height="28"/>
+                                                        </DataTemplate>
+                                                    </GridViewColumn.CellTemplate>
+                                                </GridViewColumn>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </TabItem>
+
+                                <TabItem Header="Items" x:Name="ItemsTab">
+                                    <ListView x:Name="ItemsTranslationsList" Background="Transparent" BorderThickness="0">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
+                                                <GridViewColumn Header="Value" Width="250" DisplayMemberBinding="{Binding Value}"/>
+                                                <GridViewColumn Header="Actions" Width="80">
+                                                    <GridViewColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <ui:Button Content="Override" Tag="{Binding}" 
+                                                                      Click="CreateKeyOverride_Click" 
+                                                                      Padding="8,4" Height="28"/>
+                                                        </DataTemplate>
+                                                    </GridViewColumn.CellTemplate>
+                                                </GridViewColumn>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </TabItem>
+
+                                <TabItem Header="Blocks" x:Name="BlocksTab">
+                                    <ListView x:Name="BlocksTranslationsList" Background="Transparent" BorderThickness="0">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
+                                                <GridViewColumn Header="Value" Width="250" DisplayMemberBinding="{Binding Value}"/>
+                                                <GridViewColumn Header="Actions" Width="80">
+                                                    <GridViewColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <ui:Button Content="Override" Tag="{Binding}" 
+                                                                      Click="CreateKeyOverride_Click" 
+                                                                      Padding="8,4" Height="28"/>
+                                                        </DataTemplate>
+                                                    </GridViewColumn.CellTemplate>
+                                                </GridViewColumn>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </TabItem>
+
+                                <TabItem Header="Other" x:Name="OtherTab">
+                                    <ListView x:Name="OtherTranslationsList" Background="Transparent" BorderThickness="0">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
+                                                <GridViewColumn Header="Value" Width="250" DisplayMemberBinding="{Binding Value}"/>
+                                                <GridViewColumn Header="Actions" Width="80">
+                                                    <GridViewColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <ui:Button Content="Override" Tag="{Binding}" 
+                                                                      Click="CreateKeyOverride_Click" 
+                                                                      Padding="8,4" Height="28"/>
+                                                        </DataTemplate>
+                                                    </GridViewColumn.CellTemplate>
+                                                </GridViewColumn>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </TabItem>
+                            </TabControl>
 
                             <!-- Empty State -->
                             <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center" Visibility="Visible">
-                                <ui:SymbolIcon Symbol="LocalLanguage28" FontSize="48" 
-                                              Foreground="Gray"/>
+                                       VerticalAlignment="Center" Visibility="Collapsed">
+                                <ui:SymbolIcon Symbol="LocalLanguage24" FontSize="48" 
+                                              Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                 <TextBlock Text="No translations found" FontSize="16" FontWeight="SemiBold" 
                                           Margin="0,8,0,4" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Select a language file to view its translations" 
-                                          FontSize="14" Foreground="Gray" 
+                                <TextBlock Text="Select a language or extract assets first" 
+                                          FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                           HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Grid>

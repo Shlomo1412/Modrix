@@ -179,6 +179,128 @@
                     </Border>
                 </TabItem>
 
+                <!-- Models Tab -->
+                <TabItem x:Name="ModelsTab">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Cube24" Margin="0,0,8,0"/>
+                            <TextBlock Text="Model Overrides" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    
+                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}" 
+                            CornerRadius="12" Padding="24">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Model Controls -->
+                            <Grid Grid.Row="0" Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ui:TextBox x:Name="ModelSearchBox" 
+                                           PlaceholderText="Search model overrides..."
+                                           Icon="{ui:SymbolIcon Search24}"
+                                           TextChanged="ModelSearchBox_TextChanged"/>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                                    <ui:Button Content="Import Model" 
+                                              Icon="{ui:SymbolIcon ArrowDownload24}"
+                                              Click="ImportModel_Click"
+                                              Margin="0,0,8,0"/>
+                                    <ui:Button Content="Open Folder" 
+                                              Icon="{ui:SymbolIcon FolderOpen24}"
+                                              Click="OpenModelsFolder_Click"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Model Overrides List -->
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl x:Name="ModelOverridesList">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                                                    CornerRadius="8" Margin="0,0,0,8" Padding="12"
+                                                    MouseLeftButtonDown="ModelOverride_MouseLeftButtonDown">
+                                                <Border.ContextMenu>
+                                                    <ContextMenu>
+                                                        <MenuItem Header="Open" Tag="{Binding}" Click="OpenModelOverride_Click"/>
+                                                        <MenuItem Header="Edit JSON" Tag="{Binding}" Click="EditModelOverride_Click"/>
+                                                        <Separator/>
+                                                        <MenuItem Header="Remove" Tag="{Binding}" Click="RemoveModelOverride_Click"/>
+                                                    </ContextMenu>
+                                                </Border.ContextMenu>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="48"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Model Icon -->
+                                                    <Border Grid.Column="0" Width="40" Height="40" 
+                                                            Background="{DynamicResource AccentFillColorDefaultBrush}" 
+                                                            CornerRadius="4">
+                                                        <ui:SymbolIcon Symbol="Cube24" 
+                                                                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                    </Border>
+
+                                                    <!-- Override Info -->
+                                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding Category}" FontSize="11" 
+                                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                        <TextBlock Text="{Binding OriginalPath}" FontSize="10" 
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+
+                                                    <!-- Actions -->
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                                        <ui:Button Content="Open" 
+                                                                  Appearance="Secondary"
+                                                                  Click="OpenModelOverride_Click"
+                                                                  Tag="{Binding}"
+                                                                  Margin="0,0,8,0"/>
+                                                        <ui:Button Content="Edit" 
+                                                                  Icon="{ui:SymbolIcon Edit24}"
+                                                                  Appearance="Secondary"
+                                                                  Click="EditModelOverride_Click"
+                                                                  Tag="{Binding}"
+                                                                  Margin="0,0,8,0"/>
+                                                        <ui:Button Content="Remove" 
+                                                                  Icon="{ui:SymbolIcon Delete24}"
+                                                                  Appearance="Danger"
+                                                                  Click="RemoveModelOverride_Click"
+                                                                  Tag="{Binding}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+
+                            <!-- Empty State -->
+                            <StackPanel x:Name="ModelEmptyState" 
+                                       Grid.Row="1" HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" Visibility="Collapsed">
+                                <ui:SymbolIcon Symbol="Cube48" FontSize="48" 
+                                              Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="No model overrides yet" FontSize="16" FontWeight="SemiBold" 
+                                          Margin="0,8,0,4" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Import or create overrides to customize Minecraft models" 
+                                          FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                          HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </TabItem>
+
                 <!-- Translations Tab -->
                 <TabItem x:Name="TranslationsTab">
                     <TabItem.Header>

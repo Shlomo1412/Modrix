@@ -177,7 +177,11 @@ namespace Modrix.Services
             try
             {
                 var texturesDir = Path.Combine(extractDir, "textures");
+                var langDir = Path.Combine(extractDir, "lang");
+                var modelsDir = Path.Combine(extractDir, "models");
                 Directory.CreateDirectory(texturesDir);
+                Directory.CreateDirectory(langDir);
+                Directory.CreateDirectory(modelsDir);
 
                 System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Opening JAR file: {jarPath}");
                 using var archive = ZipFile.OpenRead(jarPath);
@@ -188,14 +192,27 @@ namespace Modrix.Services
                                !string.IsNullOrEmpty(e.Name))
                     .ToList();
 
-                System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Found {textureEntries.Count} texture files in JAR");
+                var langEntries = archive.Entries
+                    .Where(e => e.FullName.StartsWith("assets/minecraft/lang/") && 
+                               e.FullName.EndsWith(".json") && 
+                               !string.IsNullOrEmpty(e.Name))
+                    .ToList();
+
+                var modelEntries = archive.Entries
+                    .Where(e => e.FullName.StartsWith("assets/minecraft/models/") && 
+                               e.FullName.EndsWith(".json") && 
+                               !string.IsNullOrEmpty(e.Name))
+                    .ToList();
+
+                System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Found {textureEntries.Count} texture files, {langEntries.Count} language files, and {modelEntries.Count} model files in JAR");
 
                 int extractedCount = 0;
+                
+                // Extract textures
                 foreach (var entry in textureEntries)
                 {
                     try
                     {
-                        // Create the directory structure
                         var relativePath = entry.FullName.Substring("assets/minecraft/textures/".Length);
                         var outputPath = Path.Combine(texturesDir, relativePath);
                         var outputDir = Path.GetDirectoryName(outputPath);
@@ -205,7 +222,6 @@ namespace Modrix.Services
                             Directory.CreateDirectory(outputDir);
                         }
 
-                        // Extract the file
                         using var entryStream = entry.Open();
                         using var outputStream = File.Create(outputPath);
                         await entryStream.CopyToAsync(outputStream);
@@ -214,15 +230,58 @@ namespace Modrix.Services
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Error extracting {entry.FullName}: {ex.Message}");
-                        // Continue with other files if one fails
                     }
                 }
 
-                System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Successfully extracted {extractedCount} texture files");
+                // Extract language files
+                foreach (var entry in langEntries)
+                {
+                    try
+                    {
+                        var relativePath = entry.FullName.Substring("assets/minecraft/lang/".Length);
+                        var outputPath = Path.Combine(langDir, relativePath);
+                        
+                        using var entryStream = entry.Open();
+                        using var outputStream = File.Create(outputPath);
+                        await entryStream.CopyToAsync(outputStream);
+                        extractedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Error extracting {entry.FullName}: {ex.Message}");
+                    }
+                }
+
+                // Extract model files
+                foreach (var entry in modelEntries)
+                {
+                    try
+                    {
+                        var relativePath = entry.FullName.Substring("assets/minecraft/models/".Length);
+                        var outputPath = Path.Combine(modelsDir, relativePath);
+                        var outputDir = Path.GetDirectoryName(outputPath);
+                        
+                        if (!string.IsNullOrEmpty(outputDir))
+                        {
+                            Directory.CreateDirectory(outputDir);
+                        }
+
+                        using var entryStream = entry.Open();
+                        using var outputStream = File.Create(outputPath);
+                        await entryStream.CopyToAsync(outputStream);
+                        extractedCount++;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Error extracting {entry.FullName}: {ex.Message}");
+                    }
+                }
+
+                System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Successfully extracted {extractedCount} asset files");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Error extracting textures from JAR: {ex}");
+                System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Error extracting assets from JAR: {ex}");
                 throw;
             }
         }
@@ -258,6 +317,32 @@ namespace Modrix.Services
                 .ToList()!
                 .Select(v => v.Replace(" ", "")) // Trim spaces
                 .ToList();
+        }
+
+        public string GetLanguageAssetsPath(string minecraftVersion)
+        {
+            return Path.Combine(_cacheDirectory, minecraftVersion, "lang");
+        }
+
+        public string GetModelsAssetsPath(string minecraftVersion)
+        {
+            return Path.Combine(_cacheDirectory, minecraftVersion, "models");
+        }
+
+        public bool AreLanguageAssetsAvailable(string minecraftVersion)
+        {
+            var langPath = GetLanguageAssetsPath(minecraftVersion);
+            var isAvailable = Directory.Exists(langPath) && Directory.GetFiles(langPath, "*.json", SearchOption.TopDirectoryOnly).Length > 0;
+            System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Language assets available for {minecraftVersion}: {isAvailable}");
+            return isAvailable;
+        }
+
+        public bool AreModelsAssetsAvailable(string minecraftVersion)
+        {
+            var modelsPath = GetModelsAssetsPath(minecraftVersion);
+            var isAvailable = Directory.Exists(modelsPath) && Directory.GetFiles(modelsPath, "*.json", SearchOption.AllDirectories).Length > 0;
+            System.Diagnostics.Debug.WriteLine($"MinecraftAssetExtractor: Models assets available for {minecraftVersion}: {isAvailable}");
+            return isAvailable;
         }
     }
 

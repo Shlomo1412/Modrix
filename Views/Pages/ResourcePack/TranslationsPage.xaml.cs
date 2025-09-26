@@ -7,11 +7,8 @@ using System.Windows;
 using System.Windows.Controls;
 using Modrix.Services;
 using Modrix.Views.Windows;
-using Wpf.Ui.Controls;
 using Wpf.Ui.Abstractions.Controls;
-using MessageBox = Wpf.Ui.Controls.MessageBox;
-using UiButton = Wpf.Ui.Controls.Button;
-using WpfButton = System.Windows.Controls.Button;
+using Wpf.Ui.Controls;
 
 namespace Modrix.Views.Pages.ResourcePack
 {
@@ -20,24 +17,30 @@ namespace Modrix.Views.Pages.ResourcePack
         public object ViewModel => this;
         
         private ResourcePackData? _currentPack;
-        private List<LanguageInfo> _availableLanguages = new();
-        private List<TranslationKeyItem> _allTranslationKeys = new();
-        private List<TranslationKeyItem> _filteredKeys = new();
-        
+        private List<LanguageItem> _languages = new();
+        private List<TranslationKeyItem> _allTranslations = new();
+        private string? _selectedLanguageCode;
+        private MinecraftAssetExtractor? _assetExtractor;
+
         public TranslationsPage()
         {
-            InitializeComponent();
-            DataContext = this;
-            LoadCurrentPack();
-            LoadAvailableLanguages();
-            UpdateEmptyState();
-        }
-
-        public void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            LoadCurrentPack();
-            LoadAvailableLanguages();
-            UpdateEmptyState();
+            try
+            {
+                InitializeComponent();
+                DataContext = this;
+                
+                // Get asset extractor from DI container
+                _assetExtractor = App.Services.GetService(typeof(MinecraftAssetExtractor)) as MinecraftAssetExtractor;
+                
+                LoadCurrentPack();
+                LoadAvailableLanguages();
+                UpdateEmptyState();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"TranslationsPage constructor error: {ex.Message}");
+                throw;
+            }
         }
 
         private void LoadCurrentPack()
@@ -54,85 +57,50 @@ namespace Modrix.Views.Pages.ResourcePack
 
         private void LoadAvailableLanguages()
         {
-            _availableLanguages.Clear();
+            _languages.Clear();
 
-            if (_currentPack == null) return;
+            if (_currentPack == null || _assetExtractor == null) return;
 
-            var langPath = Path.Combine(_currentPack.Location, "assets", "minecraft", "lang");
+            var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
             
-            if (Directory.Exists(langPath))
+            if (!_assetExtractor.AreLanguageAssetsAvailable(minecraftVersion))
             {
-                foreach (var langFile in Directory.GetFiles(langPath, "*.json"))
-                {
-                    var code = Path.GetFileNameWithoutExtension(langFile);
-                    var language = new LanguageInfo
-                    {
-                        Code = code,
-                        DisplayName = GetLanguageDisplayName(code),
-                        FilePath = langFile
-                    };
-
-                    // Count keys in language file
-                    try
-                    {
-                        var content = File.ReadAllText(langFile);
-                        var doc = JsonDocument.Parse(content);
-                        language.KeyCount = CountJsonKeys(doc.RootElement);
-                    }
-                    catch
-                    {
-                        language.KeyCount = 0;
-                    }
-
-                    _availableLanguages.Add(language);
-                }
+                // Show only basic language options if assets aren't extracted
+                _languages.Add(new LanguageItem("en_us", "English (US)", 0));
+                _languages.Add(new LanguageItem("en_gb", "English (UK)", 0));
+                _languages.Add(new LanguageItem("de_de", "German", 0));
+                _languages.Add(new LanguageItem("fr_fr", "French", 0));
+                _languages.Add(new LanguageItem("es_es", "Spanish", 0));
             }
-
-            // Add common languages even if not present
-            var commonLanguages = new Dictionary<string, string>
+            else
             {
-                {"en_us", "English (US)"},
-                {"en_gb", "English (UK)"},
-                {"de_de", "German"},
-                {"fr_fr", "French"},
-                {"es_es", "Spanish"},
-                {"it_it", "Italian"},
-                {"ja_jp", "Japanese"},
-                {"ko_kr", "Korean"},
-                {"zh_cn", "Chinese (Simplified)"},
-                {"pt_br", "Portuguese (Brazil)"},
-                {"ru_ru", "Russian"}
-            };
-
-            foreach (var kvp in commonLanguages)
-            {
-                if (!_availableLanguages.Any(l => l.Code == kvp.Key))
-                {
-                    _availableLanguages.Add(new LanguageInfo
-                    {
-                        Code = kvp.Key,
-                        DisplayName = kvp.Value,
-                        FilePath = "",
-                        KeyCount = 0
-                    });
-                }
-            }
-
-            // Sort by display name
-            _availableLanguages = _availableLanguages.OrderBy(l => l.DisplayName).ToList();
-            
-            var languagesList = this.FindName("LanguagesList") as ListBox;
-            if (languagesList != null)
-            {
-                languagesList.ItemsSource = _availableLanguages;
+                var langDir = _assetExtractor.GetLanguageAssetsPath(minecraftVersion);
+                var langFiles = Directory.GetFiles(langDir, "*.json");
                 
-                // Select English (US) by default if available
-                var defaultLang = _availableLanguages.FirstOrDefault(l => l.Code == "en_us") ?? 
-                                 _availableLanguages.FirstOrDefault();
-                if (defaultLang != null)
+                foreach (var file in langFiles)
                 {
-                    languagesList.SelectedItem = defaultLang;
+                    var code = Path.GetFileNameWithoutExtension(file);
+                    var displayName = GetLanguageDisplayName(code);
+                    var keyCount = CountKeysInFile(file);
+                    
+                    _languages.Add(new LanguageItem(code, displayName, keyCount));
                 }
+            }
+
+            LanguagesList.ItemsSource = _languages;
+        }
+
+        private int CountKeysInFile(string filePath)
+        {
+            try
+            {
+                var content = File.ReadAllText(filePath);
+                var doc = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
+                return doc?.Count ?? 0;
+            }
+            catch
+            {
+                return 0;
             }
         }
 
@@ -150,304 +118,232 @@ namespace Modrix.Views.Pages.ResourcePack
                 "ko_kr" => "Korean",
                 "zh_cn" => "Chinese (Simplified)",
                 "zh_tw" => "Chinese (Traditional)",
-                "pt_br" => "Portuguese (Brazil)",
                 "ru_ru" => "Russian",
+                "pt_br" => "Portuguese (Brazil)",
                 "nl_nl" => "Dutch",
                 "sv_se" => "Swedish",
-                "no_no" => "Norwegian",
-                "da_dk" => "Danish",
-                "fi_fi" => "Finnish",
                 "pl_pl" => "Polish",
-                "cs_cz" => "Czech",
-                "sk_sk" => "Slovak",
-                "hu_hu" => "Hungarian",
-                "ro_ro" => "Romanian",
-                "bg_bg" => "Bulgarian",
-                "hr_hr" => "Croatian",
-                "sl_si" => "Slovenian",
-                "et_ee" => "Estonian",
-                "lv_lv" => "Latvian",
-                "lt_lt" => "Lithuanian",
-                "el_gr" => "Greek",
-                "tr_tr" => "Turkish",
-                "ar_sa" => "Arabic",
-                "he_il" => "Hebrew",
-                "hi_in" => "Hindi",
-                "th_th" => "Thai",
-                "vi_vn" => "Vietnamese",
-                "id_id" => "Indonesian",
-                "ms_my" => "Malay",
-                "tl_ph" => "Filipino",
                 _ => code.Replace("_", "-").ToUpperInvariant()
             };
         }
 
-        private int CountJsonKeys(JsonElement element)
+        private void UpdateEmptyState()
         {
-            if (element.ValueKind == JsonValueKind.Object)
-            {
-                return element.EnumerateObject().Count();
-            }
-            return 0;
+            var hasTranslations = _allTranslations.Count > 0;
+            EmptyState.Visibility = hasTranslations ? Visibility.Collapsed : Visibility.Visible;
+            CategoryTabs.Visibility = hasTranslations ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void LoadTranslationKeys(LanguageInfo language)
+        private void LanguagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _allTranslationKeys.Clear();
-
-            if (language == null || string.IsNullOrEmpty(language.FilePath) || !File.Exists(language.FilePath))
+            if (LanguagesList.SelectedItem is LanguageItem selectedLang)
             {
-                FilterTranslationKeys();
+                _selectedLanguageCode = selectedLang.Code;
+                LoadTranslationsForLanguage(selectedLang.Code);
+            }
+        }
+
+        private void LoadTranslationsForLanguage(string languageCode)
+        {
+            _allTranslations.Clear();
+
+            if (_currentPack == null || _assetExtractor == null) return;
+
+            var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
+            
+            if (!_assetExtractor.AreLanguageAssetsAvailable(minecraftVersion))
+            {
+                System.Diagnostics.Debug.WriteLine($"Language assets not available for {minecraftVersion}");
+                UpdateEmptyState();
+                return;
+            }
+
+            var langDir = _assetExtractor.GetLanguageAssetsPath(minecraftVersion);
+            var langFile = Path.Combine(langDir, $"{languageCode}.json");
+            
+            if (!File.Exists(langFile))
+            {
+                System.Diagnostics.Debug.WriteLine($"Language file not found: {langFile}");
+                UpdateEmptyState();
                 return;
             }
 
             try
             {
-                var content = File.ReadAllText(language.FilePath);
-                var doc = JsonDocument.Parse(content);
-
-                foreach (var property in doc.RootElement.EnumerateObject())
+                var content = File.ReadAllText(langFile);
+                var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
+                
+                if (translations != null)
                 {
-                    _allTranslationKeys.Add(new TranslationKeyItem
+                    foreach (var kvp in translations)
                     {
-                        Key = property.Name,
-                        OriginalValue = property.Value.GetString() ?? "",
-                        LanguageCode = language.Code
-                    });
+                        var category = CategorizeTranslationKey(kvp.Key);
+                        _allTranslations.Add(new TranslationKeyItem
+                        {
+                            Key = kvp.Key,
+                            Value = kvp.Value,
+                            Category = category,
+                            LanguageCode = languageCode
+                        });
+                    }
                 }
 
-                // Sort by key
-                _allTranslationKeys = _allTranslationKeys.OrderBy(k => k.Key).ToList();
+                FilterAndDisplayTranslations();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading translations: {ex.Message}");
             }
-
-            FilterTranslationKeys();
-        }
-
-        private void FilterTranslationKeys()
-        {
-            var searchBox = this.FindName("SearchBox") as Wpf.Ui.Controls.TextBox;
-            var searchQuery = searchBox?.Text?.ToLowerInvariant() ?? "";
-
-            _filteredKeys = _allTranslationKeys.Where(key =>
-                string.IsNullOrEmpty(searchQuery) ||
-                key.Key.ToLowerInvariant().Contains(searchQuery) ||
-                key.OriginalValue.ToLowerInvariant().Contains(searchQuery)
-            ).ToList();
-
-            var translationsGrid = this.FindName("TranslationsGrid") as System.Windows.Controls.ListView;
-            if (translationsGrid != null)
-            {
-                translationsGrid.ItemsSource = _filteredKeys;
-            }
             
             UpdateEmptyState();
         }
 
-        private void UpdateEmptyState()
+        private string CategorizeTranslationKey(string key)
         {
-            var hasKeys = _filteredKeys.Count > 0;
+            if (key.StartsWith("gui.") || key.StartsWith("menu.") || key.StartsWith("options.") || 
+                key.StartsWith("controls.") || key.StartsWith("key."))
+                return "GUI";
             
-            var emptyState = this.FindName("EmptyState") as FrameworkElement;
-            var translationsGrid = this.FindName("TranslationsGrid") as FrameworkElement;
+            if (key.StartsWith("item.") || key.StartsWith("enchantment.") || key.StartsWith("potion."))
+                return "Items";
             
-            if (emptyState != null)
-                emptyState.Visibility = hasKeys ? Visibility.Collapsed : Visibility.Visible;
-                
-            if (translationsGrid != null)
-                translationsGrid.Visibility = hasKeys ? Visibility.Visible : Visibility.Collapsed;
+            if (key.StartsWith("block.") || key.StartsWith("tile."))
+                return "Blocks";
+            
+            return "Other";
         }
 
-        public void LanguagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void FilterAndDisplayTranslations()
         {
-            var languagesList = sender as ListBox;
-            if (languagesList?.SelectedItem is LanguageInfo language)
+            var guiTranslations = _allTranslations.Where(t => t.Category == "GUI").ToList();
+            var itemTranslations = _allTranslations.Where(t => t.Category == "Items").ToList();
+            var blockTranslations = _allTranslations.Where(t => t.Category == "Blocks").ToList();
+            var otherTranslations = _allTranslations.Where(t => t.Category == "Other").ToList();
+
+            GuiTranslationsList.ItemsSource = guiTranslations;
+            ItemsTranslationsList.ItemsSource = itemTranslations;
+            BlocksTranslationsList.ItemsSource = blockTranslations;
+            OtherTranslationsList.ItemsSource = otherTranslations;
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            FilterTranslationsWithSearch();
+        }
+
+        private void FilterTranslationsWithSearch()
+        {
+            var query = SearchBox?.Text?.ToLowerInvariant() ?? "";
+            var filteredTranslations = string.IsNullOrEmpty(query) ? 
+                _allTranslations : 
+                _allTranslations.Where(t => 
+                    t.Key.ToLowerInvariant().Contains(query) || 
+                    t.Value.ToLowerInvariant().Contains(query)).ToList();
+
+            var guiTranslations = filteredTranslations.Where(t => t.Category == "GUI").ToList();
+            var itemTranslations = filteredTranslations.Where(t => t.Category == "Items").ToList();
+            var blockTranslations = filteredTranslations.Where(t => t.Category == "Blocks").ToList();
+            var otherTranslations = filteredTranslations.Where(t => t.Category == "Other").ToList();
+
+            GuiTranslationsList.ItemsSource = guiTranslations;
+            ItemsTranslationsList.ItemsSource = itemTranslations;
+            BlocksTranslationsList.ItemsSource = blockTranslations;
+            OtherTranslationsList.ItemsSource = otherTranslations;
+        }
+
+        private async void CreateKeyOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPack == null || _selectedLanguageCode == null) return;
+            if (sender is not Wpf.Ui.Controls.Button button || button.Tag is not TranslationKeyItem item) return;
+
+            try
             {
-                LoadTranslationKeys(language);
+                var overridesDir = Path.Combine(_currentPack.Location, "overrides", "translations");
+                Directory.CreateDirectory(overridesDir);
+                var overrideFile = Path.Combine(overridesDir, $"{_selectedLanguageCode}.json");
+
+                Dictionary<string, string> overrides;
+                if (File.Exists(overrideFile))
+                {
+                    var content = File.ReadAllText(overrideFile);
+                    overrides = JsonSerializer.Deserialize<Dictionary<string, string>>(content) ?? new();
+                }
+                else
+                {
+                    overrides = new Dictionary<string, string>();
+                }
+
+                // Add or update the key
+                overrides[item.Key] = item.Value; // Start with original value for editing
+
+                // Save the override file
+                var json = JsonSerializer.Serialize(overrides, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(overrideFile, json);
+
+                // Refresh pack data
+                var manager = new ResourcePackTemplateManager();
+                _currentPack = manager.ReadResourcePack(_currentPack.Location);
+
+                ShowMessage($"Created override for key '{item.Key}'", "Override Created");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Failed to create override: {ex.Message}", "Error");
             }
         }
 
-        public void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private async void ExtractAssets_Click(object sender, RoutedEventArgs e)
         {
-            FilterTranslationKeys();
+            if (_currentPack == null || _assetExtractor == null) return;
+
+            var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
+            
+            // Show progress dialog
+            var progressDialog = new AssetExtractionProgressDialog();
+            progressDialog.Owner = Window.GetWindow(this);
+            
+            var progress = new Progress<string>(status => 
+            {
+                progressDialog.UpdateStatus(status);
+            });
+
+            progressDialog.Show();
+
+            try
+            {
+                var success = await _assetExtractor.ExtractAssetsForVersion(minecraftVersion, progress);
+                
+                if (success)
+                {
+                    progressDialog.Close();
+                    LoadAvailableLanguages();
+                    ShowMessage($"Successfully extracted language assets for Minecraft {minecraftVersion}!", "Extraction Complete");
+                }
+                else
+                {
+                    progressDialog.Close();
+                    ShowMessage($"Failed to extract assets for Minecraft {minecraftVersion}. Please check your internet connection and try again.", "Extraction Failed");
+                }
+            }
+            catch (Exception ex)
+            {
+                progressDialog.Close();
+                ShowMessage($"Error during asset extraction: {ex.Message}", "Error");
+            }
         }
 
-        public void RefreshTranslations_Click(object sender, RoutedEventArgs e)
+        private void RefreshTranslations_Click(object sender, RoutedEventArgs e)
         {
             LoadAvailableLanguages();
-        }
-
-        public async void CreateOverride_Click(object sender, RoutedEventArgs e)
-        {
-            if (_currentPack == null) return;
-            
-            var dialog = new CreateTranslationDialog();
-            if (dialog.ShowDialog() == true)
+            if (_selectedLanguageCode != null)
             {
-                try
-                {
-                    var languageCode = dialog.LanguageCode;
-                    var targetDir = Path.Combine(_currentPack.Location, "overrides", "translations");
-                    Directory.CreateDirectory(targetDir);
-                    
-                    var targetFile = Path.Combine(targetDir, $"{languageCode}.json");
-                    
-                    // Create empty translation file with some examples
-                    var exampleTranslations = new Dictionary<string, string>
-                    {
-                        {"example.custom_item", "My Custom Item"},
-                        {"example.custom_block", "My Custom Block"},
-                        {"example.greeting", "Welcome to my resource pack!"}
-                    };
-                    
-                    var json = JsonSerializer.Serialize(exampleTranslations, new JsonSerializerOptions 
-                    { 
-                        WriteIndented = true 
-                    });
-                    
-                    File.WriteAllText(targetFile, json);
-                    
-                    await new MessageBox
-                    {
-                        Title = "Translation Created",
-                        Content = $"Created translation file for {GetLanguageDisplayName(languageCode)}. You can now edit it to add your custom translations.",
-                        PrimaryButtonText = "OK"
-                    }.ShowDialogAsync();
-                }
-                catch (Exception ex)
-                {
-                    ShowMessage($"Failed to create translation: {ex.Message}", "Error");
-                }
-            }
-        }
-
-        public async void CreateKeyOverride_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not WpfButton button || button.Tag is not TranslationKeyItem keyItem)
-                return;
-
-            var dialog = new TranslationOverrideDialog(keyItem);
-            if (dialog.ShowDialog() == true)
-            {
-                try
-                {
-                    var languageCode = dialog.SelectedLanguageCode;
-                    var customValue = dialog.CustomValue;
-                    
-                    var targetDir = Path.Combine(_currentPack.Location, "overrides", "translations");
-                    Directory.CreateDirectory(targetDir);
-                    
-                    var targetFile = Path.Combine(targetDir, $"{languageCode}.json");
-                    
-                    // Load existing overrides or create new
-                    Dictionary<string, string> overrides;
-                    if (File.Exists(targetFile))
-                    {
-                        var existingContent = File.ReadAllText(targetFile);
-                        overrides = JsonSerializer.Deserialize<Dictionary<string, string>>(existingContent) ?? 
-                                   new Dictionary<string, string>();
-                    }
-                    else
-                    {
-                        overrides = new Dictionary<string, string>();
-                    }
-                    
-                    // Add/update the override
-                    overrides[keyItem.Key] = customValue;
-                    
-                    // Save the file
-                    var json = JsonSerializer.Serialize(overrides, new JsonSerializerOptions 
-                    { 
-                        WriteIndented = true 
-                    });
-                    
-                    File.WriteAllText(targetFile, json);
-                    
-                    ShowMessage($"Created translation override for '{keyItem.Key}'", "Success");
-                }
-                catch (Exception ex)
-                {
-                    ShowMessage($"Failed to create override: {ex.Message}", "Error");
-                }
-            }
-        }
-
-        public void ExportLanguage_Click(object sender, RoutedEventArgs e)
-        {
-            var languagesList = this.FindName("LanguagesList") as ListBox;
-            if (languagesList?.SelectedItem is not LanguageInfo language || 
-                string.IsNullOrEmpty(language.FilePath) || 
-                !File.Exists(language.FilePath))
-            {
-                ShowMessage("Please select a language with available translations", "No Language Selected");
-                return;
-            }
-
-            var dialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Title = "Export Language File",
-                Filter = "JSON Files|*.json",
-                FileName = $"{language.Code}.json"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                try
-                {
-                    File.Copy(language.FilePath, dialog.FileName, true);
-                    ShowMessage($"Language file exported successfully to {Path.GetFileName(dialog.FileName)}", "Export Successful");
-                }
-                catch (Exception ex)
-                {
-                    ShowMessage($"Failed to export language file: {ex.Message}", "Error");
-                }
-            }
-        }
-
-        public void TranslationsGrid_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            var translationsGrid = sender as System.Windows.Controls.ListView;
-            if (translationsGrid?.SelectedItem is TranslationKeyItem keyItem)
-            {
-                var contextMenu = new ContextMenu();
-
-                var createOverrideItem = new System.Windows.Controls.MenuItem
-                {
-                    Header = "Create Override",
-                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.DocumentCopy24)
-                };
-                createOverrideItem.Click += (s, args) => CreateKeyOverride_Click(s, null);
-
-                var copyKeyItem = new System.Windows.Controls.MenuItem
-                {
-                    Header = "Copy Key",
-                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Copy24)
-                };
-                copyKeyItem.Click += (s, args) => Clipboard.SetText(keyItem.Key);
-
-                var copyValueItem = new System.Windows.Controls.MenuItem
-                {
-                    Header = "Copy Value", 
-                    Icon = new SymbolIcon(Wpf.Ui.Controls.SymbolRegular.Copy24)
-                };
-                copyValueItem.Click += (s, args) => Clipboard.SetText(keyItem.OriginalValue);
-
-                contextMenu.Items.Add(createOverrideItem);
-                contextMenu.Items.Add(new Separator());
-                contextMenu.Items.Add(copyKeyItem);
-                contextMenu.Items.Add(copyValueItem);
-
-                contextMenu.IsOpen = true;
-                e.Handled = true;
+                LoadTranslationsForLanguage(_selectedLanguageCode);
             }
         }
 
         private async void ShowMessage(string message, string title)
         {
-            var msgBox = new MessageBox
+            var msgBox = new Wpf.Ui.Controls.MessageBox
             {
                 Title = title,
                 Content = message,
@@ -457,242 +353,26 @@ namespace Modrix.Views.Pages.ResourcePack
         }
 
         // Helper classes
-        public class LanguageInfo
+        public class LanguageItem
         {
-            public string Code { get; set; } = "";
-            public string DisplayName { get; set; } = "";
-            public string FilePath { get; set; } = "";
+            public string Code { get; set; }
+            public string DisplayName { get; set; }
             public int KeyCount { get; set; }
+
+            public LanguageItem(string code, string displayName, int keyCount)
+            {
+                Code = code;
+                DisplayName = displayName;
+                KeyCount = keyCount;
+            }
         }
 
         public class TranslationKeyItem
         {
             public string Key { get; set; } = "";
-            public string OriginalValue { get; set; } = "";
+            public string Value { get; set; } = "";
+            public string Category { get; set; } = "";
             public string LanguageCode { get; set; } = "";
         }
     }
-
-    // Dialog for creating translation overrides - move this outside the class
-    public partial class TranslationOverrideDialog : FluentWindow
-    {
-        public string SelectedLanguageCode { get; private set; } = "en_us";
-        public string CustomValue { get; private set; } = "";
-
-        private readonly TranslationsPage.TranslationKeyItem _keyItem;
-
-        public TranslationOverrideDialog(TranslationsPage.TranslationKeyItem keyItem)
-        {
-            _keyItem = keyItem;
-            InitializeDialog();
-        }
-
-        private void InitializeDialog()
-        {
-            Title = "Create Translation Override";
-            Width = 500;
-            Height = 400;
-            WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
-            var mainPanel = new StackPanel { Margin = new Thickness(20) };
-
-            // Title
-            mainPanel.Children.Add(new System.Windows.Controls.TextBlock 
-            { 
-                Text = $"Create override for: {_keyItem.Key}",
-                FontSize = 16,
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 0, 16)
-            });
-
-            // Original value
-            mainPanel.Children.Add(new System.Windows.Controls.TextBlock 
-            { 
-                Text = "Original value:",
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 0, 4)
-            });
-
-            var originalValueBox = new System.Windows.Controls.TextBox
-            {
-                Text = _keyItem.OriginalValue,
-                IsReadOnly = true,
-                Background = SystemColors.ControlBrush,
-                TextWrapping = TextWrapping.Wrap,
-                Height = 60,
-                Margin = new Thickness(0, 0, 0, 16),
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-            };
-            mainPanel.Children.Add(originalValueBox);
-
-            // Language selection
-            mainPanel.Children.Add(new System.Windows.Controls.TextBlock 
-            { 
-                Text = "Target language:",
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 0, 4)
-            });
-
-            var languages = new Dictionary<string, string>
-            {
-                { "en_us", "English (US)" },
-                { "en_gb", "English (UK)" },
-                { "de_de", "German" },
-                { "fr_fr", "French" },
-                { "es_es", "Spanish" },
-                { "it_it", "Italian" },
-                { "ja_jp", "Japanese" },
-                { "ko_kr", "Korean" },
-                { "zh_cn", "Chinese (Simplified)" }
-            };
-
-            var languageComboBox = new ComboBox 
-            { 
-                ItemsSource = languages,
-                DisplayMemberPath = "Value",
-                SelectedValuePath = "Key",
-                SelectedValue = _keyItem.LanguageCode,
-                Margin = new Thickness(0, 0, 0, 16)
-            };
-
-            if (languageComboBox.SelectedItem == null)
-                languageComboBox.SelectedIndex = 0;
-
-            mainPanel.Children.Add(languageComboBox);
-
-            // Custom value
-            mainPanel.Children.Add(new System.Windows.Controls.TextBlock 
-            { 
-                Text = "Your custom translation:",
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 0, 4)
-            });
-
-            var customValueBox = new System.Windows.Controls.TextBox
-            {
-                Text = _keyItem.OriginalValue, // Start with original as template
-                TextWrapping = TextWrapping.Wrap,
-                Height = 80,
-                Margin = new Thickness(0, 0, 0, 20),
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-            };
-            mainPanel.Children.Add(customValueBox);
-
-            // Buttons
-            var buttonPanel = new StackPanel 
-            { 
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-
-            var createButton = new UiButton 
-            { 
-                Content = "Create Override", 
-                Appearance = Wpf.Ui.Controls.ControlAppearance.Primary,
-                Margin = new Thickness(0, 0, 8, 0)
-            };
-            createButton.Click += (s, e) =>
-            {
-                SelectedLanguageCode = languageComboBox.SelectedValue?.ToString() ?? "en_us";
-                CustomValue = customValueBox.Text;
-                DialogResult = true;
-            };
-
-            var cancelButton = new UiButton 
-            { 
-                Content = "Cancel",
-                Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary
-            };
-            cancelButton.Click += (s, e) => DialogResult = false;
-
-            buttonPanel.Children.Add(createButton);
-            buttonPanel.Children.Add(cancelButton);
-
-            mainPanel.Children.Add(buttonPanel);
-
-            Content = mainPanel;
-        }
-    }
-
-    // Dialog for creating new translation files  
-    public partial class CreateTranslationDialog : FluentWindow
-    {
-        public string LanguageCode { get; private set; } = "en_us";
-
-        public CreateTranslationDialog()
-        {
-            InitializeDialog();
-        }
-
-        private void InitializeDialog()
-        {
-            Title = "Create Translation File";
-            Width = 400;
-            Height = 300;
-            WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
-            var stackPanel = new StackPanel { Margin = new Thickness(20) };
-            
-            stackPanel.Children.Add(new System.Windows.Controls.TextBlock 
-            { 
-                Text = "Select the language for this translation:",
-                FontSize = 16,
-                Margin = new Thickness(0, 0, 0, 16)
-            });
-
-            var languages = new Dictionary<string, string>
-            {
-                { "en_us", "English (US)" },
-                { "en_gb", "English (UK)" },
-                { "de_de", "German" },
-                { "fr_fr", "French" },
-                { "es_es", "Spanish" },
-                { "it_it", "Italian" },
-                { "ja_jp", "Japanese" },
-                { "ko_kr", "Korean" },
-                { "zh_cn", "Chinese (Simplified)" }
-            };
-
-            var comboBox = new ComboBox 
-            { 
-                ItemsSource = languages,
-                DisplayMemberPath = "Value",
-                SelectedValuePath = "Key",
-                SelectedIndex = 0,
-                Margin = new Thickness(0, 0, 0, 20)
-            };
-
-            var buttonPanel = new StackPanel 
-            { 
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Right
-            };
-
-            var createButton = new UiButton 
-            { 
-                Content = "Create", 
-                Appearance = Wpf.Ui.Controls.ControlAppearance.Primary,
-                Margin = new Thickness(0, 0, 8, 0)
-            };
-            createButton.Click += (s, e) =>
-            {
-                LanguageCode = comboBox.SelectedValue?.ToString() ?? "en_us";
-                DialogResult = true;
-            };
-
-            var cancelButton = new UiButton 
-            { 
-                Content = "Cancel",
-                Appearance = Wpf.Ui.Controls.ControlAppearance.Secondary
-            };
-            cancelButton.Click += (s, e) => DialogResult = false;
-
-            buttonPanel.Children.Add(createButton);
-            buttonPanel.Children.Add(cancelButton);
-
-            stackPanel.Children.Add(comboBox);
-            stackPanel.Children.Add(buttonPanel);
-
-            Content = stackPanel;
-        }
-    }}
+}
