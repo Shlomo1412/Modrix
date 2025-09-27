@@ -80,8 +80,19 @@
                                 VerticalAlignment="Center"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <ui:TextBox x:Name="TextureTextBox" Width="220" Height="32" IsReadOnly="True" Text="{Binding TexturePath}" PlaceholderText="No texture selected"/>
-                            <ui:Button Content="Choose..." Margin="8,0,0,0" Click="ChooseTexture_Click"/>
+                            <controls:TexturePicker x:Name="TexturePicker" 
+                                                   ProjectData="{Binding CurrentProject}"
+                                                   MinecraftVersion="{Binding MinecraftVersion}"
+                                                   SelectedTexturePath="{Binding TexturePath, Mode=TwoWay}"
+                                                   TextureSelected="TexturePicker_TextureSelected"/>
+                            <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Select a texture for your item" 
+                                          FontSize="12" Margin="0,0,0,4"/>
+                                <TextBlock Text="Choose from your project textures" 
+                                          FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="Or pick from Minecraft assets" 
+                                          FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </ui:Card>

@@ -8,6 +8,8 @@ using System;
 using System.IO;
 using Wpf.Ui.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
+using Modrix.Models;
+using System.Linq;
 
 namespace Modrix.Views.Pages
 {
@@ -17,6 +19,7 @@ namespace Modrix.Views.Pages
         private string? _projectPath;
         private bool _isEditing;
         private ItemModElementData? _existingItem;
+        private ModProjectData? _currentProject;
 
         public ItemGeneratorPage()
         {
@@ -29,7 +32,9 @@ namespace Modrix.Views.Pages
                 var workspace = Application.Current.Windows
                     .OfType<Window>()
                     .FirstOrDefault(w => w is Modrix.Views.Windows.ProjectWorkspace);
-                _projectPath = (workspace as Modrix.Views.Windows.ProjectWorkspace)?.ViewModel?.CurrentProject?.Location;
+                var workspaceTyped = workspace as Modrix.Views.Windows.ProjectWorkspace;
+                _currentProject = workspaceTyped?.ViewModel?.CurrentProject;
+                _projectPath = _currentProject?.Location;
                 
                 if (!string.IsNullOrEmpty(_projectPath) && Directory.Exists(_projectPath))
                 {
@@ -71,8 +76,14 @@ namespace Modrix.Views.Pages
             // Update UI to reflect editing mode
             try
             {
-                NameTextBox.Text = ItemName;
-                TextureTextBox.Text = TexturePath;
+                if (NameTextBox != null)
+                {
+                    NameTextBox.Text = ItemName;
+                }
+                if (TexturePicker != null)
+                {
+                    TexturePicker.SelectedTexturePath = TexturePath;
+                }
                 
                 if (IsFood && FoodPropertiesPanel != null)
                 {
@@ -96,6 +107,9 @@ namespace Modrix.Views.Pages
             await msgBox.ShowDialogAsync();
         }
 
+        // Properties for data binding
+        public ModProjectData? CurrentProject => _currentProject;
+        public string MinecraftVersion => _currentProject?.MinecraftVersion ?? "1.20.1";
         public string ItemName { get; set; } = "";
         public string TexturePath { get; set; } = "";
         public int MaxStackSize { get; set; } = 64;
@@ -104,35 +118,9 @@ namespace Modrix.Views.Pages
         public int FoodValue { get; set; }
         public float SaturationValue { get; set; }
 
-        private async void ChooseTexture_Click(object sender, RoutedEventArgs e)
+        private void TexturePicker_TextureSelected(object sender, string? texturePath)
         {
-            try
-            {
-                // Get the current project path from the workspace view model
-                var workspace = Application.Current.Windows
-                    .OfType<Window>()
-                    .FirstOrDefault(w => w is Modrix.Views.Windows.ProjectWorkspace);
-                    
-                var projectPath = (workspace as Modrix.Views.Windows.ProjectWorkspace)?.ViewModel?.CurrentProject?.Location;
-                
-                if (string.IsNullOrEmpty(projectPath) || !Directory.Exists(projectPath))
-                {
-                    await ShowMessageAsync("Error", "Could not determine project path. Please ensure a project is loaded.");
-                    return;
-                }
-                
-                var dialog = new Windows.ChooseTextureDialog(projectPath);
-                if (dialog.ShowDialog() == true && !string.IsNullOrEmpty(dialog.SelectedTexturePath))
-                {
-                    // Set the texture path
-                    TexturePath = dialog.SelectedTexturePath;
-                    TextureTextBox.Text = TexturePath;
-                }
-            }
-            catch (Exception ex)
-            {
-                await ShowMessageAsync("Error", $"Error choosing texture: {ex.Message}");
-            }
+            TexturePath = texturePath ?? "";
         }
 
         private async Task ShowMessageAsync(string title, string message)
@@ -208,7 +196,7 @@ namespace Modrix.Views.Pages
                 else
                 {
                     // Generate a valid translation key
-                    string translationKey = $"item.{_projectPath?.Split('\\').Last()?.ToLower() ?? "mod"}.{ItemName.ToLower().Replace(" ", "_")}";
+                    string translationKey = $"item.{_currentProject?.ModId?.ToLower() ?? "mod"}.{ItemName.ToLower().Replace(" ", "_")}";
                     
                     // Create new item
                     itemData = new ItemModElementData
