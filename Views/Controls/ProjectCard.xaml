@@ -118,31 +118,76 @@
             <ui:Flyout
                 x:Name="OptionsFlyout"
                 Placement="Bottom"
-                IsOpen="False">
-                <StackPanel MinWidth="150">
-                    <ui:Button
-                        x:Name="FlyoutDeleteButton"
-                        Appearance="Danger"
-                        Icon="{ui:SymbolIcon Delete20}"
-                        Content="Delete Project"
-                        Margin="0,0,0,4"
-                        Width="169"
-                        Click="FlyoutDeleteButton_Click"/>
-                    <ui:Button
-                        x:Name="FlyoutOpenFolderButton"
-                        Appearance="Primary"
-                        Icon="{ui:SymbolIcon FolderOpen24}"
-                        Content="Open Project Folder"
-                        Margin="0,0,0,4"
-                        Click="FlyoutOpenFolderButton_Click"/>
-                    <ui:Button
-                        x:Name="FlyoutOpenInIDEButton"
-                        Appearance="Secondary"
-                        Icon="{ui:SymbolIcon Open24}"
-                        Content="Open in IDE"
-                        Width="169"
-                        Click="FlyoutOpenInIDEButton_Click"/>
-                </StackPanel>
+                IsOpen="False"
+                DataContext="{Binding ProjectData, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                <!-- Improved visual container -->
+                <Border Padding="0" CornerRadius="10" Background="{DynamicResource ControlFillColorDefaultBrush}">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="18" ShadowDepth="2" Opacity="0.35" />
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <Border CornerRadius="10,10,0,0" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="10,8,10,8">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Rectangle Width="4" Height="28" RadiusX="2" RadiusY="2" Fill="{DynamicResource AccentFillColorSecondaryBrush}" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" />
+                                    <TextBlock Margin="0,-2,0,0" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}">
+                                        <Run Text="{Binding ModType}"/>
+                                        <Run Text="  ·  "/>
+                                        <Run Text="{Binding MinecraftVersion}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Separator Grid.Row="1" Margin="0" />
+
+                        <!-- Actions -->
+                        <StackPanel Grid.Row="2" Margin="8" MinWidth="210">
+                            <StackPanel.Resources>
+                                <Style TargetType="ui:Button" x:Key="FlyoutActionButton" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                    <Setter Property="Appearance" Value="Transparent"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                    <Setter Property="Padding" Value="10,6"/>
+                                    <Setter Property="Margin" Value="0,0,0,4"/>
+                                    <Setter Property="Width" Value="Auto"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                </Style>
+                            </StackPanel.Resources>
+
+                            <ui:Button
+                                x:Name="FlyoutOpenFolderButton"
+                                Style="{StaticResource FlyoutActionButton}"
+                                Icon="{ui:SymbolIcon FolderOpen24}"
+                                Content="Open Project Folder"
+                                Click="FlyoutOpenFolderButton_Click"/>
+
+                            <ui:Button
+                                x:Name="FlyoutOpenInIDEButton"
+                                Style="{StaticResource FlyoutActionButton}"
+                                Icon="{ui:SymbolIcon Open24}"
+                                Content="Open in IDE"
+                                Click="FlyoutOpenInIDEButton_Click"/>
+
+                            <Separator Margin="0,4,0,8" />
+
+                            <ui:Button
+                                x:Name="FlyoutDeleteButton"
+                                Style="{StaticResource FlyoutActionButton}"
+                                Appearance="Danger"
+                                Icon="{ui:SymbolIcon Delete20}"
+                                Content="Delete Project"
+                                Click="FlyoutDeleteButton_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </ui:Flyout>
         </Grid>
 
