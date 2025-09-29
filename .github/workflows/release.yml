@@ -1,0 +1,147 @@
+# This workflow creates installers for Modrix releases
+# It builds both standalone executable and installers for releases
+
+name: Create Release with Installer
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-release-with-installer:
+    runs-on: windows-latest
+    
+    env:
+      Solution_Name: Modrix.sln
+      Project_Name: Modrix.csproj
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # Add MSBuild to the PATH
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2
+
+    # Restore and build the application
+    - name: Restore dependencies
+      run: dotnet restore $env:Solution_Name
+
+    - name: Build application (Release)
+      run: dotnet build $env:Project_Name --configuration Release --no-restore
+
+    # Create standalone executable in exe directory
+    - name: Create exe directory
+      run: New-Item -ItemType Directory -Force -Path "exe"
+
+    - name: Publish standalone executable
+      run: |
+        dotnet publish $env:Project_Name `
+          --configuration Release `
+          --runtime win-x64 `
+          --self-contained true `
+          --output "exe" `
+          --property:PublishSingleFile=true `
+          --verbosity normal
+
+    - name: Verify standalone executable
+      run: |
+        if (Test-Path "exe\Modrix.exe") {
+          Write-Host "✓ Standalone executable created successfully"
+          $fileInfo = Get-Item "exe\Modrix.exe"
+          Write-Host "Executable size: $($fileInfo.Length) bytes"
+          Get-ChildItem "exe\" | Select-Object Name, Length | Format-Table -AutoSize
+        } else {
+          Write-Error "✗ Standalone executable creation failed"
+          exit 1
+        }
+
+    # Install Inno Setup
+    - name: Install Inno Setup
+      run: |
+        $url = "https://files.jrsoftware.org/is/6/innosetup-6.2.2.exe"
+        $output = "innosetup.exe"
+        Write-Host "Downloading Inno Setup..."
+        Invoke-WebRequest -Uri $url -OutFile $output
+        Write-Host "Installing Inno Setup..."
+        Start-Process -FilePath $output -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART" -Wait
+        Write-Host "Inno Setup installed successfully"
+
+    # Create installer directory
+    - name: Create installer directory
+      run: New-Item -ItemType Directory -Force -Path "installer"
+
+    # Create installer using Inno Setup
+    - name: Create installer with Inno Setup
+      run: |
+        $innoSetupPath = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+        if (Test-Path $innoSetupPath) {
+          Write-Host "Creating installer using Inno Setup..."
+          & $innoSetupPath "Modrix.iss"
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "✓ Installer created successfully"
+          } else {
+            Write-Error "✗ Installer creation failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+        } else {
+          Write-Error "✗ Inno Setup compiler not found at $innoSetupPath"
+          exit 1
+        }
+
+    # Verify installer was created
+    - name: Verify installer creation
+      run: |
+        $installerPath = "installer\ModrixSetup.exe"
+        if (Test-Path $installerPath) {
+          $fileInfo = Get-Item $installerPath
+          Write-Host "✓ Installer created: $installerPath"
+          Write-Host "Installer size: $($fileInfo.Length) bytes"
+        } else {
+          Write-Error "✗ Installer file not found at $installerPath"
+          Get-ChildItem "installer\" -ErrorAction SilentlyContinue | Format-Table -AutoSize
+          exit 1
+        }
+
+    # Upload installer as release asset
+    - name: Upload installer to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: installer/ModrixSetup.exe
+        asset_name: ModrixSetup.exe
+        asset_content_type: application/octet-stream
+
+    # Upload standalone executable as release asset
+    - name: Upload standalone executable to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: exe/Modrix.exe
+        asset_name: Modrix.exe
+        asset_content_type: application/octet-stream
+
+    # Also upload as workflow artifacts for debugging
+    - name: Upload installer artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Modrix-Release-Installer
+        path: installer/ModrixSetup.exe
+
+    - name: Upload standalone executable artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Modrix-Release-Executable
+        path: exe/
