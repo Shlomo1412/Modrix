@@ -363,6 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Modrix build artifacts
-# exe/
-# installer/
-# nsis-installer/
+exe/
+installer/
