@@ -1,106 +1,65 @@
-using ModrixInstaller.ViewModels.Windows;
-using ModrixInstaller.Views.Pages;
-using ModrixInstaller.Services;
-using ModrixInstaller.ViewModels.Pages;
-using System.Windows;
-using System.Windows.Controls;
+﻿using ModrixInstaller.ViewModels.Windows;
+using Wpf.Ui;
+using Wpf.Ui.Abstractions;
+using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
 namespace ModrixInstaller.Views.Windows
 {
-    public partial class MainWindow : FluentWindow
+    public partial class MainWindow : INavigationWindow
     {
         public MainWindowViewModel ViewModel { get; }
-        private readonly ConfigurationService _configurationService;
-        private readonly LicenseService _licenseService;
-        private readonly InstallationService _installationService;
 
-        public MainWindow(MainWindowViewModel viewModel, ConfigurationService configurationService, LicenseService licenseService, InstallationService installationService)
+        public MainWindow(
+            MainWindowViewModel viewModel,
+            INavigationViewPageProvider navigationViewPageProvider,
+            INavigationService navigationService
+        )
         {
             ViewModel = viewModel;
-            _configurationService = configurationService;
-            _licenseService = licenseService;
-            _installationService = installationService;
-            
-            DataContext = ViewModel;
+            DataContext = this;
+
+            SystemThemeWatcher.Watch(this);
 
             InitializeComponent();
+            SetPageService(navigationViewPageProvider);
 
-            // Subscribe to navigation events
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-
-            // Navigate to first page
-            NavigateToCurrentStep();
+            navigationService.SetNavigationControl(RootNavigation);
         }
 
-        private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ViewModel.CurrentStep))
-            {
-                NavigateToCurrentStep();
-            }
-        }
+        #region INavigationWindow methods
 
-        private void NavigateToCurrentStep()
-        {
-            if (ViewModel.CurrentStep?.PageType != null)
-            {
-                Page? page = ViewModel.CurrentStep.PageType.Name switch
-                {
-                    nameof(WelcomePage) => new WelcomePage(new WelcomePageViewModel()),
-                    nameof(LicensePage) => CreateLicensePage(),
-                    nameof(InstallationOptionsPage) => CreateInstallationOptionsPage(),
-                    nameof(InstallationProgressPage) => new InstallationProgressPage(new InstallationProgressViewModel(_installationService, _configurationService)),
-                    nameof(CompletePage) => new CompletePage(new CompletePageViewModel(_configurationService)),
-                    _ => null
-                };
+        public INavigationView GetNavigation() => RootNavigation;
 
-                if (page != null)
-                {
-                    MainFrame.Navigate(page);
-                }
-            }
-        }
+        public bool Navigate(Type pageType) => RootNavigation.Navigate(pageType);
 
-        private LicensePage CreateLicensePage()
-        {
-            var viewModel = new LicensePageViewModel(_licenseService);
-            var page = new LicensePage(viewModel);
-            
-            // Subscribe to license changes to refresh main navigation
-            viewModel.PropertyChanged += (s, e) => 
-            {
-                if (e.PropertyName == nameof(LicensePageViewModel.IsLicenseAccepted))
-                {
-                    ViewModel.RefreshNavigationState();
-                }
-            };
-            
-            return page;
-        }
+        public void SetPageService(INavigationViewPageProvider navigationViewPageProvider) => RootNavigation.SetPageProviderService(navigationViewPageProvider);
 
-        private InstallationOptionsPage CreateInstallationOptionsPage()
-        {
-            var viewModel = new InstallationOptionsViewModel(_configurationService);
-            var page = new InstallationOptionsPage(viewModel);
-            
-            // Subscribe to configuration changes to refresh main navigation
-            viewModel.PropertyChanged += (s, e) => 
-            {
-                if (e.PropertyName == nameof(InstallationOptionsViewModel.IsInstallPathValid) || 
-                    e.PropertyName == nameof(InstallationOptionsViewModel.HasEnoughSpace))
-                {
-                    ViewModel.RefreshNavigationState();
-                }
-            };
-            
-            return page;
-        }
+        public void ShowWindow() => Show();
 
+        public void CloseWindow() => Close();
+
+        #endregion INavigationWindow methods
+
+        /// <summary>
+        /// Raises the closed event.
+        /// </summary>
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
+
+            // Make sure that closing this window will begin the process of closing the application.
             Application.Current.Shutdown();
+        }
+
+        INavigationView INavigationWindow.GetNavigation()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetServiceProvider(IServiceProvider serviceProvider)
+        {
+            throw new NotImplementedException();
         }
     }
 }

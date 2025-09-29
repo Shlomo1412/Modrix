@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -8,13 +8,6 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyTitle>ModrixInstaller</AssemblyTitle>
-    <AssemblyDescription>Installer for Modrix - Minecraft Mod Development IDE</AssemblyDescription>
-    <AssemblyCompany>Modrix</AssemblyCompany>
-    <AssemblyProduct>ModrixInstaller</AssemblyProduct>
-    <AssemblyCopyright>Copyright � 2024</AssemblyCopyright>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +18,7 @@
     <PackageReference Include="WPF-UI" Version="4.0.2" />
     <PackageReference Include="WPF-UI.DependencyInjection" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0 " />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0 "/>
   </ItemGroup>
 
   <ItemGroup>
@@ -36,22 +29,6 @@
   <ItemGroup>
     <Resource Include="Assets\wpfui-icon-256.png" />
     <Resource Include="Assets\wpfui-icon-1024.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <COMReference Include="IWshRuntimeLibrary">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>0</VersionMinor>
-      <VersionMajor>1</VersionMajor>
-      <Guid>f935dc20-1cf0-11d0-adb9-00c04fd58a0b</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>

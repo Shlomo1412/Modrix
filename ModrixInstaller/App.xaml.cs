@@ -1,64 +1,83 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ModrixInstaller.Services;
 using ModrixInstaller.ViewModels.Pages;
 using ModrixInstaller.ViewModels.Windows;
 using ModrixInstaller.Views.Pages;
 using ModrixInstaller.Views.Windows;
-using System.Windows;
+using System.IO;
+using System.Reflection;
 using System.Windows.Threading;
+using Wpf.Ui;
+using Wpf.Ui.DependencyInjection;
 
 namespace ModrixInstaller
 {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App : Application
+    public partial class App
     {
-        private ServiceProvider? _serviceProvider;
+        // The.NET Generic Host provides dependency injection, configuration, logging, and other services.
+        // https://docs.microsoft.com/dotnet/core/extensions/generic-host
+        // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
+        // https://docs.microsoft.com/dotnet/core/extensions/configuration
+        // https://docs.microsoft.com/dotnet/core/extensions/logging
+        private static readonly IHost _host = Host
+            .CreateDefaultBuilder()
+            .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory)); })
+            .ConfigureServices((context, services) =>
+            {
+                services.AddNavigationViewPageProvider();
 
-        protected override void OnStartup(StartupEventArgs e)
+                services.AddHostedService<ApplicationHostService>();
+
+                // Theme manipulation
+                services.AddSingleton<IThemeService, ThemeService>();
+
+                // TaskBar manipulation
+                services.AddSingleton<ITaskBarService, TaskBarService>();
+
+                // Service containing navigation, same as INavigationWindow... but without window
+                services.AddSingleton<INavigationService, NavigationService>();
+
+                // Main window with navigation
+                services.AddSingleton<INavigationWindow, MainWindow>();
+                services.AddSingleton<MainWindowViewModel>();
+
+                services.AddSingleton<DashboardPage>();
+                services.AddSingleton<DashboardViewModel>();
+                services.AddSingleton<DataPage>();
+                services.AddSingleton<DataViewModel>();
+                services.AddSingleton<SettingsPage>();
+                services.AddSingleton<SettingsViewModel>();
+            }).Build();
+
+        /// <summary>
+        /// Gets services.
+        /// </summary>
+        public static IServiceProvider Services
         {
-            base.OnStartup(e);
-
-            // Setup dependency injection
-            var services = new ServiceCollection();
-            ConfigureServices(services);
-            _serviceProvider = services.BuildServiceProvider();
-
-            // Show main window
-            var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            get { return _host.Services; }
         }
 
-        private void ConfigureServices(IServiceCollection services)
+        /// <summary>
+        /// Occurs when the application is loading.
+        /// </summary>
+        private async void OnStartup(object sender, StartupEventArgs e)
         {
-            // Services (as singletons to share state)
-            services.AddSingleton<InstallationService>();
-            services.AddSingleton<ConfigurationService>();
-            services.AddSingleton<LicenseService>();
-
-            // ViewModels
-            services.AddSingleton<MainWindowViewModel>();
-            services.AddTransient<WelcomePageViewModel>();
-            services.AddTransient<LicensePageViewModel>();
-            services.AddTransient<InstallationOptionsViewModel>();
-            services.AddTransient<InstallationProgressViewModel>();
-            services.AddTransient<CompletePageViewModel>();
-
-            // Views
-            services.AddTransient<MainWindow>();
-            services.AddTransient<WelcomePage>();
-            services.AddTransient<LicensePage>();
-            services.AddTransient<InstallationOptionsPage>();
-            services.AddTransient<InstallationProgressPage>();
-            services.AddTransient<CompletePage>();
+            await _host.StartAsync();
         }
 
-        protected override void OnExit(ExitEventArgs e)
+        /// <summary>
+        /// Occurs when the application is closing.
+        /// </summary>
+        private async void OnExit(object sender, ExitEventArgs e)
         {
-            _serviceProvider?.Dispose();
-            base.OnExit(e);
+            await _host.StopAsync();
+
+            _host.Dispose();
         }
 
         /// <summary>
@@ -67,16 +86,6 @@ namespace ModrixInstaller
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
-        }
-
-        private void OnStartup(object sender, StartupEventArgs e)
-        {
-            // This method is called by the XAML event handler
-        }
-
-        private void OnExit(object sender, ExitEventArgs e)
-        {
-            // This method is called by the XAML event handler
         }
     }
 }
