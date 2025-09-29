@@ -5,9 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:ModrixInstaller.Views.Pages"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:ModrixInstaller.Models"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="DataPage"
+    Title="AboutPage"
     d:DataContext="{d:DesignInstance local:DataPage,
                                      IsDesignTimeCreatable=False}"
     d:DesignHeight="450"
@@ -18,26 +17,102 @@
     ScrollViewer.CanContentScroll="False"
     mc:Ignorable="d">
 
-    <Grid>
-        <ui:VirtualizingItemsControl
-            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-            ItemsSource="{Binding ViewModel.Colors, Mode=OneWay}"
-            VirtualizingPanel.CacheLengthUnit="Item">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type models:DataColor}">
-                    <ui:Button
-                        Width="80"
-                        Height="80"
-                        Margin="2"
-                        Padding="0"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        Appearance="Secondary"
-                        Background="{Binding Color, Mode=OneWay}"
-                        FontSize="25"
-                        Icon="Fluent24" />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ui:VirtualizingItemsControl>
+    <Grid Margin="20">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="600">
+            
+            <!-- App Icon -->
+            <ui:ImageIcon 
+                Width="128" Height="128"
+                Source="pack://application:,,,/Assets/wpfui-icon-256.png"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,25" />
+            
+            <!-- Title -->
+            <TextBlock 
+                FontSize="32" 
+                FontWeight="Bold" 
+                Text="Modrix Installer"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,25" />
+            
+            <!-- Version -->
+            <TextBlock 
+                FontSize="16" 
+                Opacity="0.8"
+                Text="Version 1.0.0"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,25" />
+            
+            <!-- Description -->
+            <ui:Card Margin="0,0,0,25">
+                <StackPanel>
+                    <TextBlock 
+                        FontSize="18" 
+                        FontWeight="SemiBold" 
+                        Text="About Modrix Installer" 
+                        Margin="0,0,0,10" />
+                    <TextBlock 
+                        TextWrapping="Wrap"
+                        LineHeight="22"
+                        Text="The Modrix Installer allows you to easily download and install Modrix from GitHub releases. It provides a beautiful, user-friendly interface for selecting versions, choosing installation locations, and managing the installation process." />
+                </StackPanel>
+            </ui:Card>
+            
+            <!-- Features -->
+            <ui:Card Margin="0,0,0,25">
+                <StackPanel>
+                    <TextBlock 
+                        FontSize="18" 
+                        FontWeight="SemiBold" 
+                        Text="Features" 
+                        Margin="0,0,0,10" />
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <ui:SymbolIcon Symbol="Checkmark24" Foreground="Green" Margin="0,0,8,0" />
+                            <TextBlock Text="Download from GitHub releases" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <ui:SymbolIcon Symbol="Checkmark24" Foreground="Green" Margin="0,0,8,0" />
+                            <TextBlock Text="Version selection and management" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <ui:SymbolIcon Symbol="Checkmark24" Foreground="Green" Margin="0,0,8,0" />
+                            <TextBlock Text="Custom installation paths" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <ui:SymbolIcon Symbol="Checkmark24" Foreground="Green" Margin="0,0,8,0" />
+                            <TextBlock Text="Automatic shortcut creation" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Checkmark24" Foreground="Green" Margin="0,0,8,0" />
+                            <TextBlock Text="Administrator privilege handling" />
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+            
+            <!-- Links -->
+            <ui:Card>
+                <StackPanel>
+                    <TextBlock 
+                        FontSize="18" 
+                        FontWeight="SemiBold" 
+                        Text="Links" 
+                        Margin="0,0,0,15" />
+                    <StackPanel Orientation="Horizontal">
+                        <ui:Button 
+                            Content="Modrix Repository"
+                            Icon="Link24"
+                            Command="{Binding ViewModel.OpenRepositoryCommand}"
+                            Margin="0,0,15,0" />
+                        <ui:Button 
+                            Content="Report Issues"
+                            Icon="Bug24"
+                            Command="{Binding ViewModel.OpenIssuesCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </ui:Card>
+            
+        </StackPanel>
     </Grid>
 </Page>

@@ -1,15 +1,19 @@
-﻿using ModrixInstaller.Models;
-using System.Windows.Media;
+﻿using System.Diagnostics;
+using Wpf.Ui;
 using Wpf.Ui.Abstractions.Controls;
+using Wpf.Ui.Controls;
 
 namespace ModrixInstaller.ViewModels.Pages
 {
     public partial class DataViewModel : ObservableObject, INavigationAware
     {
+        private readonly ISnackbarService _snackbarService;
         private bool _isInitialized = false;
 
-        [ObservableProperty]
-        private IEnumerable<DataColor> _colors;
+        public DataViewModel(ISnackbarService snackbarService)
+        {
+            _snackbarService = snackbarService;
+        }
 
         public Task OnNavigatedToAsync()
         {
@@ -21,28 +25,42 @@ namespace ModrixInstaller.ViewModels.Pages
 
         public Task OnNavigatedFromAsync() => Task.CompletedTask;
 
+        [RelayCommand]
+        private void OpenRepository()
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/Shlomo1412/Modrix",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _snackbarService.Show("Error", $"Failed to open repository: {ex.Message}", ControlAppearance.Danger, null, TimeSpan.FromSeconds(3));
+            }
+        }
+
+        [RelayCommand]
+        private void OpenIssues()
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/Shlomo1412/Modrix/issues",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _snackbarService.Show("Error", $"Failed to open issues page: {ex.Message}", ControlAppearance.Danger, null, TimeSpan.FromSeconds(3));
+            }
+        }
+
         private void InitializeViewModel()
         {
-            var random = new Random();
-            var colorCollection = new List<DataColor>();
-
-            for (int i = 0; i < 8192; i++)
-                colorCollection.Add(
-                    new DataColor
-                    {
-                        Color = new SolidColorBrush(
-                            Color.FromArgb(
-                                (byte)200,
-                                (byte)random.Next(0, 250),
-                                (byte)random.Next(0, 250),
-                                (byte)random.Next(0, 250)
-                            )
-                        )
-                    }
-                );
-
-            Colors = colorCollection;
-
             _isInitialized = true;
         }
     }

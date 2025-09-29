@@ -1,0 +1,52 @@
+<Page x:Class="ModrixInstaller.Views.Pages.LicensePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Background="{DynamicResource ApplicationBackgroundBrush}"
+      d:DesignWidth="760" d:DesignHeight="500">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+            <TextBlock Text="License Agreement"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+            <TextBlock Text="MIT License - You must accept to continue."
+                       Margin="0,4,0,0"
+                       Opacity="0.75"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+
+        <!-- License Content -->
+        <Border Grid.Row="1"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBlock Text="{Binding ViewModel.LicenseText}"
+                           FontFamily="Consolas"
+                           FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Acceptance -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
+            <CheckBox IsChecked="{Binding ViewModel.IsAccepted}"
+                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                      Content="I accept the MIT License" />
+        </StackPanel>
+    </Grid>
+</Page>
