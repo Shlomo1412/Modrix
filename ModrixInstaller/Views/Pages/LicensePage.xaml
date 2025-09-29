@@ -3,10 +3,24 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d"
       Background="{DynamicResource ApplicationBackgroundBrush}"
       d:DesignWidth="760" d:DesignHeight="500">
-    <Grid Margin="12">
+    <Page.Resources>
+        <!-- Subtle shadow for elevated surfaces -->
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="18" ShadowDepth="0" Opacity="0.25" RenderingBias="Quality" />
+        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#4C6EF5" Offset="0" />
+            <GradientStop Color="#364FC7" Offset="1" />
+        </LinearGradientBrush>
+    </Page.Resources>
+
+    <Grid x:Name="RootGrid" Margin="20" Opacity="0" RenderTransformOrigin="0.5,0.5">
+        <Grid.RenderTransform>
+            <TranslateTransform Y="12" />
+        </Grid.RenderTransform>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -14,39 +28,70 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock Text="License Agreement"
-                       FontSize="24"
-                       FontWeight="Bold"
-                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-            <TextBlock Text="MIT License - You must accept to continue."
-                       Margin="0,4,0,0"
-                       Opacity="0.75"
-                       TextWrapping="Wrap"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-        </StackPanel>
-
-        <!-- License Content -->
-        <Border Grid.Row="1"
-                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                BorderThickness="1"
-                CornerRadius="6"
-                Padding="10">
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <TextBlock Text="{Binding ViewModel.LicenseText}"
-                           FontFamily="Consolas"
-                           FontSize="12"
-                           TextWrapping="Wrap"
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-            </ScrollViewer>
+        <Border Grid.Row="0" CornerRadius="12" Padding="18" Margin="0,0,0,14" Background="{StaticResource HeaderGradient}">
+            <StackPanel>
+                <TextBlock Text="License Agreement" FontSize="30" FontWeight="Bold" Foreground="White" />
+                <StackPanel Orientation="Horizontal" Margin="0,6,0,0" VerticalAlignment="Center" Opacity="0.9">
+                    <ui:SymbolIcon Symbol="Info24" Foreground="White" Width="20" Height="20" Margin="0,0,6,0" />
+                    <TextBlock Text="MIT License - You must accept to continue." FontSize="14" Foreground="White" />
+                </StackPanel>
+            </StackPanel>
         </Border>
 
-        <!-- Acceptance -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,12,0,0">
-            <CheckBox IsChecked="{Binding ViewModel.IsAccepted}"
-                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                      Content="I accept the MIT License" />
+        <!-- Content Card -->
+        <Border Grid.Row="1" Padding="16" CornerRadius="14" 
+                Background="#15000000"
+                BorderBrush="#22000000" BorderThickness="1"
+                Effect="{StaticResource CardShadow}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="0,0,0,10">
+                    <TextBlock Text="{Binding ViewModel.LicenseText}" FontFamily="Consolas" FontSize="13" TextWrapping="Wrap"
+                               Foreground="#DDFFFFFF" />
+                </ScrollViewer>
+
+                <!-- Acceptance -->
+                <Border Grid.Row="1" CornerRadius="8" Padding="10" 
+                        Background="#10000000" 
+                        BorderBrush="#22000000" BorderThickness="1">
+                    <DockPanel>
+                        <CheckBox IsChecked="{Binding ViewModel.IsAccepted}" VerticalAlignment="Center"
+                                  Foreground="#EEFFFFFF" FontSize="14">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="CheckmarkCircle24" Margin="0,0,6,0" />
+                                <TextBlock Text="I have read and accept the MIT License" />
+                            </StackPanel>
+                        </CheckBox>
+                        <Border DockPanel.Dock="Right" Background="#1FFFFFFF" CornerRadius="6" Padding="8,4" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="ShieldCheckmark24" Margin="0,0,4,0" />
+                                <TextBlock Text="Required" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Footer hint -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="4,14,4,0" HorizontalAlignment="Center" Opacity="0.6">
+            <ui:SymbolIcon Symbol="Warning24" />
+            <TextBlock Text="Declining will close the installer." Margin="6,0,0,0" />
         </StackPanel>
     </Grid>
+
+    <Page.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.35" />
+                    <DoubleAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="12" To="0" Duration="0:0:0.35" />
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Page.Triggers>
 </Page>

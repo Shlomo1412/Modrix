@@ -49,7 +49,14 @@ public class MainWindowViewModel : ObservableObject
     public bool IsDarkTheme
     {
         get => _isDarkTheme;
-        set => SetProperty(ref _isDarkTheme, value);
+        set
+        {
+            if (SetProperty(ref _isDarkTheme, value))
+            {
+                // Apply immediately when bound ToggleButton changes
+                _themeService.SetTheme(_isDarkTheme ? Wpf.Ui.Appearance.ApplicationTheme.Dark : Wpf.Ui.Appearance.ApplicationTheme.Light);
+            }
+        }
     }
 
     public IReadOnlyList<Page> Steps { get; }
@@ -124,7 +131,6 @@ public class MainWindowViewModel : ObservableObject
 
     private void ToggleTheme()
     {
-        IsDarkTheme = !IsDarkTheme;
-        _themeService.SetTheme(IsDarkTheme ? Wpf.Ui.Appearance.ApplicationTheme.Dark : Wpf.Ui.Appearance.ApplicationTheme.Light);
+        IsDarkTheme = !IsDarkTheme; // setter handles applying theme
     }
 }

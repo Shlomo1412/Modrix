@@ -16,6 +16,13 @@
     Background="{DynamicResource ApplicationBackgroundBrush}"
     mc:Ignorable="d">
 
+    <ui:FluentWindow.Resources>
+        <Storyboard x:Key="ContentFadeIn">
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.35" />
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" From="25" To="0" Duration="0:0:0.35" />
+        </Storyboard>
+    </ui:FluentWindow.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -29,7 +36,17 @@
             <Frame x:Name="WizardFrame"
                    NavigationUIVisibility="Hidden"
                    Background="Transparent"
-                   Content="{Binding ViewModel.CurrentContent}" />
+                   Content="{Binding ViewModel.CurrentContent}"
+                   Opacity="1">
+                <Frame.RenderTransform>
+                    <TranslateTransform X="0" />
+                </Frame.RenderTransform>
+                <Frame.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard Storyboard="{StaticResource ContentFadeIn}" />
+                    </EventTrigger>
+                </Frame.Triggers>
+            </Frame>
         </Border>
 
         <Grid Grid.Row="2" Margin="20,0,20,20">
@@ -44,12 +61,11 @@
                 </ui:Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Column="2" >
-                <ui:Button Command="{Binding ViewModel.ToggleThemeCommand}" Appearance="Transparent" ToolTip="Toggle Theme" Margin="0,0,8,0">
-                    <ui:SymbolIcon Symbol="WeatherMoon24" />
-                </ui:Button>
-                <ui:Button Command="{Binding ViewModel.NextCommand}" IsEnabled="{Binding ViewModel.NextEnabled}" Appearance="Primary" ToolTip="Next">
-                    <ui:SymbolIcon Symbol="ArrowRight24" />
-                </ui:Button>
+                <ui:ToggleSwitch Margin="0,0,12,0"
+                                 IsChecked="{Binding ViewModel.IsDarkTheme, Mode=TwoWay}"
+                                 ToolTip="Toggle theme"
+                                 OnContent="Dark Theme" OffContent="Light Theme"/>
+                <ui:Button Command="{Binding ViewModel.NextCommand}" IsEnabled="{Binding ViewModel.NextEnabled}" Appearance="Primary" ToolTip="Next" Icon="{ui:SymbolIcon ArrowRight24}"/>
             </StackPanel>
         </Grid>
     </Grid>
