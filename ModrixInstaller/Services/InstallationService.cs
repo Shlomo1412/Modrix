@@ -3,6 +3,8 @@ using System.Security.Principal;
 using ModrixInstaller.Models;
 using System.Threading.Tasks;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ModrixInstaller.Services;
 
@@ -135,16 +137,11 @@ public class InstallationService : IInstallationService
                 var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 var shortcutPath = Path.Combine(desktopPath, "Modrix.lnk");
 
-                // Simple shortcut creation using WScript.Shell COM object
-                var shell = new IWshRuntimeLibrary.WshShell();
-                var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutPath);
-                shortcut.TargetPath = modrixPath;
-                shortcut.WorkingDirectory = Path.GetDirectoryName(modrixPath);
-                shortcut.Description = "Modrix Application";
-                shortcut.Save();
+                CreateShortcut(shortcutPath, modrixPath, Path.GetDirectoryName(modrixPath) ?? "", "Modrix Application");
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Failed to create desktop shortcut: {ex.Message}");
                 // Shortcut creation failed, but don't fail the entire installation
             }
         });
@@ -165,15 +162,11 @@ public class InstallationService : IInstallationService
 
                 var shortcutPath = Path.Combine(startMenuPath, "Modrix.lnk");
 
-                var shell = new IWshRuntimeLibrary.WshShell();
-                var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutPath);
-                shortcut.TargetPath = modrixPath;
-                shortcut.WorkingDirectory = Path.GetDirectoryName(modrixPath);
-                shortcut.Description = "Modrix Application";
-                shortcut.Save();
+                CreateShortcut(shortcutPath, modrixPath, Path.GetDirectoryName(modrixPath) ?? "", "Modrix Application");
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Failed to create start menu shortcut: {ex.Message}");
                 // Shortcut creation failed, but don't fail the entire installation
             }
         });
@@ -185,5 +178,87 @@ public class InstallationService : IInstallationService
         // for Programs and Features, but for simplicity, we'll skip this
         // as it requires more complex registry operations
         await Task.Delay(100); // Simulate work
+    }
+
+    // .NET-compatible shortcut creation using Shell32
+    [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+    private static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, 
+        ref SHFILEINFO psfi, uint cbSizeFileInfo, uint uFlags);
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct SHFILEINFO
+    {
+        public IntPtr hIcon;
+        public int iIcon;
+        public uint dwAttributes;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+        public string szDisplayName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
+        public string szTypeName;
+    }
+
+    private static void CreateShortcut(string shortcutPath, string targetPath, string workingDirectory, string description)
+    {
+        try
+        {
+            // Use PowerShell to create the shortcut as a fallback method
+            var powershellScript = $@"
+$WshShell = New-Object -comObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut('{shortcutPath}')
+$Shortcut.TargetPath = '{targetPath}'
+$Shortcut.WorkingDirectory = '{workingDirectory}'
+$Shortcut.Description = '{description}'
+$Shortcut.Save()
+";
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"{powershellScript}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            process.Start();
+            process.WaitForExit(5000); // Wait max 5 seconds
+
+            if (process.ExitCode != 0)
+            {
+                var error = process.StandardError.ReadToEnd();
+                System.Diagnostics.Debug.WriteLine($"PowerShell shortcut creation failed: {error}");
+                
+                // Fallback: create a simple batch file that launches the target
+                CreateBatchShortcut(shortcutPath.Replace(".lnk", ".bat"), targetPath, workingDirectory);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Shortcut creation failed: {ex.Message}");
+            
+            // Final fallback: create a simple batch file
+            try
+            {
+                CreateBatchShortcut(shortcutPath.Replace(".lnk", ".bat"), targetPath, workingDirectory);
+            }
+            catch (Exception batchEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"Batch shortcut creation also failed: {batchEx.Message}");
+            }
+        }
+    }
+
+    private static void CreateBatchShortcut(string batchPath, string targetPath, string workingDirectory)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("@echo off");
+        sb.AppendLine($"cd /d \"{workingDirectory}\"");
+        sb.AppendLine($"start \"\" \"{targetPath}\"");
+        
+        File.WriteAllText(batchPath, sb.ToString());
     }
 }
