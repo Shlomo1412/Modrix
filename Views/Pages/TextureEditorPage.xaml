@@ -9,6 +9,7 @@
     xmlns:vm="clr-namespace:Modrix.ViewModels.Pages"
     xmlns:converters="clr-namespace:Modrix.ViewModels.Converters"
     xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+    xmlns:helpers="clr-namespace:Modrix.Helpers"
     Title="Texture Editor"
     x:Name="TextureEditorPageRoot"
     d:DataContext="{d:DesignInstance Type=local:TextureEditorPage, IsDesignTimeCreatable=False}"
@@ -23,6 +24,10 @@
     <Page.Resources>
         <converters:ToolToAppearanceConverter x:Key="ToolToAppearanceConverter" />
         <local:ZoomMultiplierConverter x:Key="MultiplyByZoomConverter"/>
+        <helpers:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <!-- Local fallbacks -->
+        <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="#1FFFFFFF" />
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="12" ShadowDepth="2" Opacity="0.25" Color="#77000000" />
     </Page.Resources>
 
     <Grid Margin="0,0,0,0">
@@ -86,10 +91,27 @@
                                 <ui:SymbolIcon Symbol="Eyedropper24" />
                             </ui:Button.Icon>
                         </ui:Button>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.SelectLineCommand}" ToolTip="Line (L)" Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Line}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Line24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.SelectRectangleCommand}" ToolTip="Rectangle (R)" Appearance="{Binding ViewModel.CurrentTool, Converter={StaticResource ToolToAppearanceConverter}, ConverterParameter=Rectangle}">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Square24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.ClearCommand}" ToolTip="Clear (Del)" Appearance="Secondary">
+                            <ui:Button.Icon>
+                                <ui:SymbolIcon Symbol="Delete24" />
+                            </ui:Button.Icon>
+                        </ui:Button>
                     </StackPanel>
                     <Separator Margin="4,0"/>
                     <TextBlock FontWeight="SemiBold" FontSize="16" Margin="0,8,0,8" Text="Color" />
                     <colorpicker:PortableColorPicker Width="40" Height="40" SelectedColor="{Binding ViewModel.SelectedColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Separator Margin="4,8"/>
+                    <ui:ToggleSwitch Margin="0,8,0,0" IsChecked="{Binding ViewModel.ShowGrid}" Content="Grid (G)"/>
                 </StackPanel>
             </Border>
 

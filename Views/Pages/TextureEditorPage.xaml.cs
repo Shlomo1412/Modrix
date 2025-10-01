@@ -38,6 +38,7 @@ namespace Modrix.Views.Pages
         public TextureEditorViewModel ViewModel { get; }
         private Point _lastProcessedPoint;
         private bool _pencilDragInProgress = false;
+        private Point? _shapeStartPoint; // For line/rectangle tools
 
         public TextureEditorPage(TextureEditorViewModel viewModel)
         {
@@ -60,38 +61,50 @@ namespace Modrix.Views.Pages
                         ViewModel.SelectPencilCommand.Execute(null);
                     e.Handled = true;
                     break;
-                    
+                
                 case Key.E: // Eraser
                     if (ViewModel.SelectEraserCommand.CanExecute(null))
                         ViewModel.SelectEraserCommand.Execute(null);
                     e.Handled = true;
                     break;
-                    
+                
                 case Key.B: // Bucket Fill
                     if (ViewModel.SelectBucketCommand.CanExecute(null))
                         ViewModel.SelectBucketCommand.Execute(null);
                     e.Handled = true;
                     break;
-                    
+                
                 case Key.I: // Color Picker
                     if (ViewModel.SelectPickerCommand.CanExecute(null))
                         ViewModel.SelectPickerCommand.Execute(null);
                     e.Handled = true;
                     break;
-                    
+
+                case Key.L: // Line
+                    if (ViewModel.SelectLineCommand.CanExecute(null))
+                        ViewModel.SelectLineCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                
+                case Key.R: // Rectangle
+                    if (ViewModel.SelectRectangleCommand.CanExecute(null))
+                        ViewModel.SelectRectangleCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                
                 case Key.G: // Toggle Grid
                     if (ViewModel.ToggleGridCommand.CanExecute(null))
                         ViewModel.ToggleGridCommand.Execute(null);
                     e.Handled = true;
                     break;
-                    
+                
                 case Key.OemPlus: // Zoom In (also works with '+' key)
                 case Key.Add:
                     if (ViewModel.ZoomInCommand.CanExecute(null))
                         ViewModel.ZoomInCommand.Execute(null);
                     e.Handled = true;
                     break;
-                    
+                
                 case Key.OemMinus: // Zoom Out (also works with '-' key)
                 case Key.Subtract:
                     if (ViewModel.ZoomOutCommand.CanExecute(null))
@@ -125,6 +138,12 @@ namespace Modrix.Views.Pages
                         e.Handled = true;
                     }
                     break;
+
+                case Key.Delete: // Clear canvas
+                    if (ViewModel.ClearCommand.CanExecute(null))
+                        ViewModel.ClearCommand.Execute(null);
+                    e.Handled = true;
+                    break;
             }
         }
 
@@ -142,6 +161,12 @@ namespace Modrix.Views.Pages
                         _pencilDragInProgress = true;
                     }
                 }
+                else if (ViewModel.CurrentTool == EditorTool.Line || ViewModel.CurrentTool == EditorTool.Rectangle)
+                {
+                    // Start shape drawing
+                    ViewModel.PushUndoState();
+                    _shapeStartPoint = new Point(pixelCoords.Item1, pixelCoords.Item2);
+                }
                 ProcessPixelAction(pixelCoords);
                 ViewModel.IsDrawing = true;
             }
@@ -154,37 +179,56 @@ namespace Modrix.Views.Pages
 
             if (e.LeftButton == MouseButtonState.Pressed && ViewModel.IsDrawing)
             {
-                // If pencil tool, only push undo state at drag start (handled in MouseDown)
-                ProcessPixelAction(pixelCoords);
+                if (ViewModel.CurrentTool == EditorTool.Pencil)
+                {
+                    ProcessPixelAction(pixelCoords);
+                }
+                // For line/rectangle we only draw on mouse up (final position)
             }
         }
 
         private void Image_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (ViewModel.IsDrawing)
+            {
+                var pixelCoords = GetPixelCoordinates(e.GetPosition(PixelCanvas));
+                if ((ViewModel.CurrentTool == EditorTool.Line || ViewModel.CurrentTool == EditorTool.Rectangle) && _shapeStartPoint.HasValue)
+                {
+                    int x0 = (int)_shapeStartPoint.Value.X;
+                    int y0 = (int)_shapeStartPoint.Value.Y;
+                    int x1 = pixelCoords.Item1;
+                    int y1 = pixelCoords.Item2;
+
+                    if (ViewModel.CurrentTool == EditorTool.Line)
+                    {
+                        ViewModel.DrawLine(x0, y0, x1, y1, ViewModel.SelectedColor);
+                    }
+                    else if (ViewModel.CurrentTool == EditorTool.Rectangle)
+                    {
+                        ViewModel.DrawFilledRectangle(x0, y0, x1, y1, ViewModel.SelectedColor);
+                    }
+                }
+            }
             ViewModel.IsDrawing = false;
             if (_pencilDragInProgress)
             {
                 _pencilDragInProgress = false;
             }
+            _shapeStartPoint = null;
         }
 
         private (int x, int y) GetPixelCoordinates(Point mousePosition)
         {
-            // Get the scroll viewer's offset
             var scrollViewer = FindParent<ScrollViewer>(PixelCanvas);
             double scrollX = scrollViewer?.HorizontalOffset ?? 0;
             double scrollY = scrollViewer?.VerticalOffset ?? 0;
-
-            // Do NOT divide by zoom level, since LayoutTransform already applies it
             int x = (int)(mousePosition.X + scrollX);
             int y = (int)(mousePosition.Y + scrollY);
-
             return (x, y);
         }
 
         private void ProcessPixelAction((int x, int y) coordinates)
         {
-            // Ensure we're within the image bounds
             if (coordinates.x >= 0 && coordinates.x < ViewModel.ImageWidth && 
                 coordinates.y >= 0 && coordinates.y < ViewModel.ImageHeight)
             {
@@ -195,17 +239,13 @@ namespace Modrix.Views.Pages
         private static T FindParent<T>(DependencyObject child) where T : DependencyObject
         {
             DependencyObject parentObject = VisualTreeHelper.GetParent(child);
-
             if (parentObject == null)
                 return null;
-
             if (parentObject is T parent)
                 return parent;
-
             return FindParent<T>(parentObject);
         }
 
-        // Handle Ctrl+Scroll for zoom in/out
         private void Page_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)

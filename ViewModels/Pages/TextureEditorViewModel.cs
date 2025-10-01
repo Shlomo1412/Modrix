@@ -14,7 +14,7 @@ using System.Windows.Controls; // <-- Add this for Frame
 
 namespace Modrix.ViewModels.Pages;
 
-public enum EditorTool { Pencil, Eraser, Bucket, Picker }
+public enum EditorTool { Pencil, Eraser, Bucket, Picker, Line, Rectangle }
 
 public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 {
@@ -102,9 +102,12 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         SelectEraserCommand = new RelayCommand(() => CurrentTool = EditorTool.Eraser);
         SelectBucketCommand = new RelayCommand(() => CurrentTool = EditorTool.Bucket);
         SelectPickerCommand = new RelayCommand(() => CurrentTool = EditorTool.Picker);
+        SelectLineCommand = new RelayCommand(() => CurrentTool = EditorTool.Line);
+        SelectRectangleCommand = new RelayCommand(() => CurrentTool = EditorTool.Rectangle);
         ZoomInCommand = new RelayCommand(ZoomIn);
         ZoomOutCommand = new RelayCommand(ZoomOut);
         ToggleGridCommand = new RelayCommand(() => ShowGrid = !ShowGrid);
+        ClearCommand = new RelayCommand(ClearCanvas, () => _bitmap != null);
         UndoCommand = new RelayCommand(Undo, CanUndo);
         RedoCommand = new RelayCommand(Redo, CanRedo);
     }
@@ -114,9 +117,12 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     public ICommand SelectEraserCommand { get; }
     public ICommand SelectBucketCommand { get; }
     public ICommand SelectPickerCommand { get; }
+    public ICommand SelectLineCommand { get; }
+    public ICommand SelectRectangleCommand { get; }
     public ICommand ZoomInCommand { get; }
     public ICommand ZoomOutCommand { get; }
     public ICommand ToggleGridCommand { get; }
+    public ICommand ClearCommand { get; }
     public IRelayCommand UndoCommand { get; }
     public IRelayCommand RedoCommand { get; }
 
@@ -170,6 +176,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
             _redoStack.Clear();
             UndoCommand.NotifyCanExecuteChanged();
             RedoCommand.NotifyCanExecuteChanged();
+            (ClearCommand as RelayCommand)?.NotifyCanExecuteChanged();
         }
         catch (Exception ex)
         {
@@ -252,7 +259,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         try
         {
             // For Pencil tool, do NOT push undo state here (handled in code-behind for drag)
-            if (CurrentTool != EditorTool.Picker && CurrentTool != EditorTool.Pencil)
+            if (CurrentTool != EditorTool.Picker && CurrentTool != EditorTool.Pencil && CurrentTool != EditorTool.Line && CurrentTool != EditorTool.Rectangle)
             {
                 PushUndoState();
             }
@@ -286,6 +293,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
                         UndoCommand.NotifyCanExecuteChanged();
                     }
                     break;
+                // Line & Rectangle handled separately (on mouse up) in code-behind
             }
             // HasUnsavedChanges is now set in PushUndoState
         }
@@ -302,24 +310,16 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 
         try
         {
-            // Create a color array with BGRA format (which is what WriteableBitmap expects)
             var colorData = new byte[] { color.B, color.G, color.R, color.A };
-
-            // Lock the bitmap for writing
             _bitmap.Lock();
-
             try
             {
-                // Write the pixel
                 Int32Rect rect = new Int32Rect(x, y, 1, 1);
                 _bitmap.WritePixels(rect, colorData, 4, 0);
-
-                // Update our pixel data cache
                 _pixelData[x, y] = color;
             }
             finally
             {
-                // Always unlock the bitmap
                 _bitmap.Unlock();
             }
         }
@@ -361,6 +361,63 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
                 queue.Enqueue(new Point(px + 1, py));
                 queue.Enqueue(new Point(px, py - 1));
                 queue.Enqueue(new Point(px, py + 1));
+            }
+        }
+        finally
+        {
+            _bitmap.Unlock();
+        }
+    }
+
+    // Drawing algorithms for shapes
+    public void DrawLine(int x0, int y0, int x1, int y1, Color color)
+    {
+        if (_bitmap == null || _pixelData == null) return;
+        _bitmap.Lock();
+        try
+        {
+            int dx = Math.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+            int dy = -Math.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+            int err = dx + dy;
+            while (true)
+            {
+                if (x0 >= 0 && x0 < ImageWidth && y0 >= 0 && y0 < ImageHeight)
+                {
+                    _pixelData[x0, y0] = color;
+                    var colorData = new byte[] { color.B, color.G, color.R, color.A };
+                    _bitmap.WritePixels(new Int32Rect(x0, y0, 1, 1), colorData, 4, 0);
+                }
+                if (x0 == x1 && y0 == y1) break;
+                int e2 = 2 * err;
+                if (e2 >= dy) { err += dy; x0 += sx; }
+                if (e2 <= dx) { err += dx; y0 += sy; }
+            }
+        }
+        finally
+        {
+            _bitmap.Unlock();
+        }
+    }
+
+    public void DrawFilledRectangle(int x0, int y0, int x1, int y1, Color color)
+    {
+        if (_bitmap == null || _pixelData == null) return;
+        if (x0 > x1) (x0, x1) = (x1, x0);
+        if (y0 > y1) (y0, y1) = (y1, y0);
+        x0 = Math.Max(0, x0); y0 = Math.Max(0, y0);
+        x1 = Math.Min(ImageWidth - 1, x1); y1 = Math.Min(ImageHeight - 1, y1);
+
+        _bitmap.Lock();
+        try
+        {
+            var colorData = new byte[] { color.B, color.G, color.R, color.A };
+            for (int y = y0; y <= y1; y++)
+            {
+                for (int x = x0; x <= x1; x++)
+                {
+                    _pixelData[x, y] = color;
+                    _bitmap.WritePixels(new Int32Rect(x, y, 1, 1), colorData, 4, 0);
+                }
             }
         }
         finally
@@ -502,6 +559,30 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         OnPropertyChanged(nameof(CurrentImage));
     }
 
+    private void ClearCanvas()
+    {
+        if (_bitmap == null || _pixelData == null) return;
+        PushUndoState();
+        _bitmap.Lock();
+        try
+        {
+            var transparent = new byte[] { 0, 0, 0, 0 };
+            for (int y = 0; y < ImageHeight; y++)
+            {
+                for (int x = 0; x < ImageWidth; x++)
+                {
+                    _pixelData[x, y] = Colors.Transparent;
+                    _bitmap.WritePixels(new Int32Rect(x, y, 1, 1), transparent, 4, 0);
+                }
+            }
+        }
+        finally
+        {
+            _bitmap.Unlock();
+        }
+        StatusText = "Canvas cleared";
+    }
+
     partial void OnSelectedColorChanged(Color value)
     {
         SelectedColorBrush = new SolidColorBrush(value);
@@ -541,15 +622,27 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         {
             case EditorTool.Pencil:
                 CurrentCursor = PencilCursor;
+                StatusText = "Pencil";
                 break;
             case EditorTool.Eraser:
                 CurrentCursor = EraserCursor ?? Cursors.Cross;
+                StatusText = "Eraser";
                 break;
             case EditorTool.Bucket:
                 CurrentCursor = BucketCursor ?? Cursors.Hand;
+                StatusText = "Bucket";
                 break;
             case EditorTool.Picker:
                 CurrentCursor = PickerCursor ?? Cursors.IBeam;
+                StatusText = "Color Picker";
+                break;
+            case EditorTool.Line:
+                CurrentCursor = Cursors.Cross;
+                StatusText = "Line";
+                break;
+            case EditorTool.Rectangle:
+                CurrentCursor = Cursors.Cross;
+                StatusText = "Rectangle";
                 break;
             default:
                 CurrentCursor = DefaultCursor;
