@@ -54,6 +54,9 @@ namespace Modrix
                 services.AddSingleton<ITaskBarService, TaskBarService>();
                 services.AddSingleton<Modrix.Services.IModrixTaskBarService, Modrix.Services.ModrixTaskBarService>();
 
+                // Uninstall service
+                services.AddSingleton<IUninstallService, UninstallService>();
+
                 // Minecraft Asset Extraction
                 services.AddSingleton<MinecraftAssetExtractor>();
 
@@ -140,6 +143,14 @@ namespace Modrix
         {
             await _host.StartAsync();
 
+            // Check for uninstall parameter first
+            var args = Environment.GetCommandLineArgs();
+            if (args.Contains("--uninstall"))
+            {
+                await HandleUninstallRequest();
+                return;
+            }
+
             // Get the connectivity service
             _connectivityService = Services.GetService<IConnectivityService>();
 
@@ -161,7 +172,6 @@ namespace Modrix
             taskBarService?.UpdateJumpListWithProjects(allProjects);
 
             // Handle JumpList activation (open project from JumpList)
-            var args = Environment.GetCommandLineArgs();
             var openArg = args.FirstOrDefault(a => a.StartsWith("--open-project="));
             if (openArg != null)
             {
@@ -209,6 +219,44 @@ namespace Modrix
                 {
                     mainWindow.ShowOfflineSnackbar();
                 }
+            }
+        }
+
+        private async Task HandleUninstallRequest()
+        {
+            try
+            {
+                var uninstallService = Services.GetRequiredService<IUninstallService>();
+                var uninstallDialog = new UninstallDialog(uninstallService);
+                
+                // Show the uninstall dialog
+                uninstallDialog.ShowDialog();
+                
+                // If the dialog indicates we should exit, shut down the application
+                if (uninstallDialog.ShouldExit)
+                {
+                    Current.Shutdown();
+                }
+                else
+                {
+                    // User cancelled uninstall, continue with normal startup
+                    // Load saved theme and continue normal startup
+                    var themeService = Services.GetRequiredService<IThemeService>();
+                    var saved = themeService.LoadTheme();
+                    ApplicationThemeManager.Apply(saved);
+
+                    var dialogService = Services.GetRequiredService<IContentDialogService>();
+                    var navigationWindow = Services.GetService<INavigationWindow>();
+                    if (navigationWindow is MainWindow main)
+                    {
+                        dialogService.SetDialogHost(main.DialogHost);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error during uninstallation: {ex.Message}", "Uninstall Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Current.Shutdown();
             }
         }
 

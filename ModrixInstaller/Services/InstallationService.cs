@@ -339,19 +339,25 @@ $item.InvokeVerb('taskbarpin')
                     key.SetValue("Publisher", "Modrix Team");
                     key.SetValue("InstallLocation", installationPath);
                     key.SetValue("DisplayIcon", modrixPath);
-                    key.SetValue("UninstallString", $"\"{modrixPath}\" --uninstall");
-                    key.SetValue("QuietUninstallString", $"\"{modrixPath}\" --uninstall --quiet");
+                    
+                    // Create a more robust uninstall string that tries Modrix first, then fallback
+                    var uninstallString = $"\"{modrixPath}\" --uninstall";
+                    var quietUninstallString = $"\"{modrixPath}\" --uninstall --quiet";
+                    
+                    key.SetValue("UninstallString", uninstallString);
+                    key.SetValue("QuietUninstallString", quietUninstallString);
                     key.SetValue("ModifyPath", $"\"{modrixPath}\" --modify");
                     key.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
-                    key.SetValue("NoModify", 0, RegistryValueKind.DWord);
-                    key.SetValue("NoRepair", 0, RegistryValueKind.DWord);
+                    key.SetValue("NoModify", 1, RegistryValueKind.DWord); // Disable modify option for now
+                    key.SetValue("NoRepair", 1, RegistryValueKind.DWord); // Disable repair option
                     key.SetValue("SystemComponent", 0, RegistryValueKind.DWord);
                     
                     // Calculate estimated size (in KB)
                     if (File.Exists(modrixPath))
                     {
-                        var fileSize = new FileInfo(modrixPath).Length;
-                        var sizeKB = (int)(fileSize / 1024);
+                        var directoryInfo = new DirectoryInfo(installationPath);
+                        var totalSize = GetDirectorySize(directoryInfo);
+                        var sizeKB = (int)(totalSize / 1024);
                         key.SetValue("EstimatedSize", sizeKB, RegistryValueKind.DWord);
                     }
 
@@ -367,6 +373,29 @@ $item.InvokeVerb('taskbarpin')
                 // Registration failed, but don't fail the entire installation
             }
         });
+    }
+
+    private static long GetDirectorySize(DirectoryInfo directoryInfo)
+    {
+        long size = 0;
+        try
+        {
+            // Add file sizes
+            FileInfo[] fileInfos = directoryInfo.GetFiles();
+            foreach (FileInfo fileInfo in fileInfos)
+                size += fileInfo.Length;
+
+            // Add subdirectory sizes
+            DirectoryInfo[] directoryInfos = directoryInfo.GetDirectories();
+            foreach (DirectoryInfo subDirectoryInfo in directoryInfos)
+                size += GetDirectorySize(subDirectoryInfo);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error calculating directory size: {ex.Message}");
+        }
+
+        return size;
     }
 
     // .NET-compatible shortcut creation using Shell32
