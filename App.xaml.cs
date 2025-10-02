@@ -235,7 +235,7 @@ namespace Modrix
                 // If the dialog indicates we should exit, shut down the application
                 if (uninstallDialog.ShouldExit)
                 {
-                    Current.Shutdown();
+                    Environment.Exit(0);
                 }
                 else
                 {
@@ -256,7 +256,7 @@ namespace Modrix
             catch (Exception ex)
             {
                 MessageBox.Show($"Error during uninstallation: {ex.Message}", "Uninstall Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                Current.Shutdown();
+                Environment.Exit(1);
             }
         }
 

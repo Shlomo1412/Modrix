@@ -139,9 +139,14 @@
                         <ui:SymbolIcon Symbol="ArrowDownload24" Width="28" Height="28" Margin="0,0,8,0"/>
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="Installation"/>
                     </StackPanel>
-                    <ui:Button Margin="0,12,0,0" Appearance="Primary" Icon="{ui:SymbolIcon ArrowReset24}" Content="Reinstall" />
-                    <ui:Button Margin="0,8,0,0" Appearance="Danger" Icon="{ui:SymbolIcon Delete24}" Content="Uninstall" />
-                    <ui:ToggleSwitch Margin="0,12,0,0" Content="Keep Projects" />
+                    
+                    <!-- Uninstall Button -->
+                    <ui:Button Margin="0,12,0,0" 
+                              Appearance="Danger" 
+                              Icon="{ui:SymbolIcon Delete24}" 
+                              Content="Uninstall Modrix" 
+                              Click="Uninstall_Click"
+                              ToolTip="Remove Modrix from your system"/>
 
                     <!-- Java JDKs Section -->
                     <Border Margin="0,24,0,0" Padding="18" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8">

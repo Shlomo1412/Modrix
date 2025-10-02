@@ -7,7 +7,7 @@ namespace Modrix.Services
 {
     public interface IUninstallService
     {
-        Task<bool> UninstallModrixAsync(IProgress<string>? progress = null, bool deleteProjects = false);
+        Task<bool> UninstallModrixAsync(IProgress<(string Status, int Percentage)>? progress = null, bool deleteProjects = false);
         bool IsRunningAsAdministrator();
         Task<bool> RequestAdministratorPrivilegesAsync();
     }
@@ -43,11 +43,12 @@ namespace Modrix.Services
             }
         }
 
-        public async Task<bool> UninstallModrixAsync(IProgress<string>? progress = null, bool deleteProjects = false)
+        public async Task<bool> UninstallModrixAsync(IProgress<(string Status, int Percentage)>? progress = null, bool deleteProjects = false)
         {
             try
             {
-                progress?.Report("Starting uninstallation...");
+                progress?.Report(("Starting uninstallation...", 0));
+                await Task.Delay(500); // Brief pause for UI feedback
                 
                 var installLocation = GetInstallLocation();
                 if (string.IsNullOrEmpty(installLocation))
@@ -55,33 +56,43 @@ namespace Modrix.Services
                     installLocation = AppDomain.CurrentDomain.BaseDirectory;
                 }
 
-                progress?.Report("Removing registry entries...");
+                progress?.Report(("Removing registry entries...", 10));
                 await RemoveRegistryEntriesAsync();
+                await Task.Delay(300);
 
-                progress?.Report("Removing file associations...");
+                progress?.Report(("Removing file associations...", 25));
                 await RemoveFileAssociationsAsync();
+                await Task.Delay(300);
 
-                progress?.Report("Removing from system PATH...");
+                progress?.Report(("Removing from system PATH...", 40));
                 await RemoveFromSystemPathAsync(installLocation);
+                await Task.Delay(300);
 
-                progress?.Report("Removing shortcuts...");
+                progress?.Report(("Removing shortcuts...", 55));
                 await RemoveShortcutsAsync();
+                await Task.Delay(300);
 
                 if (deleteProjects)
                 {
-                    progress?.Report("Removing user projects and data...");
+                    progress?.Report(("Removing user projects and data...", 70));
                     await RemoveUserDataAsync();
+                    await Task.Delay(500);
                 }
 
-                progress?.Report("Removing application files...");
+                progress?.Report(("Removing application files...", 85));
                 await RemoveApplicationFilesAsync(installLocation);
+                await Task.Delay(300);
 
-                progress?.Report("Uninstallation completed successfully!");
+                progress?.Report(("Finalizing uninstallation...", 95));
+                await Task.Delay(500);
+
+                progress?.Report(("Uninstallation completed successfully!", 100));
+                await Task.Delay(1000); // Allow user to see completion
                 return true;
             }
             catch (Exception ex)
             {
-                progress?.Report($"Uninstallation failed: {ex.Message}");
+                progress?.Report(($"Uninstallation failed: {ex.Message}", 0));
                 return false;
             }
         }

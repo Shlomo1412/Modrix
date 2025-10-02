@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Media.Animation;
 using Modrix.Services;
 using Wpf.Ui.Controls;
 
@@ -8,6 +9,9 @@ namespace Modrix.Views.Windows
     {
         private readonly IUninstallService _uninstallService;
         private bool _isUninstalling = false;
+        
+        private const double NormalHeight = 490;
+        private const double UninstallingHeight = 530;
 
         public bool ShouldExit { get; private set; } = false;
 
@@ -35,6 +39,39 @@ namespace Modrix.Views.Windows
             }
         }
 
+        private void ShowProgressSection()
+        {
+            // Show progress section
+            ProgressSection.Visibility = Visibility.Visible;
+            ButtonsSection.Visibility = Visibility.Collapsed;
+            
+            // Animate window height increase
+            AnimateWindowHeight(UninstallingHeight);
+        }
+
+        private void HideProgressSection()
+        {
+            // Hide progress section
+            ProgressSection.Visibility = Visibility.Collapsed;
+            ButtonsSection.Visibility = Visibility.Visible;
+            
+            // Animate window height decrease
+            AnimateWindowHeight(NormalHeight);
+        }
+
+        private void AnimateWindowHeight(double targetHeight)
+        {
+            var heightAnimation = new DoubleAnimation
+            {
+                From = this.Height,
+                To = targetHeight,
+                Duration = TimeSpan.FromMilliseconds(300),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
+            };
+
+            this.BeginAnimation(HeightProperty, heightAnimation);
+        }
+
         private async void Uninstall_Click(object sender, RoutedEventArgs e)
         {
             if (_isUninstalling) return;
@@ -55,8 +92,8 @@ namespace Modrix.Views.Windows
                     var success = await _uninstallService.RequestAdministratorPrivilegesAsync();
                     if (success)
                     {
-                        ShouldExit = true;
-                        this.Close();
+                        // Force exit the application immediately
+                        Environment.Exit(0);
                         return;
                     }
                     else
@@ -95,13 +132,14 @@ namespace Modrix.Views.Windows
 
             _isUninstalling = true;
 
-            // Show progress and hide buttons
-            ProgressSection.Visibility = Visibility.Visible;
-            ButtonsSection.Visibility = Visibility.Collapsed;
+            // Show progress section and resize window
+            ShowProgressSection();
 
-            var progress = new Progress<string>(status =>
+            var progress = new Progress<(string Status, int Percentage)>(update =>
             {
-                ProgressText.Text = status;
+                ProgressText.Text = update.Status;
+                ProgressPercentage.Text = $"{update.Percentage}%";
+                UninstallProgressBar.Value = update.Percentage;
             });
 
             try
@@ -122,8 +160,8 @@ namespace Modrix.Views.Windows
                         PrimaryButtonText = "Close"
                     }.ShowDialogAsync();
                     
-                    ShouldExit = true;
-                    this.Close();
+                    // Force exit the application completely
+                    Environment.Exit(0);
                 }
                 else
                 {
@@ -134,9 +172,8 @@ namespace Modrix.Views.Windows
                         PrimaryButtonText = "OK"
                     }.ShowDialogAsync();
                     
-                    // Reset UI
-                    ProgressSection.Visibility = Visibility.Collapsed;
-                    ButtonsSection.Visibility = Visibility.Visible;
+                    // Reset UI and resize window back
+                    HideProgressSection();
                     _isUninstalling = false;
                 }
             }
@@ -149,9 +186,8 @@ namespace Modrix.Views.Windows
                     PrimaryButtonText = "OK"
                 }.ShowDialogAsync();
                 
-                // Reset UI
-                ProgressSection.Visibility = Visibility.Collapsed;
-                ButtonsSection.Visibility = Visibility.Visible;
+                // Reset UI and resize window back
+                HideProgressSection();
                 _isUninstalling = false;
             }
         }
