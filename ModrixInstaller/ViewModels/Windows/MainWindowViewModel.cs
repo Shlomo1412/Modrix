@@ -12,6 +12,7 @@ public class MainWindowViewModel : ObservableObject
 {
     private readonly IThemeService _themeService;
     private readonly LicensePage _licensePage;
+    private readonly ShortcutsPage _shortcutsPage;
     private readonly InstallerPage _installerPage;
 
     private string _applicationTitle = "Modrix Installer";
@@ -37,7 +38,14 @@ public class MainWindowViewModel : ObservableObject
             if (SetProperty(ref _currentStepIndex, value))
             {
                 CurrentContent = Steps[value];
-                if (CurrentContent == _installerPage) _installerPage.ViewModel.InitializeIfNeeded();
+                
+                if (CurrentContent == _installerPage) 
+                {
+                    _installerPage.ViewModel.InitializeIfNeeded();
+                    // Pass shortcuts settings to installer
+                    _installerPage.ViewModel.SetShortcutsSettings(_shortcutsPage.ViewModel);
+                }
+                
                 OnPropertyChanged(nameof(IsFirst));
                 OnPropertyChanged(nameof(IsLast));
                 UpdateEnabledStates();
@@ -104,13 +112,18 @@ public class MainWindowViewModel : ObservableObject
     public ICommand PreviousCommand { get; }
     public ICommand ToggleThemeCommand { get; }
 
-    public MainWindowViewModel(IThemeService themeService, LicensePage licensePage, InstallerPage installerPage)
+    public MainWindowViewModel(
+        IThemeService themeService, 
+        LicensePage licensePage, 
+        ShortcutsPage shortcutsPage, 
+        InstallerPage installerPage)
     {
         _themeService = themeService;
         _licensePage = licensePage;
+        _shortcutsPage = shortcutsPage;
         _installerPage = installerPage;
 
-        Steps = new List<Page> { _licensePage, _installerPage };
+        Steps = new List<Page> { _licensePage, _shortcutsPage, _installerPage };
 
         _currentStepIndex = 0;
         _currentContent = Steps[0];
@@ -157,16 +170,27 @@ public class MainWindowViewModel : ObservableObject
     private void UpdateEnabledStates()
     {
         PreviousEnabled = !IsFirst;
-        var accepted = _licensePage.ViewModel.IsAccepted;
-        NextEnabled = !IsLast && !(IsFirst && !accepted);
         
-        // For installer page, enable button if we can install or need admin
-        if (CurrentContent == _installerPage && IsLast)
+        if (IsFirst)
+        {
+            // License page - only enable if accepted
+            NextEnabled = _licensePage.ViewModel.IsAccepted;
+        }
+        else if (CurrentContent == _shortcutsPage)
+        {
+            // Shortcuts page - always allow proceeding
+            NextEnabled = true;
+        }
+        else if (CurrentContent == _installerPage && IsLast)
         {
             var installerVm = _installerPage.ViewModel;
             // Enable if not installing and not completed, and has required info
             NextEnabled = !installerVm.IsInstalling && !installerVm.InstallationCompleted && 
                          (installerVm.SelectedRelease != null && !string.IsNullOrEmpty(installerVm.InstallationPath));
+        }
+        else
+        {
+            NextEnabled = true;
         }
     }
 

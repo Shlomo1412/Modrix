@@ -1,5 +1,7 @@
 using ModrixInstaller.Models;
 using ModrixInstaller.Services;
+using ModrixInstaller.ViewModels.Pages;
+using ModrixInstaller.Views.Dialogs;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
@@ -14,7 +16,7 @@ public partial class InstallerViewModel : ObservableObject
 {
     private readonly IGitHubService _gitHubService;
     private readonly IInstallationService _installationService;
-    private readonly ISnackbarService _snackbarService;
+    private ShortcutsViewModel? _shortcutsSettings;
 
     [ObservableProperty]
     private ObservableCollection<GitHubRelease> _releases = new();
@@ -45,15 +47,18 @@ public partial class InstallerViewModel : ObservableObject
 
     public InstallerViewModel(
         IGitHubService gitHubService,
-        IInstallationService installationService,
-        ISnackbarService snackbarService)
+        IInstallationService installationService)
     {
         _gitHubService = gitHubService;
         _installationService = installationService;
-        _snackbarService = snackbarService;
 
         InstallationPath = _installationService.GetDefaultInstallationPath();
         IsAdministrator = _installationService.IsRunningAsAdministrator();
+    }
+
+    public void SetShortcutsSettings(ShortcutsViewModel shortcutsSettings)
+    {
+        _shortcutsSettings = shortcutsSettings;
     }
 
     public void InitializeIfNeeded()
@@ -86,7 +91,6 @@ public partial class InstallerViewModel : ObservableObject
         catch (Exception ex)
         {
             InstallationStatus = $"Failed to load releases: {ex.Message}";
-            _snackbarService.Show("Error", "Failed to load releases from GitHub.", ControlAppearance.Danger, null, TimeSpan.FromSeconds(5));
         }
         finally { IsLoading = false; }
     }
@@ -122,7 +126,6 @@ public partial class InstallerViewModel : ObservableObject
         else
         {
             InstallationStatus = "Failed to obtain administrator privileges.";
-            _snackbarService.Show("Error", "Administrator privileges are required for installation.", ControlAppearance.Caution, null, TimeSpan.FromSeconds(5));
         }
     }
 
@@ -131,12 +134,12 @@ public partial class InstallerViewModel : ObservableObject
     {
         if (SelectedRelease == null)
         {
-            _snackbarService.Show("Error", "Please select a release to install.", ControlAppearance.Caution, null, TimeSpan.FromSeconds(3));
+            InstallationStatus = "Please select a release to install.";
             return;
         }
         if (!_installationService.IsValidInstallationPath(InstallationPath))
         {
-            _snackbarService.Show("Error", "Please select a valid installation path.", ControlAppearance.Caution, null, TimeSpan.FromSeconds(3));
+            InstallationStatus = "Please select a valid installation path.";
             return;
         }
 
@@ -152,25 +155,51 @@ public partial class InstallerViewModel : ObservableObject
             {
                 var match = System.Text.RegularExpressions.Regex.Match(status, @"(\d+)%");
                 if (match.Success && int.TryParse(match.Groups[1].Value, out var percentage))
-                    InstallationProgress = 20 + (percentage * 60 / 100);
-                else InstallationProgress = 50;
+                    InstallationProgress = 20 + (percentage * 40 / 100);
+                else InstallationProgress = 40;
             }
-            else if (status.Contains("Creating")) InstallationProgress = 85;
-            else if (status.Contains("Adding")) InstallationProgress = 90;
-            else if (status.Contains("Registering")) InstallationProgress = 95;
+            else if (status.Contains("Creating")) InstallationProgress = 65;
+            else if (status.Contains("Adding")) InstallationProgress = 75;
+            else if (status.Contains("Registering")) InstallationProgress = 85;
+            else if (status.Contains("Attempting")) InstallationProgress = 95;
             else if (status.Contains("completed")) InstallationProgress = 100;
         });
 
         try
         {
-            await _installationService.InstallModrixAsync(SelectedRelease, InstallationPath, progress);
+            // Use shortcut settings, or create default if none provided
+            var shortcuts = _shortcutsSettings ?? new ShortcutsViewModel();
+            
+            await _installationService.InstallModrixAsync(SelectedRelease, InstallationPath, shortcuts, progress);
             InstallationCompleted = true;
-            _snackbarService.Show("Success", "Modrix has been installed successfully!", ControlAppearance.Success, null, TimeSpan.FromSeconds(5));
+            
+            // Show success dialog
+            var modrixPath = Path.Combine(InstallationPath, "Modrix.exe");
+            var successDialog = new SuccessDialog(modrixPath)
+            {
+                Owner = Application.Current.MainWindow
+            };
+            successDialog.ShowDialog();
         }
         catch (Exception ex)
         {
             InstallationStatus = $"Installation failed: {ex.Message}";
-            _snackbarService.Show("Error", $"Installation failed: {ex.Message}", ControlAppearance.Danger, null, TimeSpan.FromSeconds(5));
+            
+            // Show failed dialog
+            var failedDialog = new FailedDialog(ex.Message)
+            {
+                Owner = Application.Current.MainWindow
+            };
+            failedDialog.ShowDialog();
+            
+            // If user wants to retry
+            if (failedDialog.ShouldRetry)
+            {
+                // Reset state and try again
+                await Task.Delay(1000); // Brief delay
+                await InstallModrixAsync();
+                return;
+            }
         }
         finally { IsInstalling = false; }
     }
@@ -184,13 +213,13 @@ public partial class InstallerViewModel : ObservableObject
             if (File.Exists(modrixPath))
             {
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = modrixPath, UseShellExecute = true });
-                _snackbarService.Show("Success", "Modrix has been launched!", ControlAppearance.Success, null, TimeSpan.FromSeconds(3));
+                InstallationStatus = "Modrix launched successfully!";
             }
-            else _snackbarService.Show("Error", "Modrix.exe not found in installation directory.", ControlAppearance.Danger, null, TimeSpan.FromSeconds(3));
+            else InstallationStatus = "Modrix.exe not found in installation directory.";
         }
         catch (Exception ex)
         {
-            _snackbarService.Show("Error", $"Failed to launch Modrix: {ex.Message}", ControlAppearance.Danger, null, TimeSpan.FromSeconds(3));
+            InstallationStatus = $"Failed to launch Modrix: {ex.Message}";
         }
     }
 }

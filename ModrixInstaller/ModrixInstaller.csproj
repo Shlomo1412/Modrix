@@ -59,6 +59,8 @@
     <Resource Include="Icons\WarningIcon.png" />
     <Resource Include="Icons\WorkspaceIcon.png" />
     <Resource Include="ModrixIcon.ico" />
+    <Resource Include="Icons\VIcon.png" />
+    <Resource Include="Icons\XIcon.png" />
   </ItemGroup>
 
   <ItemGroup>

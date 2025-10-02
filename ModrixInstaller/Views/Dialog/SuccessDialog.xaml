@@ -1,0 +1,45 @@
+<ui:FluentWindow x:Class="ModrixInstaller.Views.Dialogs.SuccessDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="Installation Successful!"
+        Height="380"
+        Width="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+    
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,18" VerticalAlignment="Center">
+            <ui:SymbolIcon Symbol="CheckmarkCircle24" Width="40" Height="40" Margin="0,0,12,0" Foreground="Green"/>
+            <StackPanel>
+                <TextBlock Text="Installation Completed!" FontSize="22" FontWeight="Bold"/>
+                <TextBlock Text="Modrix has been successfully installed" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            </StackPanel>
+        </StackPanel>
+        <Border Grid.Row="1" CornerRadius="12" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="18" Margin="0,0,0,18">
+            <StackPanel>
+                <TextBlock Text="What's next?" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8"/>
+                <StackPanel Margin="0,0,0,8">
+                    <TextBlock Text="&#8226; Modrix is now ready to use on your system." Margin="0,0,0,4"/>
+                    <TextBlock Text="&#8226; Desktop and Start Menu shortcuts have been created." Margin="0,0,0,4"/>
+                    <TextBlock Text="&#8226; You can now start creating amazing Minecraft mods!" Margin="0,0,0,4"/>
+                    <TextBlock Text="&#8226; Check out our Discord community for support and tips." Margin="0,0,0,4"/>
+                    <TextBlock Text="&#8226; Visit our GitHub for documentation and updates."/>
+                </StackPanel>
+                <TextBlock Text="Thank you for choosing Modrix!" FontStyle="Italic" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            </StackPanel>
+        </Border>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <ui:Button Content="Run Modrix" Appearance="Primary" Width="140" Height="36" Margin="0,0,8,0" Icon="{ui:SymbolIcon Rocket24}" Click="RunModrix_Click"/>
+            <ui:Button Content="Close" Height="36" Icon="{ui:SymbolIcon Dismiss24}" Click="Close_Click"/>
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>

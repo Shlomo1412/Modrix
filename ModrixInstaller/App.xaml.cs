@@ -25,13 +25,16 @@ namespace ModrixInstaller
                 services.AddHttpClient<IGitHubService, GitHubService>();
                 services.AddSingleton<IThemeService, ThemeService>();
                 services.AddSingleton<ITaskBarService, TaskBarService>();
-                services.AddSingleton<ISnackbarService, SnackbarService>();
 
                 services.AddSingleton<IGitHubService, GitHubService>();
                 services.AddSingleton<IInstallationService, InstallationService>();
 
                 services.AddSingleton<LicenseViewModel>();
                 services.AddSingleton<LicensePage>();
+                
+                services.AddSingleton<ShortcutsViewModel>();
+                services.AddSingleton<ShortcutsPage>();
+                
                 services.AddSingleton<InstallerViewModel>();
                 services.AddSingleton<InstallerPage>();
 

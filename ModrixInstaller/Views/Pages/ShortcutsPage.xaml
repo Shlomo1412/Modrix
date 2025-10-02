@@ -1,0 +1,211 @@
+<Page
+    x:Class="ModrixInstaller.Views.Pages.ShortcutsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:ModrixInstaller.Views.Pages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="ShortcutsPage"
+    d:DataContext="{d:DesignInstance local:ShortcutsPage, IsDesignTimeCreatable=False}"
+    d:DesignHeight="650"
+    d:DesignWidth="900"
+    ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+    ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    mc:Ignorable="d">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,30">
+            <TextBlock 
+                FontSize="32" 
+                FontWeight="Bold" 
+                Text="Shortcuts Configuration" />
+            <TextBlock 
+                Margin="0,8,0,0"
+                FontSize="16" 
+                Opacity="0.8"
+                Text="Choose where to create shortcuts for easy access" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                
+                <!-- Desktop Shortcut -->
+                <ui:Card Margin="0,0,0,25">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <ui:SymbolIcon Grid.Column="0" Symbol="Desktop24" Margin="0,0,15,0" />
+                        
+                        <StackPanel Grid.Column="1">
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Desktop Shortcut" />
+                            <TextBlock 
+                                Margin="0,4,0,0"
+                                Opacity="0.8"
+                                Text="Create a shortcut on your desktop for quick access to Modrix" />
+                        </StackPanel>
+                        
+                        <ui:ToggleSwitch 
+                            Grid.Column="2"
+                            x:Name="DesktopShortcutToggle"
+                            IsChecked="{Binding ViewModel.CreateDesktopShortcut}" />
+                    </Grid>
+                </ui:Card>
+
+                <!-- Start Menu Shortcut -->
+                <ui:Card Margin="0,0,0,25">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <ui:SymbolIcon Grid.Column="0" Symbol="Apps24" Margin="0,0,15,0" />
+                        
+                        <StackPanel Grid.Column="1">
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Start Menu Shortcut" />
+                            <TextBlock 
+                                Margin="0,4,0,0"
+                                Opacity="0.8"
+                                Text="Add Modrix to your Start Menu under Programs" />
+                        </StackPanel>
+                        
+                        <ui:ToggleSwitch 
+                            Grid.Column="2"
+                            x:Name="StartMenuShortcutToggle"
+                            IsChecked="{Binding ViewModel.CreateStartMenuShortcut}" />
+                    </Grid>
+                </ui:Card>
+
+                <!-- Quick Launch Shortcut -->
+                <ui:Card Margin="0,0,0,25">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <ui:SymbolIcon Grid.Column="0" Symbol="Rocket24" Margin="0,0,15,0" />
+                        
+                        <StackPanel Grid.Column="1">
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Quick Launch Toolbar" />
+                            <TextBlock 
+                                Margin="0,4,0,0"
+                                Opacity="0.8"
+                                Text="Add Modrix to the Quick Launch toolbar (if available)" />
+                        </StackPanel>
+                        
+                        <ui:ToggleSwitch 
+                            Grid.Column="2"
+                            x:Name="QuickLaunchShortcutToggle"
+                            IsChecked="{Binding ViewModel.CreateQuickLaunchShortcut}" />
+                    </Grid>
+                </ui:Card>
+
+                <!-- Taskbar Pin -->
+                <ui:Card Margin="0,0,0,25">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <ui:SymbolIcon Grid.Column="0" Symbol="Pin24" Margin="0,0,15,0" />
+                        
+                        <StackPanel Grid.Column="1">
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Pin to Taskbar" />
+                            <TextBlock 
+                                Margin="0,4,0,0"
+                                Opacity="0.8"
+                                Text="Pin Modrix to your taskbar for instant access" />
+                        </StackPanel>
+                        
+                        <ui:ToggleSwitch 
+                            Grid.Column="2"
+                            x:Name="TaskbarPinToggle"
+                            IsChecked="{Binding ViewModel.PinToTaskbar}" />
+                    </Grid>
+                </ui:Card>
+
+                <!-- File Association -->
+                <ui:Card Margin="0,0,0,25">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <ui:SymbolIcon Grid.Column="0" Symbol="DocumentFolder24" Margin="0,0,15,0" />
+                        
+                        <StackPanel Grid.Column="1">
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Associate Project Files" />
+                            <TextBlock 
+                                Margin="0,4,0,0"
+                                Opacity="0.8"
+                                Text="Associate .modrix project files to open with Modrix automatically" />
+                        </StackPanel>
+                        
+                        <ui:ToggleSwitch 
+                            Grid.Column="2"
+                            x:Name="FileAssociationToggle"
+                            IsChecked="{Binding ViewModel.AssociateProjectFiles}" />
+                    </Grid>
+                </ui:Card>
+
+                <!-- System PATH -->
+                <ui:Card Margin="0,0,0,25">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <ui:SymbolIcon Grid.Column="0" Symbol="WindowConsole20" Margin="0,0,15,0" />
+                        
+                        <StackPanel Grid.Column="1">
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Add to System PATH" />
+                            <TextBlock 
+                                Margin="0,4,0,0"
+                                Opacity="0.8"
+                                Text="Add Modrix to system PATH to run from command line" />
+                        </StackPanel>
+                        
+                        <ui:ToggleSwitch 
+                            Grid.Column="2"
+                            x:Name="SystemPATHToggle"
+                            IsChecked="{Binding ViewModel.AddToSystemPath}" />
+                    </Grid>
+                </ui:Card>
+
+                <!-- Summary -->
+                <ui:Card Margin="0,0,0,25" Background="{DynamicResource AccentFillColorSecondaryBrush}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                            <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" />
+                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Summary" />
+                        </StackPanel>
+
+                        <TextBlock x:Name="SummaryText" Text="{Binding ViewModel.ShortcutSummary}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </ui:Card>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
