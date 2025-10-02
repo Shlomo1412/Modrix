@@ -18,6 +18,9 @@ using WpfButton = System.Windows.Controls.Button;
 using UiButton = Wpf.Ui.Controls.Button;
 using SystemMenuItem = System.Windows.Controls.MenuItem;
 using SystemTextBlock = System.Windows.Controls.TextBlock;
+using System.Text.Json; // added for mcmeta parsing
+using System.ComponentModel; // for INotifyPropertyChanged
+using System.Windows.Threading; // for animation timer
 
 namespace Modrix.Views.Pages.ResourcePack
 {
@@ -29,6 +32,7 @@ namespace Modrix.Views.Pages.ResourcePack
         private List<TextureOverrideItem> _allTextureOverrides = new();
         private List<TranslationOverrideItem> _allTranslationOverrides = new();
         private List<ModelOverrideItem> _allModelOverrides = new();
+        private DispatcherTimer? _previewAnimationTimer; // timer for animated previews
         
         public OverridesPage()
         {
@@ -43,11 +47,32 @@ namespace Modrix.Views.Pages.ResourcePack
                 
                 RefreshOverrides();
                 System.Diagnostics.Debug.WriteLine("OverridesPage: RefreshOverrides completed");
+
+                // Initialize animation preview timer (20 FPS ~ 50ms)
+                _previewAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+                _previewAnimationTimer.Tick += PreviewAnimationTimer_Tick;
+                _previewAnimationTimer.Start();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"OverridesPage constructor error: {ex.Message}");
                 throw;
+            }
+        }
+
+        private void PreviewAnimationTimer_Tick(object? sender, EventArgs e)
+        {
+            var now = DateTime.UtcNow;
+            foreach (var tex in _allTextureOverrides)
+            {
+                if (!tex.IsAnimated || tex.FramesSequence.Count == 0) continue;
+                // Check elapsed
+                if ((now - tex.LastFrameSwitch).TotalMilliseconds >= tex.FrameDurations[tex.CurrentSequenceIndex])
+                {
+                    tex.CurrentSequenceIndex = (tex.CurrentSequenceIndex + 1) % tex.FramesSequence.Count;
+                    tex.LastFrameSwitch = now;
+                    tex.PreviewImage = tex.FramesSequence[tex.CurrentSequenceIndex];
+                }
             }
         }
 
@@ -100,17 +125,36 @@ namespace Modrix.Views.Pages.ResourcePack
                         OverridePath = override_.OverridePath
                     };
 
-                    // Load preview image
+                    // Load preview & animation frames if present
                     if (File.Exists(override_.OverridePath))
                     {
-                        var bitmap = new BitmapImage();
-                        bitmap.BeginInit();
-                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmap.UriSource = new Uri(override_.OverridePath);
-                        bitmap.DecodePixelWidth = 40;
-                        bitmap.EndInit();
-                        bitmap.Freeze();
-                        item.PreviewImage = bitmap;
+                        try
+                        {
+                            var bitmap = new BitmapImage();
+                            bitmap.BeginInit();
+                            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmap.UriSource = new Uri(override_.OverridePath);
+                            bitmap.EndInit();
+                            bitmap.Freeze();
+
+                            bool looksLikeSpriteSheet = bitmap.PixelHeight > bitmap.PixelWidth && bitmap.PixelHeight % bitmap.PixelWidth == 0;
+                            string mcmetaPath = override_.OverridePath + ".mcmeta";
+                            bool hasMcmeta = File.Exists(mcmetaPath);
+
+                            if (looksLikeSpriteSheet)
+                            {
+                                BuildAnimatedPreview(item, bitmap, mcmetaPath, hasMcmeta);
+                            }
+                            else
+                            {
+                                // Static - scale to 40px bounding box
+                                item.PreviewImage = CreateScaledBitmap(bitmap, 40, 40);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error preparing preview: {ex.Message}");
+                        }
                     }
 
                     _allTextureOverrides.Add(item);
@@ -127,6 +171,114 @@ namespace Modrix.Views.Pages.ResourcePack
             {
                 textureOverridesList.ItemsSource = _allTextureOverrides;
             }
+        }
+
+        private BitmapSource CreateScaledBitmap(BitmapSource source, int maxW, int maxH)
+        {
+            double scale = Math.Min((double)maxW / source.PixelWidth, (double)maxH / source.PixelHeight);
+            var tb = new TransformedBitmap(source, new ScaleTransform(scale, scale));
+            tb.Freeze();
+            return tb;
+        }
+
+        private void BuildAnimatedPreview(TextureOverrideItem item, BitmapImage sheet, string mcmetaPath, bool hasMcmeta)
+        {
+            int frameSize = sheet.PixelWidth; // assume vertical strip of square frames
+            int frameCount = sheet.PixelHeight / frameSize;
+            var baseFrames = new List<BitmapSource>();
+            for (int i = 0; i < frameCount; i++)
+            {
+                try
+                {
+                    var crop = new CroppedBitmap(sheet, new Int32Rect(0, i * frameSize, frameSize, frameSize));
+                    crop.Freeze();
+                    baseFrames.Add(CreateScaledBitmap(crop, 40, 40));
+                }
+                catch { }
+            }
+
+            // Build animation sequence
+            if (baseFrames.Count == 0)
+            {
+                item.PreviewImage = CreateScaledBitmap(sheet, 40, 40);
+                return;
+            }
+
+            List<int> sequenceIndices = new();
+            List<int> sequenceDurations = new(); // ms per sequence frame
+
+            if (hasMcmeta)
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(File.ReadAllText(mcmetaPath));
+                    if (doc.RootElement.TryGetProperty("animation", out var anim))
+                    {
+                        int globalTicks = anim.TryGetProperty("frametime", out var ft) ? ft.GetInt32() : 1; // ticks (1 tick = 50ms)
+                        int globalMs = Math.Max(1, globalTicks) * 50;
+
+                        if (anim.TryGetProperty("frames", out var framesElem) && framesElem.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var f in framesElem.EnumerateArray())
+                            {
+                                if (f.ValueKind == JsonValueKind.Number)
+                                {
+                                    int idx = f.GetInt32();
+                                    if (idx >= 0 && idx < baseFrames.Count)
+                                    {
+                                        sequenceIndices.Add(idx);
+                                        sequenceDurations.Add(globalMs);
+                                    }
+                                }
+                                else if (f.ValueKind == JsonValueKind.Object)
+                                {
+                                    if (f.TryGetProperty("index", out var idxProp))
+                                    {
+                                        int idx = idxProp.GetInt32();
+                                        int timeTicks = f.TryGetProperty("time", out var timeProp) ? timeProp.GetInt32() : globalTicks;
+                                        int ms = Math.Max(1, timeTicks) * 50;
+                                        if (idx >= 0 && idx < baseFrames.Count)
+                                        {
+                                            sequenceIndices.Add(idx);
+                                            sequenceDurations.Add(ms);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // No frames array -> sequential
+                            for (int i = 0; i < baseFrames.Count; i++)
+                            {
+                                sequenceIndices.Add(i);
+                                sequenceDurations.Add(globalMs);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed parsing mcmeta: {ex.Message}");
+                }
+            }
+
+            if (sequenceIndices.Count == 0)
+            {
+                // fallback sequential 100ms each
+                for (int i = 0; i < baseFrames.Count; i++)
+                {
+                    sequenceIndices.Add(i);
+                    sequenceDurations.Add(100);
+                }
+            }
+
+            item.IsAnimated = true;
+            item.FramesSequence = sequenceIndices.Select(i => baseFrames[i]).ToList();
+            item.FrameDurations = sequenceDurations;
+            item.CurrentSequenceIndex = 0;
+            item.LastFrameSwitch = DateTime.UtcNow;
+            item.PreviewImage = item.FramesSequence[0];
         }
 
         private void LoadTranslationOverrides()
@@ -265,20 +417,9 @@ namespace Modrix.Views.Pages.ResourcePack
                     Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void TextureSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            FilterTextureOverrides();
-        }
-
-        private void TranslationSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            FilterTranslationOverrides();
-        }
-
-        private void ModelSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            FilterModelOverrides();
-        }
+        private void TextureSearchBox_TextChanged(object sender, TextChangedEventArgs e) => FilterTextureOverrides();
+        private void TranslationSearchBox_TextChanged(object sender, TextChangedEventArgs e) => FilterTranslationOverrides();
+        private void ModelSearchBox_TextChanged(object sender, TextChangedEventArgs e) => FilterModelOverrides();
 
         private void FilterTextureOverrides()
         {
@@ -562,9 +703,10 @@ namespace Modrix.Views.Pages.ResourcePack
                     return;
                 }
                 
-                // Create the editor page
+                // Create the editor page (allow animation for resource pack textures)
                 var editorVm = new TextureEditorViewModel();
-                var editorPage = new TextureEditorPage(editorVm);
+                editorVm.EnableAnimation(true);
+                var editorPage = new TextureEditorPage(editorVm, allowAnimation: true);
                 editorVm.SetPngPath(filePath);
 
                 // Create a Frame to host the page
@@ -946,13 +1088,29 @@ namespace Modrix.Views.Pages.ResourcePack
         }
         
         // Helper classes
-        public class TextureOverrideItem
+        public class TextureOverrideItem : INotifyPropertyChanged
         {
             public string Name { get; set; } = "";
             public string Category { get; set; } = "";
             public string OriginalPath { get; set; } = "";
             public string OverridePath { get; set; } = "";
-            public BitmapImage? PreviewImage { get; set; }
+
+            private BitmapSource? _previewImage;
+            public BitmapSource? PreviewImage
+            {
+                get => _previewImage;
+                set { _previewImage = value; OnPropertyChanged(nameof(PreviewImage)); }
+            }
+
+            // Animation metadata
+            public bool IsAnimated { get; set; } = false;
+            public List<BitmapSource> FramesSequence { get; set; } = new();
+            public List<int> FrameDurations { get; set; } = new(); // ms
+            public int CurrentSequenceIndex { get; set; } = 0;
+            public DateTime LastFrameSwitch { get; set; } = DateTime.UtcNow;
+
+            public event PropertyChangedEventHandler? PropertyChanged;
+            private void OnPropertyChanged(string prop) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
         public class TranslationOverrideItem

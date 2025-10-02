@@ -51,6 +51,10 @@
                         <Run Text=" x " />
                         <Run Text="{Binding ViewModel.ImageHeight, Mode=OneWay}" />
                         <Run Text=" pixels" />
+                        <Run Text="  |  Frames: " />
+                        <Run Text="{Binding ViewModel.FrameCount, Mode=OneWay}" />
+                        <Run Text="  |  Current: " />
+                        <Run Text="{Binding ViewModel.DisplayCurrentFrame, Mode=OneWay}" />
                     </TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
@@ -64,6 +68,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!-- Toolbar Card -->
@@ -163,6 +168,45 @@
                         </Image>
                     </Grid>
                 </ScrollViewer>
+            </Border>
+
+            <!-- Animation Panel -->
+            <Border Grid.Column="2" Margin="18,0,0,0" Padding="12" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="12" Effect="{DynamicResource CardShadow}" Visibility="{Binding ViewModel.AllowAnimation, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Animation" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,8"/>
+                    <ListBox Grid.Row="1" ItemsSource="{Binding ViewModel.Frames}" SelectedIndex="{Binding ViewModel.CurrentFrameIndex, Mode=TwoWay}" MinWidth="140" MaxHeight="300" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel IsVirtualizing="True" VirtualizationMode="Standard"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,2">
+                                    <Border Width="40" Height="40" Background="#222" Margin="0,0,8,0">
+                                        <Image Source="{Binding Thumbnail}" Stretch="Uniform" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                                    </Border>
+                                    <StackPanel>
+                                        <TextBlock Text="Frame" FontSize="11"/>
+                                        <TextBlock Text="{Binding DurationMs, StringFormat={}{0} ms}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <ui:Button Margin="2" Command="{Binding ViewModel.AddFrameCommand}" ToolTip="Add Frame" Icon="{ui:SymbolIcon Add24}"/>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.RemoveFrameCommand}" ToolTip="Remove Frame" Icon="{ui:SymbolIcon Delete24}"/>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.PreviousFrameCommand}" ToolTip="Previous" Icon="{ui:SymbolIcon ArrowPrevious24}"/>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.PlayPauseCommand}" ToolTip="Play / Pause" Icon="{ui:SymbolIcon Play24}"/>
+                        <ui:Button Margin="2" Command="{Binding ViewModel.NextFrameCommand}" ToolTip="Next" Icon="{ui:SymbolIcon ArrowNext24}"/>
+                    </StackPanel>
+                </Grid>
             </Border>
         </Grid>
 

@@ -39,13 +39,14 @@ namespace Modrix.Views.Pages
         private Point _lastProcessedPoint;
         private bool _pencilDragInProgress = false;
         private Point? _shapeStartPoint; // For line/rectangle tools
+        private bool _initAnimationFlagApplied = false;
 
-        public TextureEditorPage(TextureEditorViewModel viewModel)
+        public TextureEditorPage(TextureEditorViewModel viewModel, bool allowAnimation = false)
         {
             ViewModel = viewModel;
             InitializeComponent();
             DataContext = this; // Keep this as 'this' since we're binding to ViewModel property
-            
+            ViewModel.EnableAnimation(allowAnimation);
             // Set up keyboard event handling
             this.Focusable = true;
             this.PreviewKeyDown += TextureEditorPage_PreviewKeyDown;
@@ -61,58 +62,49 @@ namespace Modrix.Views.Pages
                         ViewModel.SelectPencilCommand.Execute(null);
                     e.Handled = true;
                     break;
-                
                 case Key.E: // Eraser
                     if (ViewModel.SelectEraserCommand.CanExecute(null))
                         ViewModel.SelectEraserCommand.Execute(null);
                     e.Handled = true;
                     break;
-                
                 case Key.B: // Bucket Fill
                     if (ViewModel.SelectBucketCommand.CanExecute(null))
                         ViewModel.SelectBucketCommand.Execute(null);
                     e.Handled = true;
                     break;
-                
                 case Key.I: // Color Picker
                     if (ViewModel.SelectPickerCommand.CanExecute(null))
                         ViewModel.SelectPickerCommand.Execute(null);
                     e.Handled = true;
                     break;
-
                 case Key.L: // Line
                     if (ViewModel.SelectLineCommand.CanExecute(null))
                         ViewModel.SelectLineCommand.Execute(null);
                     e.Handled = true;
                     break;
-                
                 case Key.R: // Rectangle
                     if (ViewModel.SelectRectangleCommand.CanExecute(null))
                         ViewModel.SelectRectangleCommand.Execute(null);
                     e.Handled = true;
                     break;
-                
                 case Key.G: // Toggle Grid
                     if (ViewModel.ToggleGridCommand.CanExecute(null))
                         ViewModel.ToggleGridCommand.Execute(null);
                     e.Handled = true;
                     break;
-                
-                case Key.OemPlus: // Zoom In (also works with '+' key)
+                case Key.OemPlus: // Zoom In
                 case Key.Add:
                     if (ViewModel.ZoomInCommand.CanExecute(null))
                         ViewModel.ZoomInCommand.Execute(null);
                     e.Handled = true;
                     break;
-                
-                case Key.OemMinus: // Zoom Out (also works with '-' key)
+                case Key.OemMinus: // Zoom Out
                 case Key.Subtract:
                     if (ViewModel.ZoomOutCommand.CanExecute(null))
                         ViewModel.ZoomOutCommand.Execute(null);
                     e.Handled = true;
                     break;
-
-                case Key.S: // Save (Ctrl+S)
+                case Key.S: // Save
                     if (Keyboard.Modifiers == ModifierKeys.Control)
                     {
                         if (ViewModel.SaveCommand.CanExecute(null))
@@ -120,8 +112,7 @@ namespace Modrix.Views.Pages
                         e.Handled = true;
                     }
                     break;
-
-                case Key.Z: // Undo (Ctrl+Z)
+                case Key.Z: // Undo
                     if (Keyboard.Modifiers == ModifierKeys.Control)
                     {
                         if (ViewModel.UndoCommand.CanExecute(null))
@@ -129,8 +120,7 @@ namespace Modrix.Views.Pages
                         e.Handled = true;
                     }
                     break;
-
-                case Key.Y: // Redo (Ctrl+Y)
+                case Key.Y: // Redo
                     if (Keyboard.Modifiers == ModifierKeys.Control)
                     {
                         if (ViewModel.RedoCommand.CanExecute(null))
@@ -138,10 +128,26 @@ namespace Modrix.Views.Pages
                         e.Handled = true;
                     }
                     break;
-
                 case Key.Delete: // Clear canvas
                     if (ViewModel.ClearCommand.CanExecute(null))
                         ViewModel.ClearCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                case Key.Space: // Play/Pause animation
+                    if (ViewModel.PlayPauseCommand.CanExecute(null))
+                        ViewModel.PlayPauseCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                case Key.PageDown:
+                case Key.Right:
+                    if (ViewModel.NextFrameCommand.CanExecute(null))
+                        ViewModel.NextFrameCommand.Execute(null);
+                    e.Handled = true;
+                    break;
+                case Key.PageUp:
+                case Key.Left:
+                    if (ViewModel.PreviousFrameCommand.CanExecute(null))
+                        ViewModel.PreviousFrameCommand.Execute(null);
                     e.Handled = true;
                     break;
             }

@@ -2,8 +2,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -11,10 +13,43 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Wpf.Ui.Abstractions.Controls;
 using System.Windows.Controls; // <-- Add this for Frame
+using System.Windows.Threading;
 
 namespace Modrix.ViewModels.Pages;
 
 public enum EditorTool { Pencil, Eraser, Bucket, Picker, Line, Rectangle }
+
+public class AnimationFrame : ObservableObject
+{
+    private WriteableBitmap _bitmap;
+    public WriteableBitmap Bitmap
+    {
+        get => _bitmap;
+        set => SetProperty(ref _bitmap, value);
+    }
+
+    private int _durationMs = 100; // default 100ms
+    public int DurationMs
+    {
+        get => _durationMs;
+        set => SetProperty(ref _durationMs, Math.Max(10, value));
+    }
+
+    public BitmapSource Thumbnail
+    {
+        get
+        {
+            try
+            {
+                var scale = 40.0 / Math.Max(Bitmap.PixelWidth, Bitmap.PixelHeight);
+                var tb = new TransformedBitmap(Bitmap, new ScaleTransform(scale, scale));
+                tb.Freeze();
+                return tb;
+            }
+            catch { return Bitmap; }
+        }
+    }
+}
 
 public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 {
@@ -75,7 +110,60 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private int _hoverY = -1; // New property for hover position
 
-    private WriteableBitmap? _bitmap;
+    // Animation related
+    // Removed ObservableProperty attributes and implement manually to avoid generator issues
+    private bool _allowAnimation = false;
+    public bool AllowAnimation
+    {
+        get => _allowAnimation;
+        private set
+        {
+            if (SetProperty(ref _allowAnimation, value))
+            {
+                UpdateAnimationEnabled();
+            }
+        }
+    }
+
+    private bool _isAnimationEnabled = false;
+    public bool IsAnimationEnabled
+    {
+        get => _isAnimationEnabled;
+        private set => SetProperty(ref _isAnimationEnabled, value);
+    }
+
+    private int _currentFrameIndex = 0;
+    public int CurrentFrameIndex
+    {
+        get => _currentFrameIndex;
+        set
+        {
+            if (value < 0) value = 0;
+            if (value >= Frames.Count) value = Frames.Count - 1;
+            if (SetProperty(ref _currentFrameIndex, value))
+            {
+                SwitchToFrame(value);
+                StatusText = $"Frame {value + 1}/{Frames.Count}";
+                OnPropertyChanged(nameof(DisplayCurrentFrame));
+            }
+        }
+    }
+
+    private bool _isPlaying = false;
+    public bool IsPlaying
+    {
+        get => _isPlaying;
+        set => SetProperty(ref _isPlaying, value);
+    }
+
+    private DispatcherTimer? _playbackTimer;
+
+    public ObservableCollection<AnimationFrame> Frames { get; } = new();
+
+    public int FrameCount => Frames.Count; // for binding instead of Frames.Count
+    public int DisplayCurrentFrame => CurrentFrameIndex + 1; // 1-based for UI
+
+    private WriteableBitmap? _bitmap; // current frame bitmap
     private Color[,]? _pixelData;
 
     private Stack<Color[,]> _undoStack = new();
@@ -110,6 +198,20 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         ClearCommand = new RelayCommand(ClearCanvas, () => _bitmap != null);
         UndoCommand = new RelayCommand(Undo, CanUndo);
         RedoCommand = new RelayCommand(Redo, CanRedo);
+        AddFrameCommand = new RelayCommand(AddFrame, () => AllowAnimation);
+        RemoveFrameCommand = new RelayCommand(RemoveCurrentFrame, () => AllowAnimation && Frames.Count > 1);
+        NextFrameCommand = new RelayCommand(NextFrame, () => AllowAnimation && Frames.Count > 1);
+        PreviousFrameCommand = new RelayCommand(PreviousFrame, () => AllowAnimation && Frames.Count > 1);
+        PlayPauseCommand = new RelayCommand(TogglePlay, () => AllowAnimation && Frames.Count > 1);
+
+        _playbackTimer = new DispatcherTimer();
+        _playbackTimer.Tick += PlaybackTimer_Tick;
+
+        Frames.CollectionChanged += (_, __) =>
+        {
+            OnPropertyChanged(nameof(FrameCount));
+            OnPropertyChanged(nameof(DisplayCurrentFrame));
+        };
     }
 
     public IAsyncRelayCommand SaveCommand { get; }
@@ -125,6 +227,132 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     public ICommand ClearCommand { get; }
     public IRelayCommand UndoCommand { get; }
     public IRelayCommand RedoCommand { get; }
+    public IRelayCommand AddFrameCommand { get; }
+    public IRelayCommand RemoveFrameCommand { get; }
+    public IRelayCommand NextFrameCommand { get; }
+    public IRelayCommand PreviousFrameCommand { get; }
+    public IRelayCommand PlayPauseCommand { get; }
+
+    public void EnableAnimation(bool allow)
+    {
+        AllowAnimation = allow;
+        (AddFrameCommand as RelayCommand)?.NotifyCanExecuteChanged();
+        UpdateAnimationEnabled();
+    }
+
+    private void UpdateAnimationEnabled()
+    {
+        IsAnimationEnabled = AllowAnimation && Frames.Count > 0;
+        (RemoveFrameCommand as RelayCommand)?.NotifyCanExecuteChanged();
+        (NextFrameCommand as RelayCommand)?.NotifyCanExecuteChanged();
+        (PreviousFrameCommand as RelayCommand)?.NotifyCanExecuteChanged();
+        (PlayPauseCommand as RelayCommand)?.NotifyCanExecuteChanged();
+    }
+
+    private void PlaybackTimer_Tick(object? sender, EventArgs e)
+    {
+        if (!IsPlaying || Frames.Count == 0) return;
+        // Advance based on current frame duration
+        if (CurrentFrameIndex < 0 || CurrentFrameIndex >= Frames.Count) CurrentFrameIndex = 0;
+        var frame = Frames[CurrentFrameIndex];
+        _playbackTimer!.Interval = TimeSpan.FromMilliseconds(Math.Max(10, frame.DurationMs));
+        NextFrame();
+    }
+
+    private void TogglePlay()
+    {
+        if (!IsPlaying)
+        {
+            IsPlaying = true;
+            StatusText = "Playing animation";
+            _playbackTimer!.Interval = TimeSpan.FromMilliseconds(Math.Max(10, Frames[CurrentFrameIndex].DurationMs));
+            _playbackTimer.Start();
+        }
+        else
+        {
+            IsPlaying = false;
+            StatusText = "Stopped";
+            _playbackTimer!.Stop();
+        }
+    }
+
+    private void AddFrame()
+    {
+        if (!AllowAnimation) return;
+        // Clone current frame or create blank
+        WriteableBitmap newBmp;
+        if (_bitmap != null)
+        {
+            newBmp = CloneWriteableBitmap(_bitmap);
+        }
+        else
+        {
+            newBmp = new WriteableBitmap(ImageWidth, ImageHeight, 96, 96, PixelFormats.Bgra32, null);
+        }
+        var frame = new AnimationFrame { Bitmap = newBmp, DurationMs = 100 };
+        Frames.Add(frame);
+        CurrentFrameIndex = Frames.Count - 1;
+        SwitchToFrame(CurrentFrameIndex);
+        UpdateAnimationEnabled();
+    }
+
+    private WriteableBitmap CloneWriteableBitmap(WriteableBitmap source)
+    {
+        var clone = new WriteableBitmap(source.PixelWidth, source.PixelHeight, source.DpiX, source.DpiY, source.Format, null);
+        var stride = source.BackBufferStride;
+        var pixels = new byte[stride * source.PixelHeight];
+        source.CopyPixels(pixels, stride, 0);
+        clone.Lock();
+        try { clone.WritePixels(new Int32Rect(0, 0, source.PixelWidth, source.PixelHeight), pixels, stride, 0); }
+        finally { clone.Unlock(); }
+        return clone;
+    }
+
+    private void RemoveCurrentFrame()
+    {
+        if (Frames.Count <= 1) return;
+        var idx = CurrentFrameIndex;
+        Frames.RemoveAt(idx);
+        if (idx >= Frames.Count) idx = Frames.Count - 1;
+        CurrentFrameIndex = idx;
+        SwitchToFrame(CurrentFrameIndex);
+        UpdateAnimationEnabled();
+        HasUnsavedChanges = true;
+    }
+
+    private void NextFrame()
+    {
+        if (Frames.Count == 0) return;
+        var next = (CurrentFrameIndex + 1) % Frames.Count;
+        CurrentFrameIndex = next;
+        SwitchToFrame(CurrentFrameIndex);
+    }
+
+    private void PreviousFrame()
+    {
+        if (Frames.Count == 0) return;
+        var prev = (CurrentFrameIndex - 1 + Frames.Count) % Frames.Count;
+        CurrentFrameIndex = prev;
+        SwitchToFrame(CurrentFrameIndex);
+    }
+
+    private void SwitchToFrame(int index)
+    {
+        if (index < 0 || index >= Frames.Count) return;
+        // Save current pixel data back into current frame bitmap first (already applied live)
+        var frame = Frames[index];
+        _bitmap = frame.Bitmap;
+        if (_bitmap.IsFrozen)
+        {
+            _bitmap = CloneWriteableBitmap(_bitmap);
+            frame.Bitmap = _bitmap;
+        }
+        ImageWidth = _bitmap.PixelWidth;
+        ImageHeight = _bitmap.PixelHeight;
+        UpdatePixelData();
+        CurrentImage = _bitmap;
+        StatusText = $"Frame {index + 1}/{Frames.Count}";
+    }
 
     public void SetPngPath(string path)
     {
@@ -161,17 +389,79 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
                 src = converted;
             }
 
-            ImageWidth = src.PixelWidth;
-            ImageHeight = src.PixelHeight;
             FileName = Path.GetFileName(PngPath);
             HasUnsavedChanges = false;
 
-            _bitmap = new WriteableBitmap(src);
-            _bitmap.Freeze(); // temp freeze for thread safety then clone for write
-            _bitmap = new WriteableBitmap(_bitmap); // writable instance
-            CurrentImage = _bitmap;
-            UpdatePixelData();
+            Frames.Clear();
 
+            // Attempt to parse .mcmeta if present
+            var mcmetaPath = PngPath + ".mcmeta";
+            List<int>? frameDurations = null;
+            if (File.Exists(mcmetaPath))
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(File.ReadAllText(mcmetaPath));
+                    if (doc.RootElement.TryGetProperty("animation", out var anim))
+                    {
+                        int globalTime = anim.TryGetProperty("frametime", out var ft) ? ft.GetInt32() : 1;
+                        if (anim.TryGetProperty("frames", out var framesElem) && framesElem.ValueKind == JsonValueKind.Array)
+                        {
+                            frameDurations = new();
+                            foreach (var f in framesElem.EnumerateArray())
+                            {
+                                if (f.ValueKind == JsonValueKind.Number)
+                                {
+                                    frameDurations.Add(globalTime * 50); // convert ticks (50ms)
+                                }
+                                else if (f.ValueKind == JsonValueKind.Object && f.TryGetProperty("index", out var idxProp))
+                                {
+                                    int time = f.TryGetProperty("time", out var tprop) ? tprop.GetInt32() : globalTime;
+                                    frameDurations.Add(time * 50);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            // Detect sprite sheet (vertical) if height multiple of width
+            if (AllowAnimation && src.PixelHeight > src.PixelWidth && src.PixelHeight % src.PixelWidth == 0)
+            {
+                int frameSize = src.PixelWidth; // square frames expected
+                int frameCount = src.PixelHeight / frameSize;
+                for (int i = 0; i < frameCount; i++)
+                {
+                    var wb = new WriteableBitmap(frameSize, frameSize, 96, 96, PixelFormats.Bgra32, null);
+                    var rect = new Int32Rect(0, i * frameSize, frameSize, frameSize);
+                    int bpp = (src.Format.BitsPerPixel + 7) / 8;
+                    int stride = frameSize * bpp;
+                    byte[] pixels = new byte[stride * frameSize];
+                    src.CopyPixels(rect, pixels, stride, 0);
+                    wb.Lock();
+                    try { wb.WritePixels(new Int32Rect(0, 0, frameSize, frameSize), pixels, stride, 0); }
+                    finally { wb.Unlock(); }
+                    Frames.Add(new AnimationFrame { Bitmap = wb, DurationMs = frameDurations != null && i < frameDurations.Count ? frameDurations[i] : 100 });
+                }
+                if (Frames.Count == 0)
+                {
+                    var single = new WriteableBitmap(src);
+                    Frames.Add(new AnimationFrame { Bitmap = single, DurationMs = 100 });
+                }
+                CurrentFrameIndex = 0;
+                SwitchToFrame(0);
+            }
+            else
+            {
+                // Single frame
+                var wbSingle = new WriteableBitmap(src);
+                Frames.Add(new AnimationFrame { Bitmap = wbSingle, DurationMs = 100 });
+                CurrentFrameIndex = 0;
+                SwitchToFrame(0);
+            }
+
+            UpdateAnimationEnabled();
             _undoStack.Clear();
             _redoStack.Clear();
             UndoCommand.NotifyCanExecuteChanged();
@@ -303,11 +593,24 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         }
     }
 
+    private void EnsureWritable()
+    {
+        if (_bitmap != null && _bitmap.IsFrozen)
+        {
+            _bitmap = CloneWriteableBitmap(_bitmap);
+            if (AllowAnimation && CurrentFrameIndex >= 0 && CurrentFrameIndex < Frames.Count)
+            {
+                Frames[CurrentFrameIndex].Bitmap = _bitmap;
+            }
+            CurrentImage = _bitmap;
+        }
+    }
+
     private void SetPixel(int x, int y, Color color)
     {
         if (_bitmap == null || _pixelData == null) return;
         if (_pixelData[x, y] == color) return; // No change if color is the same
-
+        EnsureWritable();
         try
         {
             var colorData = new byte[] { color.B, color.G, color.R, color.A };
@@ -333,7 +636,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     {
         if (targetColor == replacementColor) return;
         if (_pixelData == null || _bitmap == null) return;
-
+        EnsureWritable();
         var queue = new Queue<Point>();
         queue.Enqueue(new Point(x, y));
 
@@ -373,6 +676,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
     public void DrawLine(int x0, int y0, int x1, int y1, Color color)
     {
         if (_bitmap == null || _pixelData == null) return;
+        EnsureWritable();
         _bitmap.Lock();
         try
         {
@@ -406,7 +710,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         if (y0 > y1) (y0, y1) = (y1, y0);
         x0 = Math.Max(0, x0); y0 = Math.Max(0, y0);
         x1 = Math.Min(ImageWidth - 1, x1); y1 = Math.Min(ImageHeight - 1, y1);
-
+        EnsureWritable();
         _bitmap.Lock();
         try
         {
@@ -455,17 +759,71 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
 
     private async Task SaveChangesAsync()
     {
-        if (!HasUnsavedChanges || _bitmap == null)
+        if (_bitmap == null)
             return;
 
         try
         {
-            var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(_bitmap));
-
-            using (var fileStream = File.Create(PngPath))
+            if (AllowAnimation && Frames.Count > 1)
             {
-                encoder.Save(fileStream);
+                // Build vertical sprite sheet
+                int frameW = Frames[0].Bitmap.PixelWidth;
+                int frameH = Frames[0].Bitmap.PixelHeight;
+                int totalH = frameH * Frames.Count;
+                var sheet = new WriteableBitmap(frameW, totalH, 96, 96, PixelFormats.Bgra32, null);
+                sheet.Lock();
+                try
+                {
+                    int bpp = (sheet.Format.BitsPerPixel + 7) / 8;
+                    for (int i = 0; i < Frames.Count; i++)
+                    {
+                        var f = Frames[i].Bitmap;
+                        int stride = f.BackBufferStride;
+                        var pixels = new byte[stride * f.PixelHeight];
+                        f.CopyPixels(pixels, stride, 0);
+                        sheet.WritePixels(new Int32Rect(0, i * frameH, frameW, frameH), pixels, stride, 0);
+                    }
+                }
+                finally { sheet.Unlock(); }
+
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(sheet));
+                using (var fileStream = File.Create(PngPath))
+                {
+                    encoder.Save(fileStream);
+                }
+
+                // Write .mcmeta
+                var animation = new
+                {
+                    animation = new
+                    {
+                        frametime = 1, // global fallback
+                        frames = Frames.Select((f, idx) =>
+                        {
+                            int ticks = Math.Max(1, f.DurationMs / 50); // convert ms to 50ms units
+                            return ticks == 1 ? (object)idx : new { index = idx, time = ticks };
+                        }).ToArray()
+                    }
+                };
+                var json = JsonSerializer.Serialize(animation, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(PngPath + ".mcmeta", json);
+            }
+            else
+            {
+                // Normal single frame save
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(_bitmap));
+                using (var fileStream = File.Create(PngPath))
+                {
+                    encoder.Save(fileStream);
+                }
+                // Remove any stale mcmeta
+                var mcmeta = PngPath + ".mcmeta";
+                if (File.Exists(mcmeta))
+                {
+                    try { File.Delete(mcmeta); } catch { }
+                }
             }
 
             HasUnsavedChanges = false;
@@ -537,7 +895,7 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         if (_bitmap == null || newPixelData == null) return;
 
         _pixelData = newPixelData;
-
+        EnsureWritable();
         _bitmap.Lock();
         try
         {
@@ -556,13 +914,14 @@ public partial class TextureEditorViewModel : ObservableObject, INavigationAware
         {
             _bitmap.Unlock();
         }
-        OnPropertyChanged(nameof(CurrentImage));
+        CurrentImage = _bitmap;
     }
 
     private void ClearCanvas()
     {
         if (_bitmap == null || _pixelData == null) return;
         PushUndoState();
+        EnsureWritable();
         _bitmap.Lock();
         try
         {

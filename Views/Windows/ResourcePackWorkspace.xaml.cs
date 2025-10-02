@@ -256,6 +256,14 @@ namespace Modrix.Views.Windows
                 var destFull = Path.Combine(stagingRoot, normalized);
                 Directory.CreateDirectory(Path.GetDirectoryName(destFull)!);
                 File.Copy(ov.OverridePath, destFull, true);
+
+                // IMPORTANT: Also copy .mcmeta file if it exists (for animated textures)
+                var mcmetaSource = ov.OverridePath + ".mcmeta";
+                if (File.Exists(mcmetaSource))
+                {
+                    var mcmetaDest = destFull + ".mcmeta";
+                    File.Copy(mcmetaSource, mcmetaDest, true);
+                }
             }
 
             return stagingRoot;
