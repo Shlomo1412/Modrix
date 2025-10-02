@@ -65,7 +65,6 @@
   <ItemGroup>
     <Resource Include="Resources\ModrixIcon.ico" />
 	<Resource Include="Resources\Icons\*" />
-	<Resource Include="ModrixInstaller.exe" />
   </ItemGroup>
 
   <ItemGroup>
