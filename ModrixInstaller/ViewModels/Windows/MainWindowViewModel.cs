@@ -41,6 +41,7 @@ public class MainWindowViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsFirst));
                 OnPropertyChanged(nameof(IsLast));
                 UpdateEnabledStates();
+                UpdateButtonProperties();
             }
         }
     }
@@ -78,6 +79,27 @@ public class MainWindowViewModel : ObservableObject
         set => SetProperty(ref _previousEnabled, value);
     }
 
+    private string _nextButtonText = "Next";
+    public string NextButtonText
+    {
+        get => _nextButtonText;
+        set => SetProperty(ref _nextButtonText, value);
+    }
+
+    private string _nextButtonIcon = "ArrowRight24";
+    public string NextButtonIcon
+    {
+        get => _nextButtonIcon;
+        set => SetProperty(ref _nextButtonIcon, value);
+    }
+
+    private string _nextButtonToolTip = "Next";
+    public string NextButtonToolTip
+    {
+        get => _nextButtonToolTip;
+        set => SetProperty(ref _nextButtonToolTip, value);
+    }
+
     public ICommand NextCommand { get; }
     public ICommand PreviousCommand { get; }
     public ICommand ToggleThemeCommand { get; }
@@ -103,11 +125,33 @@ public class MainWindowViewModel : ObservableObject
         {
             vm.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(LicenseViewModel.IsAccepted)) UpdateEnabledStates();
+                if (e.PropertyName == nameof(LicenseViewModel.IsAccepted)) 
+                {
+                    UpdateEnabledStates();
+                    UpdateButtonProperties();
+                }
+            };
+        }
+
+        // Watch installer state changes
+        if (_installerPage.ViewModel is InstallerViewModel installerVm)
+        {
+            installerVm.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(InstallerViewModel.IsAdministrator) ||
+                    e.PropertyName == nameof(InstallerViewModel.SelectedRelease) ||
+                    e.PropertyName == nameof(InstallerViewModel.InstallationPath) ||
+                    e.PropertyName == nameof(InstallerViewModel.IsInstalling) ||
+                    e.PropertyName == nameof(InstallerViewModel.InstallationCompleted))
+                {
+                    UpdateEnabledStates();
+                    UpdateButtonProperties();
+                }
             };
         }
 
         UpdateEnabledStates();
+        UpdateButtonProperties();
     }
 
     private void UpdateEnabledStates()
@@ -115,11 +159,84 @@ public class MainWindowViewModel : ObservableObject
         PreviousEnabled = !IsFirst;
         var accepted = _licensePage.ViewModel.IsAccepted;
         NextEnabled = !IsLast && !(IsFirst && !accepted);
+        
+        // For installer page, enable button if we can install or need admin
+        if (CurrentContent == _installerPage && IsLast)
+        {
+            var installerVm = _installerPage.ViewModel;
+            // Enable if not installing and not completed, and has required info
+            NextEnabled = !installerVm.IsInstalling && !installerVm.InstallationCompleted && 
+                         (installerVm.SelectedRelease != null && !string.IsNullOrEmpty(installerVm.InstallationPath));
+        }
+    }
+
+    private void UpdateButtonProperties()
+    {
+        if (CurrentContent == _installerPage && IsLast)
+        {
+            var installerVm = _installerPage.ViewModel;
+            
+            // If installation is completed, show completed state
+            if (installerVm.InstallationCompleted)
+            {
+                NextButtonText = "Completed";
+                NextButtonIcon = "CheckmarkCircle24";
+                NextButtonToolTip = "Installation completed";
+                return;
+            }
+            
+            // If currently installing, show installing state
+            if (installerVm.IsInstalling)
+            {
+                NextButtonText = "Installing...";
+                NextButtonIcon = "ArrowDownload24";
+                NextButtonToolTip = "Installation in progress";
+                return;
+            }
+            
+            if (!installerVm.IsAdministrator)
+            {
+                NextButtonText = "Restart as Admin";
+                NextButtonIcon = "Shield24";
+                NextButtonToolTip = "Restart with administrator privileges";
+            }
+            else
+            {
+                NextButtonText = "Install";
+                NextButtonIcon = "ArrowDownload24";
+                NextButtonToolTip = "Install Modrix";
+            }
+        }
+        else
+        {
+            NextButtonText = "Next";
+            NextButtonIcon = "ArrowRight24";
+            NextButtonToolTip = "Next";
+        }
     }
 
     private void Next()
     {
         if (!NextEnabled) return;
+        
+        // Handle special case for installer page
+        if (CurrentContent == _installerPage && IsLast)
+        {
+            var installerVm = _installerPage.ViewModel;
+            
+            if (!installerVm.IsAdministrator)
+            {
+                // Request admin privileges
+                installerVm.RequestAdministratorCommand.Execute(null);
+            }
+            else
+            {
+                // Start installation
+                installerVm.InstallModrixCommand.Execute(null);
+            }
+            return;
+        }
+        
         CurrentStepIndex++;
     }
 

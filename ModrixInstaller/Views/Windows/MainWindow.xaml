@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:ModrixInstaller.Views.Windows"
+    xmlns:helpers="clr-namespace:ModrixInstaller.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
@@ -17,6 +18,7 @@
     mc:Ignorable="d">
 
     <ui:FluentWindow.Resources>
+        <helpers:StringToSymbolIconConverter x:Key="StringToSymbolIconConverter" />
         <Storyboard x:Key="ContentFadeIn">
             <DoubleAnimation Storyboard.TargetName="WizardFrame" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.35" />
             <DoubleAnimation Storyboard.TargetName="WizardFrame" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" From="25" To="0" Duration="0:0:0.35" />
@@ -65,7 +67,17 @@
                                  IsChecked="{Binding ViewModel.IsDarkTheme, Mode=TwoWay}"
                                  ToolTip="Toggle theme"
                                  OnContent="Dark Theme" OffContent="Light Theme"/>
-                <ui:Button Command="{Binding ViewModel.NextCommand}" IsEnabled="{Binding ViewModel.NextEnabled}" Appearance="Primary" ToolTip="Next" Icon="{ui:SymbolIcon ArrowRight24}"/>
+                <ui:Button Command="{Binding ViewModel.NextCommand}" 
+                          IsEnabled="{Binding ViewModel.NextEnabled}" 
+                          Appearance="Primary" 
+                          ToolTip="{Binding ViewModel.NextButtonToolTip}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding ViewModel.NextButtonText}" 
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,8,0"/>
+                        <ui:SymbolIcon Symbol="{Binding ViewModel.NextButtonIcon, Converter={StaticResource StringToSymbolIconConverter}}" />
+                    </StackPanel>
+                </ui:Button>
             </StackPanel>
         </Grid>
     </Grid>
