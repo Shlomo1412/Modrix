@@ -7,12 +7,11 @@
              x:Name="WikiTooltipControl">
 
     <UserControl.Resources>
-        <!-- Clean, solid-color styled tooltip (no broken dynamic resources) -->
+        <!-- Tooltip styled to match ProjectCard flyout with hardcoded colors -->
         <Style x:Key="WikiTooltipStyle" TargetType="ToolTip">
             <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="Background" Value="#1E1F26"/>
-            <Setter Property="BorderBrush" Value="#2C2F36"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#2C2D35"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="MaxWidth" Value="460"/>
             <Setter Property="FontSize" Value="13"/>
@@ -22,54 +21,48 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ToolTip">
                         <Border CornerRadius="10"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
+                                Background="{TemplateBinding Background}">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="18" ShadowDepth="2" Opacity="0.35"/>
                             </Border.Effect>
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="6"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
 
-                                <!-- Accent stripe -->
-                                <Border Grid.Column="0"
-                                        CornerRadius="10,0,0,10">
-                                    <Border.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="#4C7DFF" Offset="0"/>
-                                            <GradientStop Color="#2850B7" Offset="1"/>
-                                        </LinearGradientBrush>
-                                    </Border.Background>
+                                <!-- Header -->
+                                <Border Grid.Row="0"
+                                        CornerRadius="10,10,0,0" 
+                                        Background="#3C3D45" 
+                                        Padding="10,8,10,8">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Rectangle Width="4" Height="28" RadiusX="2" RadiusY="2" 
+                                                   Fill="#4C7DFF" 
+                                                   Margin="0,0,10,0"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" 
+                                                       FontWeight="SemiBold" 
+                                                       FontSize="14"
+                                                       Foreground="#FFFFFF" />
+                                            <TextBlock Margin="0,-2,0,0" 
+                                                       FontSize="11" 
+                                                       Foreground="#B0B6C3"
+                                                       Text="{Binding Category}"/>
+                                        </StackPanel>
+                                    </StackPanel>
                                 </Border>
 
-                                <!-- Content -->
-                                <StackPanel Grid.Column="1" Margin="14,12,16,14">
-                                    <!-- Title -->
-                                    <TextBlock Text="{Binding Title}"
-                                               FontWeight="SemiBold"
-                                               FontSize="15"
-                                               Margin="0,0,0,6"/>
+                                <Separator Grid.Row="1" Margin="0" Background="#4C4D55" />
 
-                                    <!-- Description -->
+                                <!-- Content -->
+                                <StackPanel Grid.Row="2" Margin="8" MinWidth="210">
                                     <TextBlock Text="{Binding Description}"
                                                TextWrapping="Wrap"
                                                LineHeight="20"
-                                               Foreground="#DDFFFFFF"/>
-
-                                    <!-- Category pill -->
-                                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                        <Border CornerRadius="6"
-                                                Background="#2D4C7F"
-                                                Padding="8,4"
-                                                Opacity="0.95">
-                                            <TextBlock Text="{Binding Category}"
-                                                       FontSize="11"
-                                                       FontWeight="SemiBold"/>
-                                        </Border>
-                                    </StackPanel>
+                                               Margin="10,6"
+                                               Foreground="#FFFFFF"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
