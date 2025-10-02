@@ -78,7 +78,7 @@ namespace Modrix.ViewModels.Windows
                 new NavigationViewItem()
                 {
                     Content = "Donate",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.PersonHeart20 },
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.Heart24 },
                     Command = new RelayCommand(ShowDonateDialog),
                     ToolTip = "Support us with a donation"
                 },

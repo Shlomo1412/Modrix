@@ -44,6 +44,20 @@
   <ItemGroup>
     <Resource Include="Assets\wpfui-icon-256.png" />
     <Resource Include="Assets\wpfui-icon-1024.png" />
+    <Resource Include="Icons\ConsoleIcon.png" />
+    <Resource Include="Icons\DisIcon.png" />
+    <Resource Include="Icons\DonateIcon.png" />
+    <Resource Include="Icons\FeedbackIcon.png" />
+    <Resource Include="Icons\HomeIcon.png" />
+    <Resource Include="Icons\ItemIcon.png" />
+    <Resource Include="Icons\LanguageControlIcon.png" />
+    <Resource Include="Icons\ModrixGitHub.png" />
+    <Resource Include="Icons\NewsIcon.png" />
+    <Resource Include="Icons\NoWifiIcon.png" />
+    <Resource Include="Icons\SettingsIcon.png" />
+    <Resource Include="Icons\SourceCodeIcon.png" />
+    <Resource Include="Icons\WarningIcon.png" />
+    <Resource Include="Icons\WorkspaceIcon.png" />
     <Resource Include="ModrixIcon.ico" />
   </ItemGroup>
 

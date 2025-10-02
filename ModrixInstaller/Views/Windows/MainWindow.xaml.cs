@@ -20,4 +20,25 @@ public partial class MainWindow
         base.OnClosed(e);
         Application.Current.Shutdown();
     }
+
+    private void Community_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        var dialog = new ModrixInstaller.Views.Dialogs.JoinDiscordDialog();
+        dialog.Owner = this;
+        dialog.ShowDialog();
+    }
+
+    private void SourceCode_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        var dialog = new ModrixInstaller.Views.Dialogs.ExploreSourceCodeDialog();
+        dialog.Owner = this;
+        dialog.ShowDialog();
+    }
+
+    private void Donate_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        var dialog = new ModrixInstaller.Views.Dialogs.DonateDialog();
+        dialog.Owner = this;
+        dialog.ShowDialog();
+    }
 }

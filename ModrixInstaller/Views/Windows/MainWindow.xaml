@@ -54,6 +54,7 @@
         <Grid Grid.Row="2" Margin="20,0,20,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
@@ -62,11 +63,18 @@
                     <ui:SymbolIcon Symbol="ArrowLeft24" />
                 </ui:Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Grid.Column="2" >
-                <ui:ToggleSwitch Margin="0,0,12,0"
-                                 IsChecked="{Binding ViewModel.IsDarkTheme, Mode=TwoWay}"
-                                 ToolTip="Toggle theme"
-                                 OnContent="Dark Theme" OffContent="Light Theme"/>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Margin="12,0,0,0">
+                <ui:Button Click="Community_Click" Appearance="Transparent" ToolTip="Join our Discord community" Margin="0,0,8,0">
+                    <ui:SymbolIcon Symbol="PeopleCommunity24" />
+                </ui:Button>
+                <ui:Button Click="SourceCode_Click" Appearance="Transparent" ToolTip="Explore source code on GitHub" Margin="0,0,8,0">
+                    <ui:SymbolIcon Symbol="Code24" />
+                </ui:Button>
+                <ui:Button Click="Donate_Click" Appearance="Transparent" ToolTip="Support Modrix development">
+                    <ui:SymbolIcon Symbol="Heart24" />
+                </ui:Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Column="3">
                 <ui:Button Command="{Binding ViewModel.NextCommand}" 
                           IsEnabled="{Binding ViewModel.NextEnabled}" 
                           Appearance="Primary" 
