@@ -79,7 +79,6 @@
             <!-- Workspace Section -->
             <ui:Card Margin="32,0,32,18" Padding="24">
                 <StackPanel>
-                    
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                         <ui:SymbolIcon Symbol="Desktop24" Width="28" Height="28" Margin="0,0,8,0"/>
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="Workspace"/>
@@ -92,16 +91,14 @@
                         <DockPanel Margin="0,8,0,0">
                             <TextBlock Text="Navigate to Tab:" VerticalAlignment="Center"/>
                             <ComboBox Margin="8,0,0,0"
-                                ItemsSource="{Binding ViewModel.AvailableTabs}"
-                                SelectedItem="{Binding ViewModel.IdeSettings.OnOpenNavigateTab}"
-                                Width="150"/>
+                                      ItemsSource="{Binding ViewModel.AvailableTabs}"
+                                      SelectedItem="{Binding ViewModel.IdeSettings.OnOpenNavigateTab}"
+                                      Width="150"/>
                         </DockPanel>
                     </StackPanel>
 
                     <!-- IDE Settings -->
                     <TextBlock Margin="0,8,0,8" FontWeight="SemiBold" Text="IDE Settings" />
-
-                    
 
                     <!-- Editor Settings -->
                     <StackPanel Margin="0,0,0,12">
@@ -131,7 +128,6 @@
                 </StackPanel>
             </ui:Card>
 
-
             <!-- Installation Section -->
             <ui:Card Margin="32,0,32,18" Padding="24">
                 <StackPanel>
@@ -140,16 +136,47 @@
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="Installation"/>
                     </StackPanel>
                     
-                    <!-- Uninstall Button -->
-                    <ui:Button Margin="0,12,0,0" 
-                              Appearance="Danger" 
-                              Icon="{ui:SymbolIcon Delete24}" 
-                              Content="Uninstall Modrix" 
-                              Click="Uninstall_Click"
-                              ToolTip="Remove Modrix from your system"/>
+                    <!-- Uninstall Section (visual improvement) -->
+                    <Border Margin="0,0,0,20" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="10" Padding="0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
 
-                    <!-- Java JDKs Section -->
-                    <Border Margin="0,24,0,0" Padding="18" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8">
+                            <!-- Accent stripe -->
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#FF4D3F" Offset="0"/>
+                                        <GradientStop Color="#C52F25" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+
+                            <!-- Content -->
+                            <StackPanel Grid.Column="1" Margin="16,14,18,14">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="40" Height="40" CornerRadius="8" Background="#3E1F24" Margin="0,0,12,0">
+                                        <ui:SymbolIcon Symbol="Delete24" Foreground="#FF6B5E" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel>
+                                        <TextBlock Text="Uninstall Modrix" FontSize="16" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Removes the application. Your projects remain on disk." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Action -->
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <ui:Button Appearance="Danger" Icon="{ui:SymbolIcon Delete24}" Content="Uninstall" Click="Uninstall_Click" ToolTip="Remove Modrix from your system" Padding="16,8"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Java JDKs Section (unchanged) -->
+                    <Border Margin="0,0,0,0" Padding="18" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Code24" Width="22" Height="22" Margin="0,0,6,0"/>
