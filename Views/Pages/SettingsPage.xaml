@@ -79,52 +79,124 @@
             <!-- Workspace Section -->
             <ui:Card Margin="32,0,32,18" Padding="24">
                 <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <ui:SymbolIcon Symbol="Desktop24" Width="28" Height="28" Margin="0,0,8,0"/>
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="Workspace"/>
                     </StackPanel>
 
-                    <!-- On Open Settings -->
-                    <StackPanel Margin="0,0,0,12">
-                        <TextBlock FontWeight="Medium" Text="On Open" Margin="0,0,0,8"/>
-                        <ui:ToggleSwitch Content="Close Main Window" IsChecked="{Binding ViewModel.IdeSettings.CloseMainWindowOnOpen}"/>
-                        <DockPanel Margin="0,8,0,0">
-                            <TextBlock Text="Navigate to Tab:" VerticalAlignment="Center"/>
-                            <ComboBox Margin="8,0,0,0"
-                                      ItemsSource="{Binding ViewModel.AvailableTabs}"
-                                      SelectedItem="{Binding ViewModel.IdeSettings.OnOpenNavigateTab}"
-                                      Width="150"/>
-                        </DockPanel>
-                    </StackPanel>
+                    <!-- On Open Settings (enhanced) -->
+                    <Border Margin="0,0,0,18" CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#4C7DFF" Offset="0"/>
+                                        <GradientStop Color="#2850B7" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="16,14,16,14">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                                    <ui:SymbolIcon Symbol="ArrowTrendingLines24" Width="20" Height="20" Margin="0,0,8,0"/>
+                                    <TextBlock Text="On Open" FontWeight="SemiBold" FontSize="14"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Content="Close Main Window" IsChecked="{Binding ViewModel.IdeSettings.CloseMainWindowOnOpen}"/>
+                                <DockPanel Margin="0,10,0,0">
+                                    <StackPanel DockPanel.Dock="Left">
+                                        <TextBlock Text="Navigate to Tab" FontWeight="Medium"/>
+                                        <TextBlock Text="Automatically open a specific workspace tab." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <ComboBox Margin="16,0,0,0"
+                                              ItemsSource="{Binding ViewModel.AvailableTabs}"
+                                              SelectedItem="{Binding ViewModel.IdeSettings.OnOpenNavigateTab}"
+                                              Width="170"
+                                              VerticalAlignment="Center"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                    <!-- IDE Settings -->
-                    <TextBlock Margin="0,8,0,8" FontWeight="SemiBold" Text="IDE Settings" />
+                    <!-- IDE Settings heading visually integrated -->
+                    <TextBlock Margin="0,0,0,8" FontWeight="SemiBold" Text="IDE Settings" />
 
-                    <!-- Editor Settings -->
-                    <StackPanel Margin="0,0,0,12">
-                        <TextBlock FontWeight="Medium" Text="Editor" Margin="0,0,0,8"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Word Wrap" IsChecked="{Binding ViewModel.IdeSettings.WordWrap}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Use Spaces for Tabs" IsChecked="{Binding ViewModel.IdeSettings.UseSpacesForTabs}"/>
-                    </StackPanel>
+                    <!-- Combined IDE settings grid style panels -->
+                    <UniformGrid Columns="2" Margin="0,0,0,4" HorizontalAlignment="Stretch">
+                        <!-- Editor Preferences -->
+                        <Border Margin="0,0,8,8" CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="14">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <ui:SymbolIcon Symbol="Edit24" Width="20" Height="20" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Editor" FontWeight="SemiBold"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <DockPanel Margin="0,0,0,8">
+                                        <TextBlock Text="Word Wrap" VerticalAlignment="Center"/>
+                                        <ui:ToggleSwitch IsChecked="{Binding ViewModel.IdeSettings.WordWrap}" HorizontalAlignment="Right" Width="52"/>
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <TextBlock Text="Use Spaces for Tabs" VerticalAlignment="Center"/>
+                                        <ui:ToggleSwitch IsChecked="{Binding ViewModel.IdeSettings.UseSpacesForTabs}" HorizontalAlignment="Right" Width="52"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
 
-                    <!-- Visual Settings -->
-                    <StackPanel Margin="0,0,0,12">
-                        <TextBlock FontWeight="Medium" Text="Visual" Margin="0,0,0,8"/>
-                        <ui:ToggleSwitch Content="Show Line Numbers" IsChecked="{Binding ViewModel.IdeSettings.ShowLineNumbers}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Whitespace Characters" IsChecked="{Binding ViewModel.IdeSettings.ShowWhitespace}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Show Line Endings" IsChecked="{Binding ViewModel.IdeSettings.ShowLineEndings}"/>
-                        <ui:ToggleSwitch Margin="0,8,0,0" Content="Highlight Current Line" IsChecked="{Binding ViewModel.IdeSettings.HighlightCurrentLine}"/>
-                    </StackPanel>
+                        <!-- Visual Preferences -->
+                        <Border Margin="8,0,0,8" CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="14">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <ui:SymbolIcon Symbol="Eye24" Width="20" Height="20" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Visual" FontWeight="SemiBold"/>
+                                </StackPanel>
+                                <StackPanel>
+                                    <DockPanel Margin="0,0,0,6">
+                                        <TextBlock Text="Line Numbers" VerticalAlignment="Center"/>
+                                        <ui:ToggleSwitch IsChecked="{Binding ViewModel.IdeSettings.ShowLineNumbers}" HorizontalAlignment="Right" Width="52"/>
+                                    </DockPanel>
+                                    <DockPanel Margin="0,0,0,6">
+                                        <TextBlock Text="Whitespace" VerticalAlignment="Center"/>
+                                        <ui:ToggleSwitch IsChecked="{Binding ViewModel.IdeSettings.ShowWhitespace}" HorizontalAlignment="Right" Width="52"/>
+                                    </DockPanel>
+                                    <DockPanel Margin="0,0,0,6">
+                                        <TextBlock Text="Line Endings" VerticalAlignment="Center"/>
+                                        <ui:ToggleSwitch IsChecked="{Binding ViewModel.IdeSettings.ShowLineEndings}" HorizontalAlignment="Right" Width="52"/>
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <TextBlock Text="Highlight Line" VerticalAlignment="Center"/>
+                                        <ui:ToggleSwitch IsChecked="{Binding ViewModel.IdeSettings.HighlightCurrentLine}" HorizontalAlignment="Right" Width="52"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
 
-                    <!-- File Settings -->
-                    <StackPanel>
-                        <TextBlock FontWeight="Medium" Text="File Handling" Margin="0,0,0,8"/>
-                        <ui:ToggleSwitch Content="Auto Save" IsChecked="{Binding ViewModel.IdeSettings.AutoSave}"/>
-                        <DockPanel Margin="0,8,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
-                            <TextBlock Text="Auto Save Interval (seconds):" VerticalAlignment="Center"/>
-                            <ui:NumberBox Margin="8,0,0,0" Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}" Minimum="5" Maximum="300" MinWidth="80"/>
-                        </DockPanel>
-                    </StackPanel>
+                    <!-- File Handling -->
+                    <Border Margin="0,4,0,0" CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="16">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <ui:SymbolIcon Symbol="SaveEdit24" Width="20" Height="20" Margin="0,0,8,0"/>
+                                <TextBlock Text="File Handling" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <DockPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Auto Save"/>
+                                    <TextBlock Text="Automatically persist changes." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch IsChecked="{Binding ViewModel.IdeSettings.AutoSave}" HorizontalAlignment="Right" Width="52"/>
+                            </DockPanel>
+                            <DockPanel Margin="0,10,0,0" IsEnabled="{Binding ViewModel.IdeSettings.AutoSave}">
+                                <StackPanel>
+                                    <TextBlock Text="Interval (seconds)"/>
+                                    <TextBlock Text="Time between automatic writes." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:NumberBox Margin="16,0,0,0" Value="{Binding ViewModel.IdeSettings.AutoSaveIntervalSeconds}" Minimum="5" Maximum="300" MinWidth="90" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ui:Card>
 
@@ -144,8 +216,6 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-
-                            <!-- Accent stripe -->
                             <Border Grid.Column="0" CornerRadius="10,0,0,10">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -154,8 +224,6 @@
                                     </LinearGradientBrush>
                                 </Border.Background>
                             </Border>
-
-                            <!-- Content -->
                             <StackPanel Grid.Column="1" Margin="16,14,18,14">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Border Width="40" Height="40" CornerRadius="8" Background="#3E1F24" Margin="0,0,12,0">
@@ -167,8 +235,6 @@
                                     </StackPanel>
                                 </StackPanel>
                             </StackPanel>
-
-                            <!-- Action -->
                             <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,16,0">
                                 <ui:Button Appearance="Danger" Icon="{ui:SymbolIcon Delete24}" Content="Uninstall" Click="Uninstall_Click" ToolTip="Remove Modrix from your system" Padding="16,8"/>
                             </StackPanel>
@@ -191,7 +257,6 @@
                                 <ui:Button Margin="12,0,0,0" Appearance="Secondary" Icon="{ui:SymbolIcon ArrowClockwise24}" Command="{Binding ViewModel.RefreshJdksCommand}" ToolTip="Refresh JDK list" VerticalAlignment="Center"/>
                                 <ui:Button Margin="12,0,0,0" Appearance="Primary" Icon="{ui:SymbolIcon ArrowDownload24}" Command="{Binding ViewModel.DownloadJdkCommand}" ToolTip="Download and install a JDK" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <!-- JDK Installation Progress -->
                             <StackPanel Margin="0,12,0,0" Visibility="{Binding ViewModel.IsInstallingJdk, Converter={StaticResource BoolToVisibility}}">
                                 <TextBlock Text="{Binding ViewModel.InstallationStatus}" Margin="0,0,0,8" HorizontalAlignment="Center"/>
                                 <ProgressBar Value="{Binding ViewModel.InstallationProgress}" Minimum="0" Maximum="100" Height="8"/>
