@@ -34,6 +34,15 @@
     <Page Remove="ModrixInstaller\**" />
     <Content Remove="ModrixInstaller\**" />
   </ItemGroup>
+	
+  <!-- Exclude ModrixElectron directory from main project -->
+  <ItemGroup>
+    <Compile Remove="Electron\**" />
+    <EmbeddedResource Remove="Electron\**" />
+    <None Remove="Electron\**" />
+    <Page Remove="Electron\**" />
+    <Content Remove="Electron\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
