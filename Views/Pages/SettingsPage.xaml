@@ -45,34 +45,94 @@
                 </StackPanel>
             </Border>
 
-            <!-- Personalization Section -->
+            <!-- Personalization Section (enhanced) -->
             <ui:Card Margin="32,0,32,18" Padding="24">
                 <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <ui:SymbolIcon Symbol="Color24" Width="28" Height="28" Margin="0,0,8,0"/>
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="Personalization"/>
                     </StackPanel>
-                    <TextBlock Margin="0,8,0,0" Text="Theme" FontWeight="Medium"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <RadioButton
-                            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                            CommandParameter="theme_light"
-                            Content="Light"
-                            GroupName="themeSelect"
-                            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
-                        <RadioButton
-                            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                            CommandParameter="theme_dark"
-                            Content="Dark"
-                            GroupName="themeSelect"
-                            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
-                        <RadioButton
-                            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-                            CommandParameter="theme_highcontrast"
-                            Content="High Contrast"
-                            GroupName="themeSelect"
-                            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
-                    </StackPanel>
+
+                    <!-- Theme selector panel -->
+                    <Border CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}" Margin="0,0,0,0">
+                        <Border.Resources>
+                            <!-- Style for theme chips moved before content -->
+                            <Style TargetType="RadioButton" x:Key="ThemeChipRadio">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RadioButton">
+                                            <Border x:Name="Chip" Padding="14,8" Margin="0,0,10,10" CornerRadius="18" Background="#2F3037" BorderBrush="#43454F" BorderThickness="1" Cursor="Hand">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <ContentPresenter/>
+                                                </StackPanel>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="Chip" Property="Background" Value="#4C7DFF"/>
+                                                    <Setter TargetName="Chip" Property="BorderBrush" Value="#4C7DFF"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Chip" Property="BorderBrush" Value="#6B89FF"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter TargetName="Chip" Property="Opacity" Value="0.4"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </Style>
+                        </Border.Resources>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Accent -->
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#9C6BFF" Offset="0"/>
+                                        <GradientStop Color="#6A46C8" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="16,14,16,16">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12" VerticalAlignment="Center">
+                                    <ui:SymbolIcon Symbol="Color24" Width="20" Height="20" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Theme" FontWeight="SemiBold" FontSize="14"/>
+                                </StackPanel>
+
+                                <WrapPanel>
+                                    <RadioButton Style="{StaticResource ThemeChipRadio}"
+                                                 Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                                                 CommandParameter="theme_light"
+                                                 Content="Light"
+                                                 Foreground="White"
+                                                 GroupName="themeSelect"
+                                                 IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
+                                    <RadioButton Style="{StaticResource ThemeChipRadio}"
+                                                 Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                                                 CommandParameter="theme_dark"
+                                                 Content="Dark"
+                                                 GroupName="themeSelect"
+                                                 Foreground="White"
+                                                 IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+                                    <RadioButton Style="{StaticResource ThemeChipRadio}"
+                                                 Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                                                 CommandParameter="theme_highcontrast"
+                                                 Content="High Contrast"
+                                                 GroupName="themeSelect"
+                                                 Foreground="White"
+                                                 IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=HighContrast, Mode=OneWay}" />
+                                </WrapPanel>
+
+                                <TextBlock Text="Choose how Modrix looks and feels." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </StackPanel>
             </ui:Card>
 
@@ -207,7 +267,7 @@
                         <ui:SymbolIcon Symbol="ArrowDownload24" Width="28" Height="28" Margin="0,0,8,0"/>
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="Installation"/>
                     </StackPanel>
-                    
+
                     <!-- Uninstall Section (visual improvement) -->
                     <Border Margin="0,0,0,20" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="10" Padding="0">
                         <Grid>
@@ -306,23 +366,71 @@
                 </StackPanel>
             </ui:Card>
 
-            <!-- About Section -->
+            <!-- About Section (enhanced) -->
             <ui:Card Margin="32,0,32,0" Padding="24">
                 <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <ui:SymbolIcon Symbol="Info24" Width="28" Height="28" Margin="0,0,8,0"/>
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="About"/>
                     </StackPanel>
-                    <TextBlock Margin="0,12,0,0" Text="Version: 1.0.0" />
-                    <TextBlock Margin="0,8,0,0" Text="Build Date: 2023-10-01" />
-                    <TextBlock Margin="0,8,0,0" Text="License: All rights reserved" />
-                    <TextBlock Margin="0,8,0,0" Text="© 2025 Modrix Team" />
-                    <ui:Button
-                        Content="Explore Source Code"
-                        Icon="{ui:SymbolIcon Open24}"
-                        Appearance="Primary"
-                        Margin="0,16,0,0"
-                        Click="ExploreSourceCode_Click"/>
+
+                    <Border CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Accent -->
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#4C7DFF" Offset="0"/>
+                                        <GradientStop Color="#2850B7" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Margin="16,14,16,16">
+                                <!-- Meta info as badges -->
+                                <WrapPanel Margin="0,0,0,12">
+                                    <Border Background="#2F3037" Padding="10,6" CornerRadius="16" Margin="0,0,8,8" BorderBrush="#44464F" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Tag24" Width="16" Height="16" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Version: 1.0.0" FontSize="12"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#2F3037" Padding="10,6" CornerRadius="16" Margin="0,0,8,8" BorderBrush="#44464F" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="CalendarLtr24" Width="16" Height="16" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Build: 2023-10-01" FontSize="12"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#2F3037" Padding="10,6" CornerRadius="16" Margin="0,0,8,8" BorderBrush="#44464F" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="ShieldCheckmark24" Width="16" Height="16" Margin="0,0,6,0"/>
+                                            <TextBlock Text="License: All rights reserved" FontSize="12"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#2F3037" Padding="10,6" CornerRadius="16" Margin="0,0,8,8" BorderBrush="#44464F" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="PeopleCommunity24" Width="16" Height="16" Margin="0,0,6,0"/>
+                                            <TextBlock Text="© 2025 Modrix Team" FontSize="12"/>
+                                        </StackPanel>
+                                    </Border>
+                                </WrapPanel>
+
+                                <TextBlock Text="Modrix helps you streamline Minecraft mod and resource pack development with modern tooling and a unified workspace." TextWrapping="Wrap" Margin="0,0,0,12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:Button
+                                        Content="Explore Source Code"
+                                        Icon="{ui:SymbolIcon Open24}"
+                                        Appearance="Primary"
+                                        Click="ExploreSourceCode_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </StackPanel>
             </ui:Card>
         </StackPanel>
