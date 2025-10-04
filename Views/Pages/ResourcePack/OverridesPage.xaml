@@ -29,7 +29,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontSize="22" FontWeight="Bold" Text="Resource Pack Overrides" />
+                        <TextBlock FontSize="22" FontWeight="Bold" Text="Resource Pack Overrides" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                         <controls:WikiTooltip 
                             WikiId="resource-pack-overrides"
                             Title="Resource Pack Overrides"
