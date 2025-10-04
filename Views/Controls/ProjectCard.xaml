@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:controls="clr-namespace:Modrix.Views.Controls"
     Width="Auto"
     ToolTipService.InitialShowDelay="200"
     ToolTipService.ShowDuration="5000"
@@ -62,10 +63,10 @@
                         VerticalAlignment="Center"
                         Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
 
-                    <Image 
+                    <!-- Replaced Image with PngDisplay -->
+                    <controls:PngDisplay 
                         x:Name="ProjectIconImage"
-                        RenderOptions.BitmapScalingMode="HighQuality"
-                        Stretch="UniformToFill"/>
+                        AnimationEnabled="False"/>
                 </Grid>
             </Border>
 

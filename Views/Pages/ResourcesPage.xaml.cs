@@ -493,16 +493,9 @@ namespace Modrix.Views.Pages
             {
                 try
                 {
-                    var bmp = new BitmapImage();
-                    bmp.BeginInit();
-                    bmp.CacheOption = BitmapCacheOption.OnLoad;
-                    bmp.UriSource = new Uri(file);
-                    bmp.EndInit();
-                    bmp.Freeze();
-
                     list.Add(new ImageContainer
                     {
-                        Image = bmp,
+                        FullPath = file, // Store full path for PngDisplay
                         FileName = Path.GetFileName(file)
                     });
                 }
@@ -594,26 +587,23 @@ namespace Modrix.Views.Pages
 
         private void LoadIcon(string path)
         {
-            if (IconImage == null || EmptyIconText == null) return;
+            // Find the PngDisplay control instead of Image
+            var iconDisplay = this.FindName("IconDisplay") as Modrix.Views.Controls.PngDisplay;
+            var emptyIconText = this.FindName("EmptyIconText") as System.Windows.Controls.TextBlock;
+            
+            if (iconDisplay == null || emptyIconText == null) return;
             
             if (File.Exists(path))
             {
-                var bmp = new BitmapImage();
-                bmp.BeginInit();
-                bmp.CacheOption = BitmapCacheOption.OnLoad;
-                bmp.UriSource = new Uri(path);
-                bmp.EndInit();
-                bmp.Freeze();
-
-                IconImage.Visibility = Visibility.Visible;
-                IconImage.Source = bmp;
-                EmptyIconText.Visibility = Visibility.Collapsed;
+                iconDisplay.Visibility = Visibility.Visible;
+                iconDisplay.SourcePath = path;
+                emptyIconText.Visibility = Visibility.Collapsed;
             }
             else
             {
-                IconImage.Source = null;
-                IconImage.Visibility = Visibility.Collapsed;
-                EmptyIconText.Visibility = Visibility.Visible;
+                iconDisplay.SourcePath = null;
+                iconDisplay.Visibility = Visibility.Collapsed;
+                emptyIconText.Visibility = Visibility.Visible;
             }
 
             UpdateEmptyStates();
@@ -1349,7 +1339,7 @@ namespace Modrix.Views.Pages
         // Helper classes
         private class ImageContainer
         {
-            public BitmapImage Image { get; set; }
+            public string FullPath { get; set; } // Changed from BitmapImage to string path
             public string FileName { get; set; }
         }
 

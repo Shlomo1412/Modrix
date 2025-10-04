@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 using Modrix.Models;
 using Wpf.Ui.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
@@ -112,25 +111,23 @@ namespace Modrix.Views.Controls
 
             string fullIconPath = Path.Combine(data.Location, data.IconPath);
 
-            if (File.Exists(fullIconPath))
+            // Find the PngDisplay control
+            var projectIconImage = this.FindName("ProjectIconImage") as Modrix.Views.Controls.PngDisplay;
+            
+            if (File.Exists(fullIconPath) && projectIconImage != null)
             {
-                var bmp = new BitmapImage();
-                using (var stream = File.OpenRead(fullIconPath))
-                {
-                    bmp.BeginInit();
-                    bmp.CacheOption = BitmapCacheOption.OnLoad;
-                    bmp.StreamSource = stream;
-                    bmp.EndInit();
-                    bmp.Freeze();
-                }
-                ProjectIconImage.Source = bmp;
-                ProjectIconImage.Visibility = Visibility.Visible;
+                // Use PngDisplay instead of Image
+                projectIconImage.SourcePath = fullIconPath;
+                projectIconImage.Visibility = Visibility.Visible;
                 DefaultIconText.Visibility = Visibility.Collapsed;
             }
             else
             {
-                ProjectIconImage.Source = null;
-                ProjectIconImage.Visibility = Visibility.Collapsed;
+                if (projectIconImage != null)
+                {
+                    projectIconImage.SourcePath = null;
+                    projectIconImage.Visibility = Visibility.Collapsed;
+                }
                 DefaultIconText.Visibility = Visibility.Visible;
 
                 DefaultIconText.Text = !string.IsNullOrEmpty(data.Name)

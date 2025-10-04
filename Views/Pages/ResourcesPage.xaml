@@ -205,9 +205,11 @@
                                             <DataTemplate>
                                                 <StackPanel Margin="5">
                                                     <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="8">
-                                                        <Image Source="{Binding Image}"
-                                                               Width="64" Height="64"
-                                                               ToolTip="{Binding FileName}"/>
+                                                        <!-- Replaced Image with PngDisplay -->
+                                                        <controls:PngDisplay SourcePath="{Binding FullPath}"
+                                                                           Width="64" Height="64"
+                                                                           AnimationEnabled="True"
+                                                                           ToolTip="{Binding FileName}"/>
                                                     </Border>
                                                     <TextBlock Text="{Binding FileName}"
                                                                HorizontalAlignment="Center"
@@ -409,8 +411,9 @@
                                     Width="128" Height="128"
                                     Background="{DynamicResource ControlFillColorSecondaryBrush}"
                                     CornerRadius="12">
-                                <Image x:Name="IconImage"
-                                    Stretch="Uniform" />
+                                <!-- Replaced Image with PngDisplay -->
+                                <controls:PngDisplay x:Name="IconDisplay"
+                                                   AnimationEnabled="False"/>
                             </Border>
                             <TextBlock x:Name="EmptyIconText"
                                 Text="No icon set."

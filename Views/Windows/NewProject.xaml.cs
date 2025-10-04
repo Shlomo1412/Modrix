@@ -58,7 +58,11 @@ namespace Modrix.Views.Windows
 
                 if (existingProject.IconPath != null)
                 {
-                    IconPreview.Source = new BitmapImage(new Uri(existingProject.IconPath));
+                    // Find and update PngDisplay control
+                    var iconPreview = this.FindName("IconPreview") as Modrix.Views.Controls.PngDisplay;
+                    if (iconPreview != null)
+                        iconPreview.SourcePath = existingProject.IconPath;
+                        
                     SelectIconButton.Visibility = Visibility.Collapsed;
                     IconPreview.Visibility = Visibility.Visible;
                     IconControls.Visibility = Visibility.Visible;
@@ -435,7 +439,11 @@ namespace Modrix.Views.Windows
         private void RemoveIconButton_Click(object sender, RoutedEventArgs e)
         {
             _selectedIconPath = null;
-            IconPreview.Source = null;
+            
+            // Find the PngDisplay control
+            var iconPreview = this.FindName("IconPreview") as Modrix.Views.Controls.PngDisplay;
+            if (iconPreview != null)
+                iconPreview.SourcePath = null;
 
             // Update UI visibility
             SelectIconButton.Visibility = Visibility.Visible;
@@ -456,12 +464,13 @@ namespace Modrix.Views.Windows
             {
                 try
                 {
-                    // Load and validate the image
-                    var image = new BitmapImage(new Uri(dialog.FileName));
-
                     // Store the path and update the preview
                     _selectedIconPath = dialog.FileName;
-                    IconPreview.Source = image;
+                    
+                    // Find the PngDisplay control
+                    var iconPreview = this.FindName("IconPreview") as Modrix.Views.Controls.PngDisplay;
+                    if (iconPreview != null)
+                        iconPreview.SourcePath = dialog.FileName;
 
                     // Update UI visibility
                     SelectIconButton.Visibility = Visibility.Collapsed;

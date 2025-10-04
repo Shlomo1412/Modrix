@@ -337,12 +337,13 @@
                                 Background="{DynamicResource ControlFillColorDefaultBrush}" 
                                 CornerRadius="8"
                                 Visibility="Collapsed">
-                                <Image
+                                <!-- Replaced Image with PngDisplay -->
+                                <controls:PngDisplay
                                     x:Name="IconPreview"
                                     Width="48"
                                     Height="48"
                                     Visibility="Collapsed"
-                                    RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    AnimationEnabled="False"/>
                             </Border>
 
                             <!-- Control Buttons (Hidden initially) -->
