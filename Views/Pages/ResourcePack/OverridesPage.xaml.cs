@@ -33,6 +33,8 @@ namespace Modrix.Views.Pages.ResourcePack
         private List<TranslationOverrideItem> _allTranslationOverrides = new();
         private List<ModelOverrideItem> _allModelOverrides = new();
         private DispatcherTimer? _previewAnimationTimer; // timer for animated previews
+        private FileSystemWatcher? _overridesWatcher;
+        private DispatcherTimer? _refreshDelayTimer; // Debounce rapid file changes
         
         public OverridesPage()
         {
@@ -52,12 +54,89 @@ namespace Modrix.Views.Pages.ResourcePack
                 _previewAnimationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
                 _previewAnimationTimer.Tick += PreviewAnimationTimer_Tick;
                 _previewAnimationTimer.Start();
+
+                // Initialize file system watcher
+                InitializeFileSystemWatcher();
+
+                // Initialize refresh delay timer for debouncing
+                _refreshDelayTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+                _refreshDelayTimer.Tick += (s, e) =>
+                {
+                    _refreshDelayTimer.Stop();
+                    RefreshOverrides();
+                };
+
+                // Handle page unload to cleanup watchers
+                Unloaded += OverridesPage_Unloaded;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"OverridesPage constructor error: {ex.Message}");
                 throw;
             }
+        }
+
+        private void OverridesPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // Cleanup watchers when page is unloaded
+            _overridesWatcher?.Dispose();
+            _previewAnimationTimer?.Stop();
+            _refreshDelayTimer?.Stop();
+        }
+
+        private void InitializeFileSystemWatcher()
+        {
+            if (_currentPack == null) return;
+
+            try
+            {
+                var overridesPath = Path.Combine(_currentPack.Location, "overrides");
+                
+                // Ensure the overrides directory exists
+                Directory.CreateDirectory(overridesPath);
+
+                _overridesWatcher?.Dispose(); // Clean up existing watcher
+
+                _overridesWatcher = new FileSystemWatcher(overridesPath)
+                {
+                    NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName,
+                    IncludeSubdirectories = true,
+                    EnableRaisingEvents = true
+                };
+
+                _overridesWatcher.Created += OnOverridesChanged;
+                _overridesWatcher.Deleted += OnOverridesChanged;
+                _overridesWatcher.Changed += OnOverridesChanged;
+                _overridesWatcher.Renamed += OnOverridesRenamed;
+
+                System.Diagnostics.Debug.WriteLine($"File system watcher initialized for: {overridesPath}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to initialize file system watcher: {ex.Message}");
+            }
+        }
+
+        private void OnOverridesChanged(object sender, FileSystemEventArgs e)
+        {
+            // Debounce rapid changes by restarting the timer
+            Dispatcher.BeginInvoke(() =>
+            {
+                _refreshDelayTimer?.Stop();
+                _refreshDelayTimer?.Start();
+                System.Diagnostics.Debug.WriteLine($"File system change detected: {e.ChangeType} - {e.Name}");
+            });
+        }
+
+        private void OnOverridesRenamed(object sender, RenamedEventArgs e)
+        {
+            // Handle renamed files
+            Dispatcher.BeginInvoke(() =>
+            {
+                _refreshDelayTimer?.Stop();
+                _refreshDelayTimer?.Start();
+                System.Diagnostics.Debug.WriteLine($"File system rename detected: {e.OldName} -> {e.Name}");
+            });
         }
 
         private void PreviewAnimationTimer_Tick(object? sender, EventArgs e)
@@ -85,6 +164,9 @@ namespace Modrix.Views.Pages.ResourcePack
             if (workspace?.ViewModel?.CurrentPack != null)
             {
                 _currentPack = workspace.ViewModel.CurrentPack;
+                
+                // Reinitialize file system watcher when pack changes
+                InitializeFileSystemWatcher();
             }
         }
 
@@ -92,10 +174,46 @@ namespace Modrix.Views.Pages.ResourcePack
         {
             if (_currentPack == null) return;
 
-            LoadTextureOverrides();
-            LoadTranslationOverrides();
-            LoadModelOverrides();
-            UpdateEmptyStates();
+            try
+            {
+                // Re-read the pack data to get the latest overrides
+                var manager = new ResourcePackTemplateManager();
+                var freshPackData = manager.ReadResourcePack(_currentPack.Location);
+                _currentPack = freshPackData;
+
+                // Update the workspace with fresh data
+                UpdateWorkspacePack(freshPackData);
+
+                LoadTextureOverrides();
+                LoadTranslationOverrides();
+                LoadModelOverrides();
+                UpdateEmptyStates();
+
+                System.Diagnostics.Debug.WriteLine("OverridesPage: Refreshed overrides successfully");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error refreshing overrides: {ex.Message}");
+            }
+        }
+
+        private void UpdateWorkspacePack(ResourcePackData freshPackData)
+        {
+            try
+            {
+                var workspace = Application.Current.Windows
+                    .OfType<ResourcePackWorkspace>()
+                    .FirstOrDefault();
+
+                if (workspace?.ViewModel != null)
+                {
+                    workspace.ViewModel.LoadPack(freshPackData);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error updating workspace pack: {ex.Message}");
+            }
         }
 
         private void RefreshOverrides_Click(object sender, RoutedEventArgs e)
@@ -516,13 +634,11 @@ namespace Modrix.Views.Pages.ResourcePack
                         var targetFile = Path.Combine(targetDir, fileName);
                         File.Copy(sourceFile, targetFile, true);
                         
-                        // Refresh the pack data
-                        var manager = new ResourcePackTemplateManager();
-                        _currentPack = manager.ReadResourcePack(_currentPack.Location);
-                        
-                        RefreshOverrides();
-                        
                         ShowMessage("Texture imported successfully", "Success");
+                        
+                        // The file system watcher will automatically refresh the overrides
+                        // But we can force an immediate refresh if needed
+                        await System.Threading.Tasks.Task.Delay(100); // Small delay to ensure file is fully written
                     }
                 }
                 catch (Exception ex)
@@ -561,13 +677,10 @@ namespace Modrix.Views.Pages.ResourcePack
                         var targetFile = Path.Combine(targetDir, fileName);
                         File.Copy(sourceFile, targetFile, true);
                         
-                        // Refresh the pack data
-                        var manager = new ResourcePackTemplateManager();
-                        _currentPack = manager.ReadResourcePack(_currentPack.Location);
-                        
-                        RefreshOverrides();
-                        
                         ShowMessage("Model imported successfully", "Success");
+                        
+                        // The file system watcher will automatically refresh the overrides
+                        await System.Threading.Tasks.Task.Delay(100); // Small delay to ensure file is fully written
                     }
                 }
                 catch (Exception ex)
@@ -577,7 +690,7 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
-        private void CreateTranslation_Click(object sender, RoutedEventArgs e)
+        private async void CreateTranslation_Click(object sender, RoutedEventArgs e)
         {
             if (_currentPack == null) return;
             
@@ -596,13 +709,10 @@ namespace Modrix.Views.Pages.ResourcePack
                     var emptyTranslation = "{\n  \"example.key\": \"Example translation\"\n}";
                     File.WriteAllText(targetFile, emptyTranslation);
                     
-                    // Refresh the pack data
-                    var manager = new ResourcePackTemplateManager();
-                    _currentPack = manager.ReadResourcePack(_currentPack.Location);
-                    
-                    RefreshOverrides();
-                    
                     ShowMessage("Translation file created successfully", "Success");
+                    
+                    // The file system watcher will automatically refresh the overrides
+                    await System.Threading.Tasks.Task.Delay(100); // Small delay to ensure file is fully written
                 }
                 catch (Exception ex)
                 {
@@ -826,13 +936,16 @@ namespace Modrix.Views.Pages.ResourcePack
                 {
                     File.Delete(item.OverridePath);
                     
-                    // Refresh the pack data
-                    var manager = new ResourcePackTemplateManager();
-                    _currentPack = manager.ReadResourcePack(_currentPack.Location);
-                    
-                    RefreshOverrides();
+                    // Also delete .mcmeta file if it exists
+                    var mcmetaPath = item.OverridePath + ".mcmeta";
+                    if (File.Exists(mcmetaPath))
+                    {
+                        File.Delete(mcmetaPath);
+                    }
                     
                     ShowMessage("Texture override removed", "Success");
+                    
+                    // The file system watcher will automatically refresh the overrides
                 }
                 catch (Exception ex)
                 {
@@ -860,13 +973,9 @@ namespace Modrix.Views.Pages.ResourcePack
                 {
                     File.Delete(item.OverridePath);
                     
-                    // Refresh the pack data
-                    var manager = new ResourcePackTemplateManager();
-                    _currentPack = manager.ReadResourcePack(_currentPack.Location);
-                    
-                    RefreshOverrides();
-                    
                     ShowMessage("Translation override removed", "Success");
+                    
+                    // The file system watcher will automatically refresh the overrides
                 }
                 catch (Exception ex)
                 {
@@ -896,13 +1005,9 @@ namespace Modrix.Views.Pages.ResourcePack
                 {
                     File.Delete(item.OverridePath);
                     
-                    // Refresh the pack data
-                    var manager = new ResourcePackTemplateManager();
-                    _currentPack = manager.ReadResourcePack(_currentPack.Location);
-                    
-                    RefreshOverrides();
-                    
                     ShowMessage("Model override removed", "Success");
+                    
+                    // The file system watcher will automatically refresh the overrides
                 }
                 catch (Exception ex)
                 {
