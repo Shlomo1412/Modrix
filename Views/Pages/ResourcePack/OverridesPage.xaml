@@ -187,9 +187,8 @@
                                                     <!-- Texture Preview -->
                                                     <Border Grid.Column="0" Width="40" Height="40" 
                                                             Background="White" CornerRadius="4">
-                                                        <Image Source="{Binding PreviewImage}" 
-                                                               RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                                               Stretch="Uniform"/>
+                                                        <!-- Replaced Image with PngDisplay -->
+                                                        <controls:PngDisplay SourcePath="{Binding OverridePath}" AnimationEnabled="True"/>
                                                     </Border>
 
                                                     <!-- Override Info -->
