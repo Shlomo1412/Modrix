@@ -76,7 +76,7 @@
                Height="20"
                Padding="0"
                Appearance="Transparent"
-               Foreground="#B0B6C3"
+               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                ToolTipService.InitialShowDelay="300"
                ToolTipService.ShowDuration="10000"
                ToolTipService.BetweenShowDelay="100"
