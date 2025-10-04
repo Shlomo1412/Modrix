@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -9,6 +10,7 @@ using Modrix.Services;
 using Modrix.Views.Windows;
 using Wpf.Ui.Controls;
 using Wpf.Ui.Abstractions.Controls;
+using SystemTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Modrix.Views.Pages.ResourcePack
 {
@@ -22,6 +24,7 @@ namespace Modrix.Views.Pages.ResourcePack
         private List<TextureItem> _filteredTextures = new();
         private bool _isGridView = true;
         private MinecraftAssetExtractor? _assetExtractor;
+        private bool _isLoading = false;
 
         public TexturesPage()
         {
@@ -39,8 +42,8 @@ namespace Modrix.Views.Pages.ResourcePack
                 System.Diagnostics.Debug.WriteLine($"TexturesPage: CurrentPack = {_currentPack?.Name ?? "null"}");
                 
                 LoadCategories();
-                LoadTextures();
-                System.Diagnostics.Debug.WriteLine("TexturesPage: LoadTextures completed");
+                _ = LoadTexturesAsync(); // Start loading asynchronously
+                System.Diagnostics.Debug.WriteLine("TexturesPage: LoadTexturesAsync started");
             }
             catch (Exception ex)
             {
@@ -97,25 +100,31 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
-        private void LoadTextures()
+        private async Task LoadTexturesAsync()
         {
-            _allTextures.Clear();
-
-            if (_currentPack == null || _assetExtractor == null) 
-            {
-                UpdateEmptyState();
-                return;
-            }
+            if (_isLoading) return;
+            _isLoading = true;
 
             try
             {
+                ShowLoadingState("Loading textures...", "Please wait while we load the texture data...");
+                
+                _allTextures.Clear();
+
+                if (_currentPack == null || _assetExtractor == null) 
+                {
+                    HideLoadingState();
+                    ShowEmptyState();
+                    return;
+                }
+
                 // Check if assets are available for the current pack's Minecraft version
                 var minecraftVersion = _currentPack.MinecraftVersion ?? "1.20.1";
                 
                 if (_assetExtractor.AreAssetsAvailable(minecraftVersion))
                 {
                     var assetsPath = _assetExtractor.GetAssetsPath(minecraftVersion);
-                    LoadTexturesFromDirectory(assetsPath, minecraftVersion);
+                    await LoadTexturesFromDirectoryAsync(assetsPath, minecraftVersion);
                 }
                 else
                 {
@@ -131,51 +140,122 @@ namespace Modrix.Views.Pages.ResourcePack
             }
             finally
             {
-                UpdateEmptyState();
+                _isLoading = false;
+                HideLoadingState();
             }
         }
 
-        private void LoadTexturesFromDirectory(string texturesDir, string minecraftVersion)
+        private async Task LoadTexturesFromDirectoryAsync(string texturesDir, string minecraftVersion)
         {
             if (!Directory.Exists(texturesDir)) return;
 
-            foreach (var file in Directory.GetFiles(texturesDir, "*.png", SearchOption.AllDirectories))
+            await Task.Run(() =>
             {
-                try
-                {
-                    var relativePath = Path.GetRelativePath(texturesDir, file);
-                    var pathParts = relativePath.Split(Path.DirectorySeparatorChar);
-                    var category = pathParts.Length > 0 ? pathParts[0] : "other";
+                var files = Directory.GetFiles(texturesDir, "*.png", SearchOption.AllDirectories);
+                var textures = new List<TextureItem>();
 
-                    var texture = new TextureItem
+                for (int i = 0; i < files.Length; i++)
+                {
+                    var file = files[i];
+                    
+                    // Update progress periodically
+                    if (i % 50 == 0)
                     {
-                        Name = Path.GetFileNameWithoutExtension(file),
-                        Category = category,
-                        FilePath = file,
-                        Size = GetFileSize(file),
-                        RelativePath = relativePath.Replace('\\', '/') // Use forward slashes for consistency
-                    };
+                        var progress = (i + 1) * 100 / files.Length;
+                        Dispatcher.Invoke(() => UpdateLoadingProgress($"Loading textures... ({i + 1}/{files.Length})", progress));
+                    }
 
-                    // Load preview image
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.UriSource = new Uri(file);
-                    bitmap.DecodePixelWidth = 64;
-                    bitmap.EndInit();
-                    bitmap.Freeze();
-                    texture.PreviewImage = bitmap;
+                    try
+                    {
+                        var relativePath = Path.GetRelativePath(texturesDir, file);
+                        var pathParts = relativePath.Split(Path.DirectorySeparatorChar);
+                        var category = pathParts.Length > 0 ? pathParts[0] : "other";
 
-                    _allTextures.Add(texture);
+                        var texture = new TextureItem
+                        {
+                            Name = Path.GetFileNameWithoutExtension(file),
+                            Category = category,
+                            FilePath = file,
+                            Size = GetFileSize(file),
+                            RelativePath = relativePath.Replace('\\', '/') // Use forward slashes for consistency
+                        };
+
+                        // Load preview image on UI thread
+                        Dispatcher.Invoke(() =>
+                        {
+                            try
+                            {
+                                var bitmap = new BitmapImage();
+                                bitmap.BeginInit();
+                                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                                bitmap.UriSource = new Uri(file);
+                                bitmap.DecodePixelWidth = 64;
+                                bitmap.EndInit();
+                                bitmap.Freeze();
+                                texture.PreviewImage = bitmap;
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Error loading preview for {file}: {ex.Message}");
+                            }
+                        });
+
+                        textures.Add(texture);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error loading texture {file}: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
+
+                // Update UI on main thread
+                Dispatcher.Invoke(() =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error loading texture {file}: {ex.Message}");
-                }
-            }
+                    _allTextures.AddRange(textures);
+                    LoadCategories(); // Update category counts
+                });
+            });
+        }
 
-            // Update category counts
-            LoadCategories();
+        private void ShowLoadingState(string message = "Loading...", string subtext = "Please wait...")
+        {
+            var loadingState = this.FindName("LoadingState") as FrameworkElement;
+            var loadingText = this.FindName("LoadingText") as SystemTextBlock;
+            var loadingSubtext = this.FindName("LoadingSubtext") as SystemTextBlock;
+            var gridView = this.FindName("GridView") as FrameworkElement;
+            var listView = this.FindName("ListView") as FrameworkElement;
+            var emptyState = this.FindName("EmptyState") as FrameworkElement;
+            
+            if (loadingState != null) loadingState.Visibility = Visibility.Visible;
+            if (loadingText != null) loadingText.Text = message;
+            if (loadingSubtext != null) loadingSubtext.Text = subtext;
+            if (gridView != null) gridView.Visibility = Visibility.Collapsed;
+            if (listView != null) listView.Visibility = Visibility.Collapsed;
+            if (emptyState != null) emptyState.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdateLoadingProgress(string message, int progress)
+        {
+            var loadingText = this.FindName("LoadingText") as SystemTextBlock;
+            if (loadingText != null)
+            {
+                loadingText.Text = $"{message} ({progress}%)";
+            }
+        }
+
+        private void HideLoadingState()
+        {
+            var loadingState = this.FindName("LoadingState") as FrameworkElement;
+            if (loadingState != null) loadingState.Visibility = Visibility.Collapsed;
+            
+            UpdateDisplayMode(); // Show the appropriate view
+            UpdateEmptyState();
+        }
+
+        private void ShowEmptyState()
+        {
+            var emptyState = this.FindName("EmptyState") as FrameworkElement;
+            if (emptyState != null) emptyState.Visibility = Visibility.Visible;
         }
 
         private string GetFileSize(string filePath)
@@ -275,8 +355,10 @@ namespace Modrix.Views.Pages.ResourcePack
         // Event handlers
         public void OnLoaded(object sender, RoutedEventArgs e)
         {
-            LoadTextures();
-            FilterTextures();
+            if (!_isLoading)
+            {
+                _ = LoadTexturesAsync();
+            }
         }
 
         public void CategoriesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -332,6 +414,13 @@ namespace Modrix.Views.Pages.ResourcePack
             {
                 var overridesRoot = Path.Combine(_currentPack.Location, "overrides", "textures");
                 var relative = item.RelativePath.Replace('\\','/');
+
+                // Handle case where relative path starts with a directory separator
+                if (relative.StartsWith("/"))
+                {
+                    relative = relative.Substring(1);
+                }
+
                 var parts = relative.Split('/');
                 string category = parts.Length > 1 ? parts[0] : "misc";
                 var targetDir = Path.Combine(overridesRoot, category);
@@ -352,8 +441,7 @@ namespace Modrix.Views.Pages.ResourcePack
 
         public async void RefreshTextures_Click(object sender, RoutedEventArgs e)
         {
-            LoadTextures();
-            FilterTextures();
+            await LoadTexturesAsync();
         }
 
         public async void ExtractAssets_Click(object sender, RoutedEventArgs e)
@@ -380,8 +468,7 @@ namespace Modrix.Views.Pages.ResourcePack
                 if (success)
                 {
                     progressDialog.Close();
-                    LoadTextures();
-                    FilterTextures();
+                    await LoadTexturesAsync();
                     ShowMessage($"Successfully extracted assets for Minecraft {minecraftVersion}!", "Extraction Complete");
                 }
                 else

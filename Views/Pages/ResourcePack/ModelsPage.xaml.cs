@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Modrix.Services;
 using Modrix.Views.Windows;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
+using SystemTextBlock = System.Windows.Controls.TextBlock;
 
 namespace Modrix.Views.Pages.ResourcePack
 {
@@ -21,6 +23,7 @@ namespace Modrix.Views.Pages.ResourcePack
         private List<ModelItem> _filteredModels = new();
         private bool _isGridView = true;
         private MinecraftAssetExtractor? _assetExtractor;
+        private bool _isLoading = false;
 
         public ModelsPage()
         {
@@ -34,7 +37,7 @@ namespace Modrix.Views.Pages.ResourcePack
                 
                 LoadCurrentPack();
                 LoadCategories();
-                LoadModels();
+                _ = LoadModelsAsync(); // Start loading asynchronously
             }
             catch (Exception ex)
             {
@@ -81,24 +84,30 @@ namespace Modrix.Views.Pages.ResourcePack
             CategoriesList.SelectedIndex = 0; // Select "All" by default
         }
 
-        private void LoadModels()
+        private async Task LoadModelsAsync()
         {
-            _allModels.Clear();
-
-            if (_currentPack == null || _assetExtractor == null) 
-            {
-                UpdateEmptyState();
-                return;
-            }
+            if (_isLoading) return;
+            _isLoading = true;
 
             try
             {
+                ShowLoadingState("Loading models...", "Please wait while we load the model data...");
+                
+                _allModels.Clear();
+
+                if (_currentPack == null || _assetExtractor == null) 
+                {
+                    HideLoadingState();
+                    ShowEmptyState();
+                    return;
+                }
+
                 var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
                 
                 if (_assetExtractor.AreModelsAssetsAvailable(minecraftVersion))
                 {
                     var modelsPath = _assetExtractor.GetModelsAssetsPath(minecraftVersion);
-                    LoadModelsFromDirectory(modelsPath);
+                    await LoadModelsFromDirectoryAsync(modelsPath);
                 }
                 else
                 {
@@ -113,41 +122,102 @@ namespace Modrix.Views.Pages.ResourcePack
             }
             finally
             {
-                UpdateEmptyState();
+                LoadCategories(); // Update category counts
+                _isLoading = false;
+                HideLoadingState();
             }
         }
 
-        private void LoadModelsFromDirectory(string modelsDir)
+        private async Task LoadModelsFromDirectoryAsync(string modelsDir)
         {
             if (!Directory.Exists(modelsDir)) return;
 
-            foreach (var file in Directory.GetFiles(modelsDir, "*.json", SearchOption.AllDirectories))
+            await Task.Run(() =>
             {
-                try
-                {
-                    var relativePath = Path.GetRelativePath(modelsDir, file);
-                    var pathParts = relativePath.Split(Path.DirectorySeparatorChar);
-                    var category = pathParts.Length > 0 ? pathParts[0] : "other";
+                var files = Directory.GetFiles(modelsDir, "*.json", SearchOption.AllDirectories);
+                var models = new List<ModelItem>();
 
-                    var model = new ModelItem
+                for (int i = 0; i < files.Length; i++)
+                {
+                    var file = files[i];
+                    
+                    // Update progress periodically
+                    if (i % 25 == 0)
                     {
-                        Name = Path.GetFileNameWithoutExtension(file),
-                        Category = category,
-                        FilePath = file,
-                        Size = GetFileSize(file),
-                        RelativePath = relativePath.Replace('\\', '/')
-                    };
+                        var progress = (i + 1) * 100 / files.Length;
+                        Dispatcher.Invoke(() => UpdateLoadingProgress($"Loading models... ({i + 1}/{files.Length})", progress));
+                    }
 
-                    _allModels.Add(model);
+                    try
+                    {
+                        var relativePath = Path.GetRelativePath(modelsDir, file);
+                        var pathParts = relativePath.Split(Path.DirectorySeparatorChar);
+                        var category = pathParts.Length > 0 ? pathParts[0] : "other";
+
+                        var model = new ModelItem
+                        {
+                            Name = Path.GetFileNameWithoutExtension(file),
+                            Category = category,
+                            FilePath = file,
+                            Size = GetFileSize(file),
+                            RelativePath = relativePath.Replace('\\', '/')
+                        };
+
+                        models.Add(model);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error loading model {file}: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
+
+                // Update UI on main thread
+                Dispatcher.Invoke(() =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error loading model {file}: {ex.Message}");
-                }
-            }
+                    _allModels.AddRange(models);
+                });
+            });
+        }
 
-            // Update category counts
-            LoadCategories();
+        private void ShowLoadingState(string message = "Loading...", string subtext = "Please wait...")
+        {
+            var loadingState = this.FindName("LoadingState") as FrameworkElement;
+            var loadingText = this.FindName("LoadingText") as SystemTextBlock;
+            var loadingSubtext = this.FindName("LoadingSubtext") as SystemTextBlock;
+            var gridView = this.FindName("GridView") as FrameworkElement;
+            var listView = this.FindName("ListView") as FrameworkElement;
+            var emptyState = this.FindName("EmptyState") as FrameworkElement;
+            
+            if (loadingState != null) loadingState.Visibility = Visibility.Visible;
+            if (loadingText != null) loadingText.Text = message;
+            if (loadingSubtext != null) loadingSubtext.Text = subtext;
+            if (gridView != null) gridView.Visibility = Visibility.Collapsed;
+            if (listView != null) listView.Visibility = Visibility.Collapsed;
+            if (emptyState != null) emptyState.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdateLoadingProgress(string message, int progress)
+        {
+            var loadingText = this.FindName("LoadingText") as SystemTextBlock;
+            if (loadingText != null)
+            {
+                loadingText.Text = $"{message} ({progress}%)";
+            }
+        }
+
+        private void HideLoadingState()
+        {
+            var loadingState = this.FindName("LoadingState") as FrameworkElement;
+            if (loadingState != null) loadingState.Visibility = Visibility.Collapsed;
+            
+            UpdateDisplayMode(); // Show the appropriate view
+            UpdateEmptyState();
+        }
+
+        private void ShowEmptyState()
+        {
+            var emptyState = this.FindName("EmptyState") as FrameworkElement;
+            if (emptyState != null) emptyState.Visibility = Visibility.Visible;
         }
 
         private string GetFileSize(string filePath)
@@ -297,10 +367,9 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
-        public void RefreshModels_Click(object sender, RoutedEventArgs e)
+        public async void RefreshModels_Click(object sender, RoutedEventArgs e)
         {
-            LoadModels();
-            FilterModels();
+            await LoadModelsAsync();
         }
 
         public void CreateOverride_Click(object sender, RoutedEventArgs e)
@@ -366,8 +435,7 @@ namespace Modrix.Views.Pages.ResourcePack
                 if (success)
                 {
                     progressDialog.Close();
-                    LoadModels();
-                    FilterModels();
+                    await LoadModelsAsync();
                     ShowMessage($"Successfully extracted assets for Minecraft {minecraftVersion}!", "Extraction Complete");
                 }
                 else

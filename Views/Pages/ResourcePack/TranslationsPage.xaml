@@ -136,6 +136,17 @@
                     <!-- Translations Display -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <Grid>
+                            <!-- Loading State -->
+                            <StackPanel x:Name="LoadingState" HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" Visibility="Collapsed">
+                                <ui:ProgressRing IsIndeterminate="True" Width="48" Height="48"/>
+                                <TextBlock x:Name="LoadingText" Text="Loading translations..." FontSize="16" 
+                                          Margin="0,16,0,4" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="LoadingSubtext" Text="Please wait while we load the translation data..." 
+                                          FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                          HorizontalAlignment="Center" TextAlignment="Center" MaxWidth="300" TextWrapping="Wrap"/>
+                            </StackPanel>
+
                             <!-- Tab Control for Categories -->
                             <TabControl x:Name="CategoryTabs" Background="Transparent" BorderThickness="0">
                                 <TabItem Header="GUI" x:Name="GuiTab">

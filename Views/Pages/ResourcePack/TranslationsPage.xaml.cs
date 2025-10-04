@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Modrix.Services;
 using Modrix.Views.Windows;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Controls;
+using TextBlock = System.Windows.Controls.TextBlock;
 
 namespace Modrix.Views.Pages.ResourcePack
 {
@@ -21,6 +23,7 @@ namespace Modrix.Views.Pages.ResourcePack
         private List<TranslationKeyItem> _allTranslations = new();
         private string? _selectedLanguageCode;
         private MinecraftAssetExtractor? _assetExtractor;
+        private bool _isLoading = false;
 
         public TranslationsPage()
         {
@@ -33,7 +36,7 @@ namespace Modrix.Views.Pages.ResourcePack
                 _assetExtractor = App.Services.GetService(typeof(MinecraftAssetExtractor)) as MinecraftAssetExtractor;
                 
                 LoadCurrentPack();
-                LoadAvailableLanguages();
+                _ = LoadAvailableLanguagesAsync(); // Start loading asynchronously
                 UpdateEmptyState();
             }
             catch (Exception ex)
@@ -55,39 +58,130 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
-        private void LoadAvailableLanguages()
+        private async Task LoadAvailableLanguagesAsync()
         {
-            _languages.Clear();
+            if (_isLoading) return;
+            _isLoading = true;
 
-            if (_currentPack == null || _assetExtractor == null) return;
-
-            var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
-            
-            if (!_assetExtractor.AreLanguageAssetsAvailable(minecraftVersion))
+            try
             {
-                // Show only basic language options if assets aren't extracted
-                _languages.Add(new LanguageItem("en_us", "English (US)", 0));
-                _languages.Add(new LanguageItem("en_gb", "English (UK)", 0));
-                _languages.Add(new LanguageItem("de_de", "German", 0));
-                _languages.Add(new LanguageItem("fr_fr", "French", 0));
-                _languages.Add(new LanguageItem("es_es", "Spanish", 0));
-            }
-            else
-            {
-                var langDir = _assetExtractor.GetLanguageAssetsPath(minecraftVersion);
-                var langFiles = Directory.GetFiles(langDir, "*.json");
+                ShowLoadingState("Loading languages...", "Please wait while we load the available languages...");
                 
-                foreach (var file in langFiles)
-                {
-                    var code = Path.GetFileNameWithoutExtension(file);
-                    var displayName = GetLanguageDisplayName(code);
-                    var keyCount = CountKeysInFile(file);
-                    
-                    _languages.Add(new LanguageItem(code, displayName, keyCount));
-                }
-            }
+                _languages.Clear();
 
-            LanguagesList.ItemsSource = _languages;
+                if (_currentPack == null || _assetExtractor == null) 
+                {
+                    LoadBasicLanguages();
+                    return;
+                }
+
+                var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
+                
+                if (!_assetExtractor.AreLanguageAssetsAvailable(minecraftVersion))
+                {
+                    // Show only basic language options if assets aren't extracted
+                    LoadBasicLanguages();
+                }
+                else
+                {
+                    await LoadLanguagesFromAssetsAsync(minecraftVersion);
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    LanguagesList.ItemsSource = _languages;
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading languages: {ex.Message}");
+                LoadBasicLanguages();
+            }
+            finally
+            {
+                _isLoading = false;
+                HideLoadingState();
+                UpdateEmptyState();
+            }
+        }
+
+        private void LoadBasicLanguages()
+        {
+            _languages.Add(new LanguageItem("en_us", "English (US)", 0));
+            _languages.Add(new LanguageItem("en_gb", "English (UK)", 0));
+            _languages.Add(new LanguageItem("de_de", "German", 0));
+            _languages.Add(new LanguageItem("fr_fr", "French", 0));
+            _languages.Add(new LanguageItem("es_es", "Spanish", 0));
+        }
+
+        private async Task LoadLanguagesFromAssetsAsync(string minecraftVersion)
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var langDir = _assetExtractor!.GetLanguageAssetsPath(minecraftVersion);
+                    var langFiles = Directory.GetFiles(langDir, "*.json");
+                    var languages = new List<LanguageItem>();
+                    
+                    for (int i = 0; i < langFiles.Length; i++)
+                    {
+                        var file = langFiles[i];
+                        
+                        // Update progress periodically
+                        if (i % 5 == 0)
+                        {
+                            var progress = (i + 1) * 100 / langFiles.Length;
+                            Dispatcher.Invoke(() => UpdateLoadingProgress($"Loading languages... ({i + 1}/{langFiles.Length})", progress));
+                        }
+
+                        var code = Path.GetFileNameWithoutExtension(file);
+                        var displayName = GetLanguageDisplayName(code);
+                        var keyCount = CountKeysInFile(file);
+                        
+                        languages.Add(new LanguageItem(code, displayName, keyCount));
+                    }
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        _languages.AddRange(languages);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error loading language files: {ex.Message}");
+                }
+            });
+        }
+
+        private void ShowLoadingState(string message = "Loading...", string subtext = "Please wait...")
+        {
+            var loadingState = this.FindName("LoadingState") as FrameworkElement;
+            var loadingText = this.FindName("LoadingText") as TextBlock;
+            var loadingSubtext = this.FindName("LoadingSubtext") as TextBlock;
+            var categoryTabs = this.FindName("CategoryTabs") as FrameworkElement;
+            var emptyState = this.FindName("EmptyState") as FrameworkElement;
+            
+            if (loadingState != null) loadingState.Visibility = Visibility.Visible;
+            if (loadingText != null) loadingText.Text = message;
+            if (loadingSubtext != null) loadingSubtext.Text = subtext;
+            if (categoryTabs != null) categoryTabs.Visibility = Visibility.Collapsed;
+            if (emptyState != null) emptyState.Visibility = Visibility.Collapsed;
+        }
+
+        private void UpdateLoadingProgress(string message, int progress)
+        {
+            var loadingText = this.FindName("LoadingText") as TextBlock;
+            if (loadingText != null)
+            {
+                loadingText.Text = $"{message} ({progress}%)";
+            }
+        }
+
+        private void HideLoadingState()
+        {
+            var loadingState = this.FindName("LoadingState") as FrameworkElement;
+            if (loadingState != null) loadingState.Visibility = Visibility.Collapsed;
         }
 
         private int CountKeysInFile(string filePath)
@@ -134,68 +228,103 @@ namespace Modrix.Views.Pages.ResourcePack
             CategoryTabs.Visibility = hasTranslations ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void LanguagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void LanguagesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (LanguagesList.SelectedItem is LanguageItem selectedLang)
             {
                 _selectedLanguageCode = selectedLang.Code;
-                LoadTranslationsForLanguage(selectedLang.Code);
+                await LoadTranslationsForLanguageAsync(selectedLang.Code);
             }
         }
 
-        private void LoadTranslationsForLanguage(string languageCode)
+        private async Task LoadTranslationsForLanguageAsync(string languageCode)
         {
-            _allTranslations.Clear();
-
-            if (_currentPack == null || _assetExtractor == null) return;
-
-            var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
-            
-            if (!_assetExtractor.AreLanguageAssetsAvailable(minecraftVersion))
-            {
-                System.Diagnostics.Debug.WriteLine($"Language assets not available for {minecraftVersion}");
-                UpdateEmptyState();
-                return;
-            }
-
-            var langDir = _assetExtractor.GetLanguageAssetsPath(minecraftVersion);
-            var langFile = Path.Combine(langDir, $"{languageCode}.json");
-            
-            if (!File.Exists(langFile))
-            {
-                System.Diagnostics.Debug.WriteLine($"Language file not found: {langFile}");
-                UpdateEmptyState();
-                return;
-            }
+            if (_isLoading) return;
+            _isLoading = true;
 
             try
             {
-                var content = File.ReadAllText(langFile);
-                var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
+                ShowLoadingState($"Loading {GetLanguageDisplayName(languageCode)} translations...", 
+                                 "Please wait while we parse the translation keys...");
                 
-                if (translations != null)
+                _allTranslations.Clear();
+
+                if (_currentPack == null || _assetExtractor == null) return;
+
+                var minecraftVersion = _currentPack.MinecraftVersion ?? "1.21.4";
+                
+                if (!_assetExtractor.AreLanguageAssetsAvailable(minecraftVersion))
                 {
-                    foreach (var kvp in translations)
-                    {
-                        var category = CategorizeTranslationKey(kvp.Key);
-                        _allTranslations.Add(new TranslationKeyItem
-                        {
-                            Key = kvp.Key,
-                            Value = kvp.Value,
-                            Category = category,
-                            LanguageCode = languageCode
-                        });
-                    }
+                    System.Diagnostics.Debug.WriteLine($"Language assets not available for {minecraftVersion}");
+                    UpdateEmptyState();
+                    return;
                 }
 
-                FilterAndDisplayTranslations();
+                var langDir = _assetExtractor.GetLanguageAssetsPath(minecraftVersion);
+                var langFile = Path.Combine(langDir, $"{languageCode}.json");
+                
+                if (!File.Exists(langFile))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Language file not found: {langFile}");
+                    UpdateEmptyState();
+                    return;
+                }
+
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        var content = File.ReadAllText(langFile);
+                        var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
+                        var translationItems = new List<TranslationKeyItem>();
+                        
+                        if (translations != null)
+                        {
+                            var items = translations.ToArray();
+                            for (int i = 0; i < items.Length; i++)
+                            {
+                                var kvp = items[i];
+                                
+                                // Update progress periodically
+                                if (i % 200 == 0)
+                                {
+                                    var progress = (i + 1) * 100 / items.Length;
+                                    Dispatcher.Invoke(() => UpdateLoadingProgress($"Processing translations... ({i + 1}/{items.Length})", progress));
+                                }
+
+                                var category = CategorizeTranslationKey(kvp.Key);
+                                translationItems.Add(new TranslationKeyItem
+                                {
+                                    Key = kvp.Key,
+                                    Value = kvp.Value,
+                                    Category = category,
+                                    LanguageCode = languageCode
+                                });
+                            }
+                        }
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            _allTranslations.AddRange(translationItems);
+                            FilterAndDisplayTranslations();
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Error loading translations: {ex.Message}");
+                    }
+                });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading translations: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error in LoadTranslationsForLanguageAsync: {ex.Message}");
             }
-            
-            UpdateEmptyState();
+            finally
+            {
+                _isLoading = false;
+                HideLoadingState();
+                UpdateEmptyState();
+            }
         }
 
         private string CategorizeTranslationKey(string key)
@@ -325,7 +454,7 @@ namespace Modrix.Views.Pages.ResourcePack
                 if (success)
                 {
                     progressDialog.Close();
-                    LoadAvailableLanguages();
+                    await LoadAvailableLanguagesAsync();
                     ShowMessage($"Successfully extracted language assets for Minecraft {minecraftVersion}!", "Extraction Complete");
                 }
                 else
@@ -341,12 +470,12 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
-        private void RefreshTranslations_Click(object sender, RoutedEventArgs e)
+        private async void RefreshTranslations_Click(object sender, RoutedEventArgs e)
         {
-            LoadAvailableLanguages();
+            await LoadAvailableLanguagesAsync();
             if (_selectedLanguageCode != null)
             {
-                LoadTranslationsForLanguage(_selectedLanguageCode);
+                await LoadTranslationsForLanguageAsync(_selectedLanguageCode);
             }
         }
 
