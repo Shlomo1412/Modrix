@@ -13,131 +13,223 @@
       ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}">
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,30">
-            <TextBlock 
-                FontSize="32" 
-                FontWeight="Bold" 
-                Text="License Agreement" />
-            <TextBlock 
-                Margin="0,8,0,0"
-                FontSize="16" 
-                Opacity="0.8"
-                Text="Please read and accept the MIT License to continue" />
-        </StackPanel>
-
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                
-                <!-- License Content -->
-                <ui:Card Margin="0,0,0,25">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="0,0,0,32">
+            <!-- Page Header -->
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,18,18" Padding="0,0,0,18" Margin="0,0,0,18">
+                <StackPanel Orientation="Horizontal" Margin="32,10,32,0" VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="Document24" Width="28" Height="28" Margin="0,0,8,0"/>
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <ui:SymbolIcon Symbol="Document24" Margin="0,0,8,0" />
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="MIT License" />
-                        </StackPanel>
+                        <TextBlock Text="License Agreement" FontSize="28" FontWeight="Bold"/>
+                        <TextBlock Text="Please review and accept the MIT License to continue" FontSize="15" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
-                        <Border 
-                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                            CornerRadius="8"
-                            Padding="16"
-                            MaxHeight="300">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <!-- License Content Section -->
+            <ui:Card Margin="32,0,32,18" Padding="24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <ui:SymbolIcon Symbol="Document24" Width="28" Height="28" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="MIT License"/>
+                    </StackPanel>
+
+                    <!-- License text with enhanced styling -->
+                    <Border CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Accent -->
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#4C7DFF" Offset="0"/>
+                                        <GradientStop Color="#2850B7" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <ScrollViewer Grid.Column="1" Margin="16,14,16,14" VerticalScrollBarVisibility="Auto" MaxHeight="280">
                                 <TextBlock 
                                     Text="{Binding ViewModel.LicenseText}" 
                                     FontFamily="Consolas" 
                                     FontSize="12" 
                                     TextWrapping="Wrap"
+                                    LineHeight="18"
                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                             </ScrollViewer>
-                        </Border>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- License Acceptance Section -->
+            <ui:Card Margin="32,0,32,18" Padding="24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <ui:SymbolIcon Symbol="ShieldCheckmark24" Width="28" Height="28" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="License Acceptance"/>
                     </StackPanel>
-                </ui:Card>
 
-                <!-- License Acceptance -->
-                <ui:Card Margin="0,0,0,25">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <ui:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark24" Margin="0,0,15,0" />
-                        
-                        <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="License Acceptance" />
-                            <TextBlock 
-                                Margin="0,4,0,0"
-                                Opacity="0.8"
-                                Text="You must accept the license terms to proceed with installation" />
-                        </StackPanel>
-                        
-                        <CheckBox 
-                            Grid.Column="2"
-                            x:Name="AcceptLicenseCheckBox"
-                            IsChecked="{Binding ViewModel.IsAccepted}"
-                            Content="I Accept"
-                            FontSize="14"
-                            FontWeight="SemiBold" />
-                    </Grid>
-                </ui:Card>
+                    <!-- Acceptance checkbox with enhanced styling -->
+                    <Border CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Accent -->
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#6EC177" Offset="0"/>
+                                        <GradientStop Color="#4A8A52" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <Grid Grid.Column="1" Margin="16,14,16,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <ui:SymbolIcon Symbol="Checkmark24" Width="20" Height="20" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Agreement Required" FontWeight="SemiBold" FontSize="14"/>
+                                    </StackPanel>
+                                    <TextBlock Text="You must accept the license terms to proceed with installation" 
+                                              FontSize="12" 
+                                              Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                              TextWrapping="Wrap"/>
+                                </StackPanel>
+                                
+                                <CheckBox 
+                                    Grid.Column="1"
+                                    x:Name="AcceptLicenseCheckBox"
+                                    IsChecked="{Binding ViewModel.IsAccepted}"
+                                    Content="I Accept"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    VerticalAlignment="Center"
+                                    Margin="16,0,0,0" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ui:Card>
 
-                <!-- License Summary -->
-                <ui:Card Margin="0,0,0,25" Background="{DynamicResource AccentFillColorSecondaryBrush}">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" />
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="License Summary" />
-                        </StackPanel>
-
-                        <StackPanel>
-                            <TextBlock 
-                                Text="• ✅ Commercial and private use allowed" 
-                                Margin="0,0,0,4" />
-                            <TextBlock 
-                                Text="• ✅ Modification and distribution permitted" 
-                                Margin="0,0,0,4" />
-                            <TextBlock 
-                                Text="• ✅ Patent use granted" 
-                                Margin="0,0,0,4" />
-                            <TextBlock 
-                                Text="• ❗ Must include copyright and license notice" 
-                                Margin="0,0,0,4" />
-                            <TextBlock 
-                                Text="• ⚠️ Software provided 'as is' without warranty" 
-                                Margin="0,0,0,0" />
-                        </StackPanel>
+            <!-- License Summary Section -->
+            <ui:Card Margin="32,0,32,18" Padding="24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <ui:SymbolIcon Symbol="Info24" Width="28" Height="28" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="License Summary"/>
                     </StackPanel>
-                </ui:Card>
 
-                <!-- Warning -->
-                <ui:Card Margin="0,0,0,25" Background="{DynamicResource SystemFillColorCautionBackgroundBrush}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <ui:SymbolIcon Grid.Column="0" Symbol="Warning24" Margin="0,0,12,0" Foreground="Orange" />
-                        
-                        <StackPanel Grid.Column="1">
-                            <TextBlock FontWeight="SemiBold" Text="Important Notice" />
-                            <TextBlock 
-                                Margin="0,4,0,0"
-                                Text="Declining the license agreement will close the installer. You must accept these terms to install Modrix." 
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Grid>
-                </ui:Card>
+                    <Border CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Accent -->
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#9C6BFF" Offset="0"/>
+                                        <GradientStop Color="#6A46C8" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="16,14,16,16">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <ui:SymbolIcon Symbol="DocumentBulletList24" Width="20" Height="20" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Key Terms" FontWeight="SemiBold" FontSize="14"/>
+                                </StackPanel>
 
-            </StackPanel>
-        </ScrollViewer>
-    </Grid>
+                                <!-- License terms as styled items -->
+                                <StackPanel>
+                                    <Border Background="#2F3037" Padding="12,8" CornerRadius="8" Margin="0,0,0,6" BorderBrush="#44464F" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Checkmark24" Width="16" Height="16" Margin="0,0,8,0" Foreground="#6EC177"/>
+                                            <TextBlock Text="Commercial and private use allowed" FontSize="13"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#2F3037" Padding="12,8" CornerRadius="8" Margin="0,0,0,6" BorderBrush="#44464F" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Checkmark24" Width="16" Height="16" Margin="0,0,8,0" Foreground="#6EC177"/>
+                                            <TextBlock Text="Modification and distribution permitted" FontSize="13"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#2F3037" Padding="12,8" CornerRadius="8" Margin="0,0,0,6" BorderBrush="#44464F" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Checkmark24" Width="16" Height="16" Margin="0,0,8,0" Foreground="#6EC177"/>
+                                            <TextBlock Text="Patent use granted" FontSize="13"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#3E2F1F" Padding="12,8" CornerRadius="8" Margin="0,0,0,6" BorderBrush="#5C4A2F" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Important24" Width="16" Height="16" Margin="0,0,8,0" Foreground="#FFB366"/>
+                                            <TextBlock Text="Must include copyright and license notice" FontSize="13"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#3E2424" Padding="12,8" CornerRadius="8" Margin="0,0,0,0" BorderBrush="#5C3838" BorderThickness="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Warning24" Width="16" Height="16" Margin="0,0,8,0" Foreground="#FF6B5E"/>
+                                            <TextBlock Text="Software provided 'as is' without warranty" FontSize="13"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ui:Card>
+
+            <!-- Important Notice Section -->
+            <ui:Card Margin="32,0,32,0" Padding="24">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <ui:SymbolIcon Symbol="Warning24" Width="28" Height="28" Margin="0,0,8,0"/>
+                        <TextBlock FontSize="20" FontWeight="SemiBold" Text="Important Notice"/>
+                    </StackPanel>
+
+                    <Border CornerRadius="10" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Warning accent -->
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#FFB366" Offset="0"/>
+                                        <GradientStop Color="#E6943D" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="16,14,16,16">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="40" Height="40" CornerRadius="8" Background="#3E2F1F" Margin="0,0,12,0">
+                                        <ui:SymbolIcon Symbol="ErrorCircle24" Foreground="#FFB366" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel>
+                                        <TextBlock Text="License Required for Installation" FontSize="16" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Declining the license agreement will close the installer. You must accept these terms to install Modrix." 
+                                                  FontSize="12" 
+                                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                                  TextWrapping="Wrap"
+                                                  Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ui:Card>
+        </StackPanel>
+    </ScrollViewer>
 </Page>

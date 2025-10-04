@@ -19,9 +19,85 @@
 
     <ui:FluentWindow.Resources>
         <helpers:StringToSymbolIconConverter x:Key="StringToSymbolIconConverter" />
+        
+        <!-- Slide In from Right (Forward Navigation) -->
+        <Storyboard x:Key="SlideInFromRight">
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="Opacity" 
+                           From="0" To="1" 
+                           Duration="0:0:0.4" />
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
+                           From="50" To="0" 
+                           Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Slide In from Left (Backward Navigation) -->
+        <Storyboard x:Key="SlideInFromLeft">
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="Opacity" 
+                           From="0" To="1" 
+                           Duration="0:0:0.4" />
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
+                           From="-50" To="0" 
+                           Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Slide Out to Left (Forward Navigation) -->
+        <Storyboard x:Key="SlideOutToLeft">
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="Opacity" 
+                           From="1" To="0" 
+                           Duration="0:0:0.3" />
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
+                           From="0" To="-50" 
+                           Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseIn"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Slide Out to Right (Backward Navigation) -->
+        <Storyboard x:Key="SlideOutToRight">
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="Opacity" 
+                           From="1" To="0" 
+                           Duration="0:0:0.3" />
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
+                           From="0" To="50" 
+                           Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseIn"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Initial Content Load Animation -->
         <Storyboard x:Key="ContentFadeIn">
-            <DoubleAnimation Storyboard.TargetName="WizardFrame" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.35" />
-            <DoubleAnimation Storyboard.TargetName="WizardFrame" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" From="25" To="0" Duration="0:0:0.35" />
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="Opacity" 
+                           From="0" To="1" 
+                           Duration="0:0:0.5" />
+            <DoubleAnimation Storyboard.TargetName="WizardFrame" 
+                           Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
+                           From="25" To="0" 
+                           Duration="0:0:0.5">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
         </Storyboard>
     </ui:FluentWindow.Resources>
 
