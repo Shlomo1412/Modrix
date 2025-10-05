@@ -12,6 +12,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Configuration;
 using Modrix.Models;
 using Modrix.Services;
+using Modrix.Views.Windows;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions.Controls;
 using Wpf.Ui.Appearance;
@@ -32,6 +33,7 @@ namespace Modrix.ViewModels.Pages
         private readonly IConfiguration _configuration;
         private readonly IContentDialogService _dialogService;
         private readonly JdkHelper _jdkHelper;
+        private readonly IUpdateService _updateService;
         private bool _isInitialized = false;
 
         [ObservableProperty]
@@ -61,6 +63,18 @@ namespace Modrix.ViewModels.Pages
         [ObservableProperty]
         private ObservableCollection<string> _encodingOptions = new();
 
+        [ObservableProperty]
+        private bool _isCheckingForUpdates;
+
+        [ObservableProperty]
+        private string _updateStatus = "Check for updates";
+
+        [ObservableProperty]
+        private UpdateInfo? _availableUpdate;
+
+        [ObservableProperty]
+        private bool _hasUpdateAvailable;
+
         public ObservableCollection<string> AvailableTabs { get; } = new()
         {
             "Workspace",
@@ -72,11 +86,13 @@ namespace Modrix.ViewModels.Pages
         public SettingsViewModel(
             IThemeService themeService,
             IContentDialogService dialogService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IUpdateService updateService)
         {
             _themeService = themeService;
             _dialogService = dialogService;
             _configuration = configuration;
+            _updateService = updateService;
             _jdkHelper = new JdkHelper();
 
             if (!_isInitialized)
@@ -358,6 +374,64 @@ namespace Modrix.ViewModels.Pages
                 {
                     Title = "Installation Failed",
                     Content = $"Failed to install JDK {version}: {ex.Message}",
+                    PrimaryButtonText = "OK"
+                }.ShowDialogAsync();
+            }
+        }
+
+        [RelayCommand]
+        private async Task CheckForUpdates()
+        {
+            IsCheckingForUpdates = true;
+            UpdateStatus = "Checking for updates...";
+            HasUpdateAvailable = false;
+
+            try
+            {
+                var updateInfo = await _updateService.CheckForUpdatesAsync();
+                
+                if (updateInfo != null && _updateService.IsUpdateAvailable(updateInfo))
+                {
+                    AvailableUpdate = updateInfo;
+                    HasUpdateAvailable = true;
+                    UpdateStatus = $"Update available: v{updateInfo.Version}";
+                }
+                else
+                {
+                    UpdateStatus = "You're up to date!";
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus = "Failed to check for updates";
+                Debug.WriteLine($"Update check failed: {ex.Message}");
+            }
+            finally
+            {
+                IsCheckingForUpdates = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task InstallUpdate()
+        {
+            if (AvailableUpdate == null) return;
+
+            try
+            {
+                var updateDialog = new UpdateDialog(AvailableUpdate, _updateService)
+                {
+                    Owner = System.Windows.Application.Current.MainWindow
+                };
+
+                updateDialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                await new MessageBox
+                {
+                    Title = "Update Error",
+                    Content = $"Failed to show update dialog: {ex.Message}",
                     PrimaryButtonText = "OK"
                 }.ShowDialogAsync();
             }

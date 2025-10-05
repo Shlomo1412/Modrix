@@ -43,8 +43,8 @@ namespace Modrix
 
                 services.AddSingleton<IConnectivityService, ConnectivityService>();
 
-
-
+                // HTTP client and update service
+                services.AddHttpClient<IUpdateService, UpdateService>();
 
                 services.AddHostedService<ApplicationHostService>();
 
@@ -72,11 +72,7 @@ namespace Modrix
                 services.AddSingleton<DataPage>();
                 services.AddSingleton<DataViewModel>();
                 services.AddSingleton<SettingsPage>();
-                services.AddSingleton<SettingsViewModel>(sp =>
-                new SettingsViewModel(
-                    sp.GetRequiredService<IThemeService>(),
-                    sp.GetRequiredService<IContentDialogService>(),
-                    sp.GetRequiredService<IConfiguration>()));
+                services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<ProjectWorkspace>();
                 services.AddSingleton<ProjectWorkspaceViewModel>();
 

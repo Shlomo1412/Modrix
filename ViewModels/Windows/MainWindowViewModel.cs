@@ -4,6 +4,7 @@ using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Modrix.Views.Windows;
+using Modrix.Services;
 
 namespace Modrix.ViewModels.Windows
 {
@@ -12,15 +13,64 @@ namespace Modrix.ViewModels.Windows
         [ObservableProperty]
         private string _applicationTitle = "Modrix";
 
+        [ObservableProperty]
+        private bool _hasUpdateAvailable;
+
+        [ObservableProperty]
+        private ObservableCollection<object> _menuItems = new();
+
+        [ObservableProperty]
+        private ObservableCollection<object> _footerMenuItems = new();
+
         private IRelayCommand _newProjectCommand;
         private IRelayCommand _showDiscordDialogCommand;
+        private readonly IUpdateService _updateService;
+        private NavigationViewItem? _updateMenuItem;
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(IUpdateService updateService)
         {
+            _updateService = updateService;
             _newProjectCommand = new RelayCommand(OpenNewProject);
             _showDiscordDialogCommand = new RelayCommand(ShowDiscordDialog);
             InitializeMenuItems();
             InitializeFooterMenuItems();
+            
+            // Check for updates on startup (non-blocking)
+            _ = CheckForUpdatesOnStartup();
+        }
+
+        private async Task CheckForUpdatesOnStartup()
+        {
+            try
+            {
+                var updateInfo = await _updateService.CheckForUpdatesAsync();
+                if (updateInfo != null && _updateService.IsUpdateAvailable(updateInfo))
+                {
+                    HasUpdateAvailable = true;
+                    AddUpdateMenuItemIfNeeded();
+                }
+            }
+            catch
+            {
+                // Silently fail - update checking is not critical
+            }
+        }
+
+        private void AddUpdateMenuItemIfNeeded()
+        {
+            if (_updateMenuItem != null || !HasUpdateAvailable) return;
+
+            _updateMenuItem = new NavigationViewItem()
+            {
+                Content = "Update Available",
+                Icon = new SymbolIcon { Symbol = SymbolRegular.ArrowSync24 },
+                TargetPageType = typeof(Views.Pages.SettingsPage),
+                ToolTip = "An update is available for Modrix"
+            };
+
+            // Insert after "New Project" item
+            var insertIndex = MenuItems.Count > 3 ? 4 : MenuItems.Count;
+            MenuItems.Insert(insertIndex, _updateMenuItem);
         }
 
         private void InitializeMenuItems()
@@ -57,12 +107,6 @@ namespace Modrix.ViewModels.Windows
                 }
             };
         }
-
-        [ObservableProperty]
-        private ObservableCollection<object> _menuItems;
-
-        [ObservableProperty]
-        private ObservableCollection<object> _footerMenuItems;
 
         private void InitializeFooterMenuItems()
         {

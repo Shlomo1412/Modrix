@@ -25,6 +25,7 @@
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
         <helpers:BytesToMegabytesConverter x:Key="BytesToMegabytesConverter" />
+        <helpers:InverseBoolConverter x:Key="InverseBoolConverter" />
         <ObjectDataProvider x:Key="LineEndingTypes" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
                 <x:Type TypeName="models:LineEndingType"/>
@@ -267,6 +268,53 @@
                         <ui:SymbolIcon Symbol="ArrowDownload24" Width="28" Height="28" Margin="0,0,8,0"/>
                         <TextBlock FontSize="20" FontWeight="SemiBold" Text="Installation"/>
                     </StackPanel>
+
+                    <!-- Update Section -->
+                    <Border Margin="0,0,0,20" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="10" Padding="0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" CornerRadius="10,0,0,10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#4C7DFF" Offset="0"/>
+                                        <GradientStop Color="#2850B7" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="16,14,18,14">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="40" Height="40" CornerRadius="8" Background="#1E2A3E" Margin="0,0,12,0">
+                                        <ui:SymbolIcon Symbol="ArrowSync24" Foreground="#4C7DFF" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel>
+                                        <TextBlock Text="Updates" FontSize="16" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding ViewModel.UpdateStatus}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,16,0" Orientation="Horizontal">
+                                <ui:Button x:Name="CheckUpdatesButton"
+                                         Content="Check for Updates" 
+                                         Appearance="Secondary"
+                                         Icon="{ui:SymbolIcon ArrowSync24}"
+                                         Command="{Binding ViewModel.CheckForUpdatesCommand}"
+                                         IsEnabled="{Binding ViewModel.IsCheckingForUpdates, Converter={StaticResource InverseBoolConverter}}"
+                                         Margin="0,0,8,0"
+                                         Padding="12,8"/>
+                                <ui:Button x:Name="InstallUpdateButton"
+                                         Content="Install Update" 
+                                         Appearance="Primary"
+                                         Icon="{ui:SymbolIcon ArrowDownload24}"
+                                         Command="{Binding ViewModel.InstallUpdateCommand}"
+                                         Visibility="{Binding ViewModel.HasUpdateAvailable, Converter={StaticResource BoolToVisibility}}"
+                                         Padding="12,8"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
                     <!-- Uninstall Section (visual improvement) -->
                     <Border Margin="0,0,0,20" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="10" Padding="0">
