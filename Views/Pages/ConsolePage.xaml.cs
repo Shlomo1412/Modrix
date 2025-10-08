@@ -10,6 +10,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Shapes;
+using System.Collections.Generic;
 using Path = System.IO.Path;
 
 namespace Modrix.Views.Pages
@@ -24,10 +26,25 @@ namespace Modrix.Views.Pages
         private bool _isBuildRunning = false;
         private Process? _currentProcess;
 
+        // Performance tracking
+        private readonly System.Timers.Timer _perfTimer; // always created
+        private Process? _minecraftProcess; // java process
+        private DateTime _lastCpuSampleTime;
+        private TimeSpan _lastTotalProcessorTime;
+        private readonly Queue<double> _cpuSamples = new();
+        private readonly Queue<double> _memSamples = new();
+        private const int MaxSamples = 120; // last 2 minutes @1s
+        private bool _perfEnabled = false;
+        private readonly object _perfLock = new();
+
         public ConsolePage()
         {
             InitializeComponent();
             Loaded += ConsolePage_Loaded;
+            // Initialize performance timer
+            _perfTimer = new System.Timers.Timer(1000);
+            _perfTimer.Elapsed += PerfTimer_Elapsed;
+            _perfTimer.AutoReset = true;
         }
 
         private void ConsolePage_Loaded(object sender, RoutedEventArgs e)
@@ -130,6 +147,7 @@ namespace Modrix.Views.Pages
                 if (!string.IsNullOrEmpty(e.Data))
                 {
                     AppendLine(e.Data, Brushes.White);
+                    if (_perfEnabled) TryDetectMinecraftProcess(e.Data);
                 }
             };
             proc.ErrorDataReceived += (s, e) => {
@@ -146,6 +164,7 @@ namespace Modrix.Views.Pages
                   success ? Brushes.LimeGreen : Brushes.Red
                 );
                 _isBuildRunning = false;
+                StopPerformanceTracking();
                 // Clean up
                 try { proc.Dispose(); } catch { }
                 if (_currentProcess == proc) _currentProcess = null;
@@ -156,7 +175,174 @@ namespace Modrix.Views.Pages
             proc.Start();
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
+
+            if (_perfEnabled)
+            {
+                // Start looking for minecraft java process if running client
+                if (gradleTasks.Contains("runClient", StringComparison.OrdinalIgnoreCase))
+                {
+                    StartPerformanceTrackingDeferred();
+                }
+            }
         }
+
+        #region Performance Tracking
+        private void ChkPerformance_Changed(object sender, RoutedEventArgs e)
+        {
+            _perfEnabled = ChkPerformance.IsChecked == true;
+            PerformancePanel.Visibility = _perfEnabled ? Visibility.Visible : Visibility.Collapsed;
+            if (_perfEnabled)
+            {
+                PerfStatusText.Text = "Waiting for process...";
+                StartPerformanceTrackingDeferred();
+            }
+            else
+            {
+                StopPerformanceTracking();
+            }
+        }
+
+        private void StartPerformanceTrackingDeferred()
+        {
+            _perfTimer.Start();
+            _lastCpuSampleTime = DateTime.UtcNow;
+            _lastTotalProcessorTime = TimeSpan.Zero;
+        }
+
+        private void StopPerformanceTracking()
+        {
+            lock (_perfLock)
+            {
+                _minecraftProcess = null;
+            }
+            _perfTimer.Stop();
+        }
+
+        private void TryDetectMinecraftProcess(string outputLine)
+        {
+            if (_minecraftProcess != null) return;
+            // Heuristic: once log shows something like 'Starting minecraft' or 'Minecraft' we attempt enumeration
+            if (outputLine.Contains("Minecraft", StringComparison.OrdinalIgnoreCase) || outputLine.Contains("Launching", StringComparison.OrdinalIgnoreCase))
+            {
+                DetectJavaProcess();
+            }
+        }
+
+        private void DetectJavaProcess()
+        {
+            try
+            {
+                var javaProcs = Process.GetProcessesByName("javaw").Concat(Process.GetProcessesByName("java"));
+                foreach (var p in javaProcs)
+                {
+                    try
+                    {
+                        // only attach to non-system java whose command line includes client args if possible (Windows only via WMI otherwise fallback)
+                        // Simple heuristic: process started after build start and has > 50MB working set
+                        if (!p.HasExited && p.WorkingSet64 > 50 * 1024 * 1024)
+                        {
+                            lock (_perfLock)
+                            {
+                                _minecraftProcess = p;
+                                _lastCpuSampleTime = DateTime.UtcNow;
+                                _lastTotalProcessorTime = p.TotalProcessorTime;
+                            }
+                            Dispatcher.Invoke(() => PerfStatusText.Text = $"Attached to PID {p.Id}");
+                            return;
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+        }
+
+        private void PerfTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (!_perfEnabled) return;
+            try
+            {
+                if (_minecraftProcess == null || _minecraftProcess.HasExited)
+                {
+                    DetectJavaProcess();
+                }
+                if (_minecraftProcess == null) return;
+                double cpuPercent = 0; double memMb = 0;
+                lock (_perfLock)
+                {
+                    try
+                    {
+                        var now = DateTime.UtcNow;
+                        var totalCpu = _minecraftProcess.TotalProcessorTime;
+                        var cpuDelta = (totalCpu - _lastTotalProcessorTime).TotalMilliseconds;
+                        var timeDelta = (now - _lastCpuSampleTime).TotalMilliseconds;
+                        if (timeDelta > 0)
+                        {
+                            int logicalProcessors = Environment.ProcessorCount;
+                            cpuPercent = Math.Min(100.0, cpuDelta / (timeDelta * logicalProcessors) * 100.0);
+                        }
+                        _lastCpuSampleTime = now;
+                        _lastTotalProcessorTime = totalCpu;
+                        memMb = _minecraftProcess.WorkingSet64 / (1024.0 * 1024.0);
+                    }
+                    catch { return; }
+                }
+                lock (_perfLock)
+                {
+                    _cpuSamples.Enqueue(cpuPercent);
+                    _memSamples.Enqueue(memMb);
+                    while (_cpuSamples.Count > MaxSamples) _cpuSamples.Dequeue();
+                    while (_memSamples.Count > MaxSamples) _memSamples.Dequeue();
+                }
+                Dispatcher.Invoke(() =>
+                {
+                    CpuValueText.Text = $"{cpuPercent:F1}%";
+                    MemValueText.Text = $"{memMb:F0} MB";
+                    DrawGraphs();
+                });
+            }
+            catch { }
+        }
+
+        private void DrawGraphs()
+        {
+            DrawGraph(CpuCanvas, _cpuSamples, 100.0, Colors.LimeGreen);
+            double memMax = Math.Max(512, _memSamples.Count > 0 ? _memSamples.Max() * 1.2 : 512);
+            DrawGraph(MemCanvas, _memSamples, memMax, Colors.DeepSkyBlue);
+        }
+
+        private void DrawGraph(Canvas canvas, IEnumerable<double> samples, double maxValue, Color strokeColor)
+        {
+            if (canvas == null) return;
+            canvas.Children.Clear();
+            var list = samples.ToList();
+            if (list.Count < 2) return;
+            double w = canvas.ActualWidth;
+            if (w <= 0) w = canvas.Width > 0 ? canvas.Width : 200;
+            double h = canvas.ActualHeight;
+            if (h <= 0) h = 80;
+            var geo = new StreamGeometry();
+            using (var ctx = geo.Open())
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    double x = i / (double)(MaxSamples - 1) * w;
+                    double y = h - (list[i] / maxValue) * h;
+                    if (i == 0) ctx.BeginFigure(new Point(x, y), false, false);
+                    else ctx.LineTo(new Point(x, y), true, false);
+                }
+            }
+            geo.Freeze();
+            var path = new System.Windows.Shapes.Path
+            {
+                Data = geo,
+                Stroke = new SolidColorBrush(strokeColor),
+                StrokeThickness = 1.5,
+                SnapsToDevicePixels = true
+            };
+            canvas.Children.Add(path);
+        }
+        #endregion
 
         private async Task FixBuildGradleJavaVersion(string projectDir, string requiredVersion)
         {

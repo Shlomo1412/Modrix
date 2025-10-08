@@ -52,16 +52,22 @@
                         <CheckBox x:Name="ChkAutoScroll"
                                   Content="Auto Scroll"
                                   IsChecked="True"
-                                  Margin="0,0,16,0"
+                                  Margin="0,0,8,0"
                                   VerticalAlignment="Center"
                                   Checked="ChkAutoScroll_Changed"
                                   Unchecked="ChkAutoScroll_Changed"/>
+                        <CheckBox x:Name="ChkPerformance"
+                                  Content="Performance"
+                                  Margin="0,0,16,0"
+                                  VerticalAlignment="Center"
+                                  Checked="ChkPerformance_Changed"
+                                  Unchecked="ChkPerformance_Changed"/>
                         <controls:WikiTooltip 
                             WikiId="console-auto-scroll"
                             Title="Auto Scroll Feature"
                             Category="Tools"
                             Keywords="auto scroll,console,output,real-time"
-                            Description="Auto scroll automatically scrolls to the bottom of the console as new output appears. This is useful for monitoring builds in real-time. Disable it if you want to read earlier output without being interrupted."
+                            Description="Auto scroll automatically scrolls to the bottom of the console as new output appears. This is useful for monitoring builds in real-time. Disable it if you want to read earlier output without being interrupted." 
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"/>
                         <ui:Button Appearance="Secondary"
@@ -78,6 +84,31 @@
                                    Icon="{ui:SymbolIcon Delete24}"
                                    ToolTip="Clear Console"
                                    Click="ClearButton_Click"/>
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Top" x:Name="PerformancePanel" Visibility="Collapsed" Margin="12,0,12,8">
+                        <Border Background="#111" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="Minecraft Performance" FontWeight="Bold" Foreground="LightGray"/>
+                                <TextBlock x:Name="PerfStatusText" Text="Waiting for process..." FontSize="12" Foreground="Gray" Margin="0,2,0,6"/>
+                                <Grid Margin="0,4,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                        <TextBlock Text="CPU %" Foreground="LightGray" FontSize="12"/>
+                                        <TextBlock x:Name="CpuValueText" Text="0%" Foreground="White" FontSize="14" FontWeight="Bold"/>
+                                        <Canvas x:Name="CpuCanvas" Height="80" Margin="0,4,0,0" Background="#222"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Memory (MB)" Foreground="LightGray" FontSize="12"/>
+                                        <TextBlock x:Name="MemValueText" Text="0 MB" Foreground="White" FontSize="14" FontWeight="Bold"/>
+                                        <Canvas x:Name="MemCanvas" Height="80" Margin="0,4,0,0" Background="#222"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
 
                     <!-- Console Output -->
