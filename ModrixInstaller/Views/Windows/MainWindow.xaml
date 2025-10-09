@@ -9,7 +9,7 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
     Width="820"
-    Height="560"
+    Height="628"
     WindowStartupLocation="CenterScreen"
     WindowBackdropType="Mica"
     WindowCornerPreference="Round"

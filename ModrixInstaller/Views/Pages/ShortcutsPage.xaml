@@ -15,30 +15,38 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <Grid Margin="20">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,30">
-            <TextBlock 
-                FontSize="32" 
-                FontWeight="Bold" 
-                Text="Shortcuts Configuration" />
-            <TextBlock 
-                Margin="0,8,0,0"
-                FontSize="16" 
-                Opacity="0.8"
-                Text="Choose where to create shortcuts for easy access" />
-        </StackPanel>
+        <!-- Page Header -->
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,12,12" 
+                Padding="16,8,16,12" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="Link24" Width="24" Height="24" Margin="0,0,8,0"/>
+                <StackPanel>
+                    <TextBlock Text="Shortcuts Configuration" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text="Choose where to create shortcuts for easy access" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                
+        <!-- Content -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Column -->
+            <StackPanel Grid.Column="0">
                 <!-- Desktop Shortcut -->
-                <ui:Card Margin="0,0,0,25">
+                <ui:Card Margin="0,0,0,8" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -46,14 +54,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         
-                        <ui:SymbolIcon Grid.Column="0" Symbol="Desktop24" Margin="0,0,15,0" />
+                        <Border Grid.Column="0" Width="32" Height="32" CornerRadius="6" Background="#1E2A3E" Margin="0,0,12,0">
+                            <ui:SymbolIcon Symbol="Desktop24" Foreground="#4C7DFF" Width="18" Height="18" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
                         
                         <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Desktop Shortcut" />
+                            <TextBlock FontSize="14" FontWeight="SemiBold" Text="Desktop Shortcut" />
                             <TextBlock 
-                                Margin="0,4,0,0"
+                                Margin="0,2,0,0"
+                                FontSize="11"
                                 Opacity="0.8"
-                                Text="Create a shortcut on your desktop for quick access to Modrix" />
+                                Text="Create a shortcut on your desktop" />
                         </StackPanel>
                         
                         <ui:ToggleSwitch 
@@ -64,7 +76,7 @@
                 </ui:Card>
 
                 <!-- Start Menu Shortcut -->
-                <ui:Card Margin="0,0,0,25">
+                <ui:Card Margin="0,0,0,8" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -72,14 +84,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         
-                        <ui:SymbolIcon Grid.Column="0" Symbol="Apps24" Margin="0,0,15,0" />
+                        <Border Grid.Column="0" Width="32" Height="32" CornerRadius="6" Background="#1E2A3E" Margin="0,0,12,0">
+                            <ui:SymbolIcon Symbol="Apps24" Foreground="#4C7DFF" Width="18" Height="18" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
                         
                         <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Start Menu Shortcut" />
+                            <TextBlock FontSize="14" FontWeight="SemiBold" Text="Start Menu Shortcut" />
                             <TextBlock 
-                                Margin="0,4,0,0"
+                                Margin="0,2,0,0"
+                                FontSize="11"
                                 Opacity="0.8"
-                                Text="Add Modrix to your Start Menu under Programs" />
+                                Text="Add Modrix to your Start Menu" />
                         </StackPanel>
                         
                         <ui:ToggleSwitch 
@@ -90,7 +106,7 @@
                 </ui:Card>
 
                 <!-- Quick Launch Shortcut -->
-                <ui:Card Margin="0,0,0,25">
+                <ui:Card Margin="0,0,0,8" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -98,14 +114,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         
-                        <ui:SymbolIcon Grid.Column="0" Symbol="Rocket24" Margin="0,0,15,0" />
+                        <Border Grid.Column="0" Width="32" Height="32" CornerRadius="6" Background="#1E2A3E" Margin="0,0,12,0">
+                            <ui:SymbolIcon Symbol="Rocket24" Foreground="#4C7DFF" Width="18" Height="18" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
                         
                         <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Quick Launch Toolbar" />
+                            <TextBlock FontSize="14" FontWeight="SemiBold" Text="Quick Launch Toolbar" />
                             <TextBlock 
-                                Margin="0,4,0,0"
+                                Margin="0,2,0,0"
+                                FontSize="11"
                                 Opacity="0.8"
-                                Text="Add Modrix to the Quick Launch toolbar (if available)" />
+                                Text="Add to Quick Launch (if available)" />
                         </StackPanel>
                         
                         <ui:ToggleSwitch 
@@ -116,7 +136,7 @@
                 </ui:Card>
 
                 <!-- Taskbar Pin -->
-                <ui:Card Margin="0,0,0,25">
+                <ui:Card Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -124,14 +144,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         
-                        <ui:SymbolIcon Grid.Column="0" Symbol="Pin24" Margin="0,0,15,0" />
+                        <Border Grid.Column="0" Width="32" Height="32" CornerRadius="6" Background="#1E2A3E" Margin="0,0,12,0">
+                            <ui:SymbolIcon Symbol="Pin24" Foreground="#4C7DFF" Width="18" Height="18" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
                         
                         <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Pin to Taskbar" />
+                            <TextBlock FontSize="14" FontWeight="SemiBold" Text="Pin to Taskbar" />
                             <TextBlock 
-                                Margin="0,4,0,0"
+                                Margin="0,2,0,0"
+                                FontSize="11"
                                 Opacity="0.8"
-                                Text="Pin Modrix to your taskbar for instant access" />
+                                Text="Pin Modrix to your taskbar" />
                         </StackPanel>
                         
                         <ui:ToggleSwitch 
@@ -140,9 +164,12 @@
                             IsChecked="{Binding ViewModel.PinToTaskbar}" />
                     </Grid>
                 </ui:Card>
+            </StackPanel>
 
+            <!-- Right Column -->
+            <StackPanel Grid.Column="2">
                 <!-- File Association -->
-                <ui:Card Margin="0,0,0,25">
+                <ui:Card Margin="0,0,0,8" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -150,14 +177,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         
-                        <ui:SymbolIcon Grid.Column="0" Symbol="DocumentFolder24" Margin="0,0,15,0" />
+                        <Border Grid.Column="0" Width="32" Height="32" CornerRadius="6" Background="#1E2A3E" Margin="0,0,12,0">
+                            <ui:SymbolIcon Symbol="DocumentFolder24" Foreground="#4C7DFF" Width="18" Height="18" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
                         
                         <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Associate Project Files" />
+                            <TextBlock FontSize="14" FontWeight="SemiBold" Text="Associate Project Files" />
                             <TextBlock 
-                                Margin="0,4,0,0"
+                                Margin="0,2,0,0"
+                                FontSize="11"
                                 Opacity="0.8"
-                                Text="Associate .modrix project files to open with Modrix automatically" />
+                                Text="Associate .modrix files with Modrix" />
                         </StackPanel>
                         
                         <ui:ToggleSwitch 
@@ -168,7 +199,7 @@
                 </ui:Card>
 
                 <!-- System PATH -->
-                <ui:Card Margin="0,0,0,25">
+                <ui:Card Margin="0,0,0,8" Padding="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -176,14 +207,18 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         
-                        <ui:SymbolIcon Grid.Column="0" Symbol="WindowConsole20" Margin="0,0,15,0" />
+                        <Border Grid.Column="0" Width="32" Height="32" CornerRadius="6" Background="#1E2A3E" Margin="0,0,12,0">
+                            <ui:SymbolIcon Symbol="WindowConsole20" Foreground="#4C7DFF" Width="18" Height="18" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
                         
                         <StackPanel Grid.Column="1">
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Add to System PATH" />
+                            <TextBlock FontSize="14" FontWeight="SemiBold" Text="Add to System PATH" />
                             <TextBlock 
-                                Margin="0,4,0,0"
+                                Margin="0,2,0,0"
+                                FontSize="11"
                                 Opacity="0.8"
-                                Text="Add Modrix to system PATH to run from command line" />
+                                Text="Run Modrix from command line" />
                         </StackPanel>
                         
                         <ui:ToggleSwitch 
@@ -193,19 +228,41 @@
                     </Grid>
                 </ui:Card>
 
-                <!-- Summary -->
-                <ui:Card Margin="0,0,0,25" Background="{DynamicResource AccentFillColorSecondaryBrush}">
+                <!-- Summary Card -->
+                <ui:Card Padding="16">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" />
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Summary" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <ui:SymbolIcon Symbol="Info24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Summary"/>
                         </StackPanel>
 
-                        <TextBlock x:Name="SummaryText" Text="{Binding ViewModel.ShortcutSummary}" TextWrapping="Wrap" />
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Info accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#9C6BFF" Offset="0"/>
+                                            <GradientStop Color="#6A46C8" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <ScrollViewer Grid.Column="1" Margin="12,10,12,10" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                    <TextBlock x:Name="SummaryText" 
+                                              Text="{Binding ViewModel.ShortcutSummary}" 
+                                              TextWrapping="Wrap" 
+                                              FontSize="12"
+                                              LineHeight="16" />
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </ui:Card>
-
             </StackPanel>
-        </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>

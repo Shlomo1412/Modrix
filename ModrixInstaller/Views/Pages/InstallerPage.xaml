@@ -15,221 +15,328 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <Grid Margin="20">
+    <Grid Margin="16">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,30">
-            <TextBlock 
-                FontSize="32" 
-                FontWeight="Bold" 
-                Text="Modrix Installer" />
-            <TextBlock 
-                Margin="0,8,0,0"
-                FontSize="16" 
-                Opacity="0.8"
-                Text="Install Modrix from GitHub releases" />
-        </StackPanel>
+        <!-- Page Header -->
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,12,12" 
+                Padding="16,8,16,12" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="ArrowDownload24" Width="24" Height="24" Margin="0,0,8,0"/>
+                <StackPanel>
+                    <TextBlock Text="Modrix Installer" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text="Configure and install Modrix from GitHub releases" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                
+        <!-- Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Column -->
+            <StackPanel Grid.Column="0">
                 <!-- Administrator Warning -->
-                <ui:Card x:Name="AdminWarning" Margin="0,0,0,25" 
+                <ui:Card x:Name="AdminWarning" Margin="0,0,0,10"
                          Visibility="{Binding ViewModel.IsAdministrator, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Column="0">
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:SymbolIcon Symbol="Shield24" Margin="0,0,8,0" />
-                                <TextBlock FontWeight="SemiBold" Text="Administrator Required" />
-                            </StackPanel>
-                            <TextBlock Text="Administrator privileges are recommended for installing to Program Files." />
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <ui:SymbolIcon Symbol="Shield24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Administrator Required"/>
                         </StackPanel>
-                        
-                        <ui:Button 
-                            Grid.Column="1"
-                            Command="{Binding ViewModel.RequestAdministratorCommand}"
-                            Appearance="Primary"
-                            ToolTip="Run as Administrator">
-                            <ui:SymbolIcon Symbol="Shield24" />
-                        </ui:Button>
-                    </Grid>
+
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Warning accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#FFB366" Offset="0"/>
+                                            <GradientStop Color="#E6943D" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,10,12,10">
+                                    <TextBlock Text="Administrator privileges are recommended for installing to Program Files." 
+                                              FontSize="12" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <ui:Button 
+                                    Grid.Column="2"
+                                    Margin="0,0,12,0"
+                                    Command="{Binding ViewModel.RequestAdministratorCommand}"
+                                    Appearance="Primary"
+                                    ToolTip="Run as Administrator"
+                                    VerticalAlignment="Center">
+                                    <ui:SymbolIcon Symbol="Shield24" />
+                                </ui:Button>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
                 </ui:Card>
 
                 <!-- Release Selection -->
-                <ui:Card Margin="0,0,0,25">
+                <ui:Card>
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <ui:SymbolIcon Symbol="CloudArrowDown24" Margin="0,0,8,0" />
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Select Release Version" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <ui:SymbolIcon Symbol="CloudArrowDown24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Select Release Version"/>
                             <ui:Button 
-                                Margin="15,0,0,0"
+                                Margin="10,0,0,0"
                                 Appearance="Transparent"
                                 Command="{Binding ViewModel.LoadReleasesCommand}"
                                 IsEnabled="{Binding ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}"
                                 ToolTip="Refresh releases">
-                                <ui:SymbolIcon Symbol="ArrowClockwise24" />
+                                <ui:SymbolIcon Symbol="ArrowClockwise24" Width="16" Height="16" />
                             </ui:Button>
                         </StackPanel>
 
-                        <ui:ProgressRing 
-                            Width="30" Height="30"
-                            Margin="0,10,0,10"
-                            IsIndeterminate="True"
-                            Visibility="{Binding ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#4C7DFF" Offset="0"/>
+                                            <GradientStop Color="#2850B7" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,10,12,10">
+                                    <ui:ProgressRing 
+                                        Width="24" Height="24"
+                                        Margin="0,6,0,6"
+                                        IsIndeterminate="True"
+                                        HorizontalAlignment="Center"
+                                        Visibility="{Binding ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                        <ComboBox 
-                            x:Name="ReleasesComboBox"
-                            ItemsSource="{Binding ViewModel.Releases}"
-                            SelectedItem="{Binding ViewModel.SelectedRelease}"
-                            Visibility="{Binding ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
-                                            <Border 
-                                                Margin="8,0,0,0"
-                                                Padding="6,2"
-                                                Background="{DynamicResource AccentFillColorDefaultBrush}"
-                                                CornerRadius="8"
-                                                Visibility="{Binding IsPrerelease, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <TextBlock 
-                                                    FontSize="10"
-                                                    FontWeight="Medium"
-                                                    Foreground="White"
-                                                    Text="PRERELEASE" />
-                                            </Border>
-                                        </StackPanel>
-                                        <TextBlock 
-                                            Margin="0,2,0,0"
-                                            FontSize="12" 
-                                            Opacity="0.7"
-                                            Text="{Binding TagName}" />
-                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                            <TextBlock 
-                                                FontSize="11" 
-                                                Opacity="0.6"
-                                                Text="{Binding PublishedAt, StringFormat='Released: {0:MMM dd, yyyy}'}" />
-                                            <TextBlock 
-                                                Margin="15,0,0,0"
-                                                FontSize="11" 
-                                                Opacity="0.6"
-                                                Text="{Binding ModrixAsset.FormattedSize, StringFormat='Size: {0}'}" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
+                                    <ComboBox 
+                                        x:Name="ReleasesComboBox"
+                                        ItemsSource="{Binding ViewModel.Releases}"
+                                        SelectedItem="{Binding ViewModel.SelectedRelease}"
+                                        HorizontalAlignment="Stretch"
+                                        Visibility="{Binding ViewModel.IsLoading, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" FontSize="13" />
+                                                        <Border 
+                                                            Margin="6,0,0,0"
+                                                            Padding="4,1"
+                                                            Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                                            CornerRadius="6"
+                                                            Visibility="{Binding IsPrerelease, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                            <TextBlock 
+                                                                FontSize="9"
+                                                                FontWeight="Medium"
+                                                                Foreground="White"
+                                                                Text="PRE" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock 
+                                                        Margin="0,1,0,0"
+                                                        FontSize="10" 
+                                                        Opacity="0.7"
+                                                        Text="{Binding PublishedAt, StringFormat='MMM dd, yyyy'}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </ui:Card>
+            </StackPanel>
 
+            <!-- Right Column -->
+            <StackPanel Grid.Column="2">
                 <!-- Installation Path -->
-                <ui:Card Margin="0,0,0,25">
+                <ui:Card Margin="0,0,0,10">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <ui:SymbolIcon Symbol="Folder24" Margin="0,0,8,0" />
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Installation Path" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <ui:SymbolIcon Symbol="Folder24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Installation Path"/>
                         </StackPanel>
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#9C6BFF" Offset="0"/>
+                                            <GradientStop Color="#6A46C8" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <Grid Grid.Column="1" Margin="12,10,12,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
 
-                            <ui:TextBox 
-                                Grid.Column="0"
-                                Margin="0,0,10,0"
-                                Text="{Binding ViewModel.InstallationPath}" />
-                            
-                            <ui:Button 
-                                Grid.Column="1"
-                                Command="{Binding ViewModel.BrowseInstallationPathCommand}"
-                                Appearance="Secondary"
-                                ToolTip="Browse">
-                                <ui:SymbolIcon Symbol="FolderOpen24" />
-                            </ui:Button>
-                        </Grid>
+                                    <ui:TextBox 
+                                        Grid.Column="0"
+                                        Margin="0,0,8,0"
+                                        Text="{Binding ViewModel.InstallationPath}" />
+                                    
+                                    <ui:Button 
+                                        Grid.Column="1"
+                                        Command="{Binding ViewModel.BrowseInstallationPathCommand}"
+                                        Appearance="Secondary"
+                                        ToolTip="Browse">
+                                        <ui:SymbolIcon Symbol="FolderOpen24" Width="16" Height="16" />
+                                    </ui:Button>
+                                </Grid>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </ui:Card>
 
                 <!-- Installation Progress -->
-                <ui:Card Margin="0,0,0,25" Visibility="{Binding ViewModel.IsInstalling, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ui:Card Margin="0,0,0,10" Visibility="{Binding ViewModel.IsInstalling, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <ui:SymbolIcon Symbol="ArrowDownload24" Margin="0,0,8,0" />
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Installing..." />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <ui:SymbolIcon Symbol="ArrowDownload24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Installing..."/>
                         </StackPanel>
 
-                        <ProgressBar 
-                            Height="6"
-                            Margin="0,0,0,10"
-                            Value="{Binding ViewModel.InstallationProgress}" />
-                        
-                        <TextBlock 
-                            FontSize="14"
-                            Text="{Binding ViewModel.InstallationStatus}" />
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Progress accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#6EC177" Offset="0"/>
+                                            <GradientStop Color="#4A8A52" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,10,12,10">
+                                    <ProgressBar 
+                                        Height="6"
+                                        Margin="0,0,0,8"
+                                        Value="{Binding ViewModel.InstallationProgress}" />
+                                    
+                                    <TextBlock 
+                                        FontSize="12"
+                                        Text="{Binding ViewModel.InstallationStatus}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </ui:Card>
 
                 <!-- Installation Complete -->
-                <ui:Card Margin="0,0,0,25" Visibility="{Binding ViewModel.InstallationCompleted, Converter={StaticResource BoolToVisibilityConverter}}">
+                <ui:Card Margin="0,0,0,10" Visibility="{Binding ViewModel.InstallationCompleted, Converter={StaticResource BoolToVisibilityConverter}}">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <ui:SymbolIcon Symbol="CheckmarkCircle24" Margin="0,0,8,0" />
-                            <TextBlock FontSize="18" FontWeight="SemiBold" Text="Installation Complete!" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <ui:SymbolIcon Symbol="CheckmarkCircle24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Installation Complete!"/>
                         </StackPanel>
 
-                        <TextBlock 
-                            Margin="0,0,0,15"
-                            Text="Modrix has been successfully installed. You can now launch the application." />
-                        
-                        <ui:Button 
-                            Command="{Binding ViewModel.LaunchModrixCommand}"
-                            Appearance="Primary"
-                            ToolTip="Launch">
-                            <ui:SymbolIcon Symbol="Rocket24" />
-                        </ui:Button>
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Success accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#6EC177" Offset="0"/>
+                                            <GradientStop Color="#4A8A52" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,10,12,10">
+                                    <TextBlock 
+                                        Margin="0,0,0,10"
+                                        FontSize="12"
+                                        Text="Modrix has been successfully installed. You can now launch the application." />
+                                    
+                                    <ui:Button 
+                                        Command="{Binding ViewModel.LaunchModrixCommand}"
+                                        Appearance="Primary"
+                                        Content="Launch Modrix"
+                                        Icon="{ui:SymbolIcon Rocket24}"
+                                        HorizontalAlignment="Stretch" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </ui:Card>
 
                 <!-- Install Button -->
-                <ui:Card Margin="0,0,0,25" Visibility="{Binding ViewModel.InstallationCompleted, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0">
-                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Ready to Install" />
-                            <TextBlock 
-                                Margin="0,4,0,0"
-                                Opacity="0.8"
-                                Text="{Binding ViewModel.InstallationStatus}" />
+                <ui:Card Visibility="{Binding ViewModel.InstallationCompleted, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <ui:SymbolIcon Symbol="ArrowDownload24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Ready to Install"/>
                         </StackPanel>
 
-                        <ui:Button 
-                            Grid.Column="1"
-                            Command="{Binding ViewModel.InstallModrixCommand}"
-                            Appearance="Primary"
-                            ToolTip="Install"
-                            IsEnabled="{Binding ViewModel.IsInstalling, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}">
-                            <ui:SymbolIcon Symbol="ArrowDownload24" />
-                        </ui:Button>
-                    </Grid>
-                </ui:Card>
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Install accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#4C7DFF" Offset="0"/>
+                                            <GradientStop Color="#2850B7" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,10,12,10">
+                                    <TextBlock 
+                                        Margin="0,0,0,10"
+                                        FontSize="12"
+                                        Opacity="0.8"
+                                        Text="{Binding ViewModel.InstallationStatus}" />
 
+                                    <ui:Button 
+                                        Command="{Binding ViewModel.InstallModrixCommand}"
+                                        Appearance="Primary"
+                                        Content="Install Modrix"
+                                        Icon="{ui:SymbolIcon ArrowDownload24}"
+                                        HorizontalAlignment="Stretch"
+                                        IsEnabled="{Binding ViewModel.IsInstalling, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ui:Card>
             </StackPanel>
-        </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>

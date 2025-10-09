@@ -16,21 +16,69 @@
     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     mc:Ignorable="d">
 
-    <Grid VerticalAlignment="Top">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <ui:Button
-            Grid.Column="0"
-            Command="{Binding ViewModel.CounterIncrementCommand, Mode=OneWay}"
-            Content="Click me!"
-            Icon="Fluent24" />
-        <TextBlock
-            Grid.Column="1"
-            Margin="12,0,0,0"
-            VerticalAlignment="Center"
-            Text="{Binding ViewModel.Counter, Mode=OneWay}" />
+        <!-- Page Header -->
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,12,12" 
+                Padding="16,8,16,12" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="Home24" Width="24" Height="24" Margin="0,0,8,0"/>
+                <StackPanel>
+                    <TextBlock Text="Welcome to Modrix Installer" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text="Your gateway to the Modrix development environment" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <ui:Card Grid.Row="1" Padding="24">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ui:ImageIcon 
+                    Width="100" Height="100"
+                    Source="pack://application:,,,/Assets/wpfui-icon-256.png"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,20" />
+
+                <TextBlock 
+                    Text="Ready to Install Modrix"
+                    FontSize="24" 
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,12" />
+
+                <TextBlock 
+                    Text="This installer will guide you through the process of downloading and installing Modrix from GitHub releases."
+                    FontSize="14" 
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Opacity="0.8"
+                    MaxWidth="400"
+                    LineHeight="20"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,20" />
+
+                <!-- Counter Test (if needed for development) -->
+                <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                        CornerRadius="8" Padding="16" Margin="0,0,0,0" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ui:Button
+                            Command="{Binding ViewModel.CounterIncrementCommand, Mode=OneWay}"
+                            Content="Test Counter"
+                            Icon="{ui:SymbolIcon Add24}"
+                            Appearance="Secondary" />
+                        <TextBlock
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            Text="{Binding ViewModel.Counter, Mode=OneWay}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ui:Card>
     </Grid>
 </Page>

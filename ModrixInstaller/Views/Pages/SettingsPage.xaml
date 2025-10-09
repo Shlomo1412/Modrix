@@ -18,34 +18,160 @@
     mc:Ignorable="d">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <Style TargetType="RadioButton" x:Key="ThemeChipRadio">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Chip" Padding="10,6" Margin="0,0,8,8" CornerRadius="14" Background="#2F3037" BorderBrush="#43454F" BorderThickness="1" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ContentPresenter/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Chip" Property="Background" Value="#4C7DFF"/>
+                                <Setter TargetName="Chip" Property="BorderBrush" Value="#4C7DFF"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chip" Property="BorderBrush" Value="#6B89FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        </Style>
     </Page.Resources>
 
-    <StackPanel>
-        <TextBlock
-            FontSize="20"
-            FontWeight="Medium"
-            Text="Personalization" />
-        <TextBlock Margin="0,12,0,0" Text="Theme" />
-        <RadioButton
-            Margin="0,12,0,0"
-            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-            CommandParameter="theme_light"
-            Content="Light"
-            GroupName="themeSelect"
-            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
-        <RadioButton
-            Margin="0,8,0,0"
-            Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
-            CommandParameter="theme_dark"
-            Content="Dark"
-            GroupName="themeSelect"
-            IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <TextBlock
-            Margin="0,24,0,0"
-            FontSize="20"
-            FontWeight="Medium"
-            Text="About ModrixInstaller" />
-        <TextBlock Margin="0,12,0,0" Text="{Binding ViewModel.AppVersion, Mode=OneWay}" />
-    </StackPanel>
+        <!-- Page Header -->
+        <Border Grid.Row="0" Background="{DynamicResource ControlFillColorDefaultBrush}" CornerRadius="3,3,12,12" 
+                Padding="16,8,16,12" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon Symbol="Settings24" Width="24" Height="24" Margin="0,0,8,0"/>
+                <StackPanel>
+                    <TextBlock Text="Installer Settings" FontSize="20" FontWeight="Bold"/>
+                    <TextBlock Text="Customize your installer experience" FontSize="12" 
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Column -->
+            <StackPanel Grid.Column="0">
+                <!-- Personalization Section -->
+                <ui:Card Padding="16" Margin="0,0,0,10">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <ui:SymbolIcon Symbol="Color24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="Personalization"/>
+                        </StackPanel>
+
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#9C6BFF" Offset="0"/>
+                                            <GradientStop Color="#6A46C8" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,10,12,12">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="Color24" Width="16" Height="16" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Theme" FontWeight="SemiBold" FontSize="12"/>
+                                    </StackPanel>
+
+                                    <WrapPanel>
+                                        <RadioButton Style="{StaticResource ThemeChipRadio}"
+                                                     Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                                                     CommandParameter="theme_light"
+                                                     Content="Light"
+                                                     GroupName="themeSelect"
+                                                     IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}" />
+                                        <RadioButton Style="{StaticResource ThemeChipRadio}"
+                                                     Command="{Binding ViewModel.ChangeThemeCommand, Mode=OneWay}"
+                                                     CommandParameter="theme_dark"
+                                                     Content="Dark"
+                                                     GroupName="themeSelect"
+                                                     IsChecked="{Binding ViewModel.CurrentTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}" />
+                                    </WrapPanel>
+
+                                    <TextBlock Text="Choose how the installer looks." FontSize="10" 
+                                              Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ui:Card>
+            </StackPanel>
+
+            <!-- Right Column -->
+            <StackPanel Grid.Column="2">
+                <!-- About Section -->
+                <ui:Card Padding="16">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <ui:SymbolIcon Symbol="Info24" Width="20" Height="20" Margin="0,0,8,0"/>
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Text="About ModrixInstaller"/>
+                        </StackPanel>
+
+                        <Border CornerRadius="8" Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- Accent -->
+                                <Border Grid.Column="0" CornerRadius="8,0,0,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#4C7DFF" Offset="0"/>
+                                            <GradientStop Color="#2850B7" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <StackPanel Grid.Column="1" Margin="12,10,12,12">
+                                    <!-- Version badge -->
+                                    <Border Background="#2F3037" Padding="6,3" CornerRadius="10" Margin="0,0,0,8" 
+                                           BorderBrush="#44464F" BorderThickness="1" HorizontalAlignment="Left">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Tag24" Width="12" Height="12" Margin="0,0,4,0"/>
+                                            <TextBlock Text="{Binding ViewModel.AppVersion, Mode=OneWay}" FontSize="10"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <TextBlock 
+                                        Text="A modern installer for the Modrix development environment. Features an intuitive wizard interface for easy installation and configuration."
+                                        TextWrapping="Wrap"
+                                        FontSize="12"
+                                        LineHeight="16" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ui:Card>
+            </StackPanel>
+        </Grid>
+    </Grid>
 </Page>
