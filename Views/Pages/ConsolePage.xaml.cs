@@ -232,29 +232,68 @@ namespace Modrix.Views.Pages
         {
             try
             {
-                var javaProcs = Process.GetProcessesByName("javaw").Concat(Process.GetProcessesByName("java"));
-                foreach (var p in javaProcs)
+                // Prefer javaw (GUI, no console). Fallback to java only if needed.
+                IEnumerable<Process> candidates = Process.GetProcessesByName("javaw");
+                if (!candidates.Any())
+                    candidates = Process.GetProcessesByName("java");
+
+                foreach (var p in candidates)
                 {
                     try
                     {
-                        // only attach to non-system java whose command line includes client args if possible (Windows only via WMI otherwise fallback)
-                        // Simple heuristic: process started after build start and has > 50MB working set
-                        if (!p.HasExited && p.WorkingSet64 > 50 * 1024 * 1024)
+                        if (p.HasExited) continue;
+                        if (p.WorkingSet64 < 50 * 1024 * 1024) continue; // simple noise filter
+
+                        // Windows-only: try to read command line to verify it's Minecraft, not Gradle, etc.
+                        string? cmd = GetProcessCommandLineWindows(p);
+                        if (cmd != null)
                         {
-                            lock (_perfLock)
-                            {
-                                _minecraftProcess = p;
-                                _lastCpuSampleTime = DateTime.UtcNow;
-                                _lastTotalProcessorTime = p.TotalProcessorTime;
-                            }
-                            Dispatcher.Invoke(() => PerfStatusText.Text = $"Attached to PID {p.Id}");
-                            return;
+                            // Skip obvious Gradle daemons
+                            if (cmd.Contains("org.gradle", StringComparison.OrdinalIgnoreCase) ||
+                                cmd.Contains("GradleDaemon", StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            // Prefer obvious Minecraft client markers
+                            bool looksLikeMcClient =
+                                cmd.Contains("net.minecraft.client", StringComparison.OrdinalIgnoreCase) ||
+                                cmd.Contains("--gameDir", StringComparison.OrdinalIgnoreCase) ||
+                                cmd.Contains("--username", StringComparison.OrdinalIgnoreCase);
+
+                            // If it doesn't look like MC and it's not javaw, skip
+                            if (!looksLikeMcClient &&
+                                !string.Equals(p.ProcessName, "javaw", StringComparison.OrdinalIgnoreCase))
+                                continue;
                         }
+
+                        lock (_perfLock)
+                        {
+                            _minecraftProcess = p;
+                            _lastCpuSampleTime = DateTime.UtcNow;
+                            _lastTotalProcessorTime = p.TotalProcessorTime;
+                        }
+                        Dispatcher.Invoke(() => PerfStatusText.Text = $"Attached to PID {p.Id} ({p.ProcessName})");
+                        return;
                     }
-                    catch { }
+                    catch { /* ignore this candidate */ }
                 }
             }
-            catch { }
+            catch { /* ignore enumeration errors */ }
+        }
+
+        private static string? GetProcessCommandLineWindows(Process p)
+        {
+            try
+            {
+                using var searcher = new System.Management.ManagementObjectSearcher(
+                    $"SELECT CommandLine, ProcessId FROM Win32_Process WHERE ProcessId = {p.Id}");
+                using var results = searcher.Get();
+                var mo = results.Cast<System.Management.ManagementObject>().FirstOrDefault();
+                return mo?["CommandLine"]?.ToString();
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private void PerfTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
