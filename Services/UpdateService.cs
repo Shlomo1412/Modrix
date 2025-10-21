@@ -20,7 +20,7 @@ public interface IUpdateService
 public class UpdateService : IUpdateService
 {
     private readonly HttpClient _httpClient;
-    private const string GitHubApiUrl = "https://api.github.com/repos/Shlomo1412/Modrix/releases/latest";
+    private const string GitHubApiUrl = "https://api.github.com/repos/Shlomo1412/Modrix/releases";
     private const string UserAgent = "Modrix/1.0";
 
     public UpdateService(HttpClient httpClient)
@@ -31,31 +31,75 @@ public class UpdateService : IUpdateService
 
     public string GetCurrentVersion()
     {
+        // First try to read from version.txt file
+        var currentDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName ?? Assembly.GetExecutingAssembly().Location);
+        if (!string.IsNullOrEmpty(currentDirectory))
+        {
+            var versionFilePath = Path.Combine(currentDirectory, "version.txt");
+            if (File.Exists(versionFilePath))
+            {
+                try
+                {
+                    var versionFromFile = File.ReadAllText(versionFilePath).Trim();
+                    if (!string.IsNullOrEmpty(versionFromFile))
+                    {
+                        return versionFromFile;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to read version.txt: {ex.Message}");
+                }
+            }
+        }
+
+        // Fallback to assembly version
         var version = Assembly.GetExecutingAssembly().GetName().Version;
-        return version?.ToString(3) ?? "1.0.0"; // Returns "1.0.0" format
+        return version?.ToString(3) ?? "1.0.0";
     }
 
     public async Task<UpdateInfo?> CheckForUpdatesAsync()
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<GitHubRelease>(GitHubApiUrl);
-            if (response == null) return null;
+            var currentVersion = GetCurrentVersion();
+            
+            // Get all releases from GitHub
+            var allReleases = await _httpClient.GetFromJsonAsync<List<GitHubRelease>>(GitHubApiUrl);
+            if (allReleases == null || !allReleases.Any()) return null;
 
-            var modrixAsset = response.Assets?.FirstOrDefault(a => 
-                a.Name.Equals("Modrix.exe", StringComparison.OrdinalIgnoreCase));
+            // Filter out drafts and prereleases, and ensure they have Modrix asset
+            var validReleases = allReleases
+                .Where(r => !r.IsDraft && !r.IsPrerelease)
+                .Where(r => r.Assets?.Any(a => a.Name.Equals("Modrix.exe", StringComparison.OrdinalIgnoreCase)) == true)
+                .OrderByDescending(r => r.PublishedAt)
+                .ToList();
 
-            if (modrixAsset == null) return null;
+            if (!validReleases.Any()) return null;
 
-            return new UpdateInfo
+            // Find the current version in the list
+            var currentReleaseIndex = validReleases.FindIndex(r => 
+                string.Equals(r.TagName, currentVersion, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(r.TagName?.TrimStart('v'), currentVersion.TrimStart('v'), StringComparison.OrdinalIgnoreCase));
+
+            UpdateInfo? latestUpdate = null;
+
+            if (currentReleaseIndex == -1)
             {
-                Version = response.TagName?.TrimStart('v') ?? "Unknown",
-                ReleaseNotes = response.Body ?? "No release notes available.",
-                DownloadUrl = modrixAsset.DownloadUrl,
-                FileSize = modrixAsset.Size,
-                PublishedAt = response.PublishedAt,
-                IsPrerelease = response.IsPrerelease
-            };
+                // Current version not found in releases, assume it's older than all releases
+                // Return the latest release
+                var latestRelease = validReleases.First();
+                latestUpdate = CreateUpdateInfo(latestRelease);
+            }
+            else if (currentReleaseIndex > 0)
+            {
+                // There are newer releases available
+                var newerRelease = validReleases.First(); // The most recent one
+                latestUpdate = CreateUpdateInfo(newerRelease);
+            }
+            // If currentReleaseIndex == 0, we're already on the latest version
+
+            return latestUpdate;
         }
         catch (Exception ex)
         {
@@ -64,13 +108,41 @@ public class UpdateService : IUpdateService
         }
     }
 
+    private static UpdateInfo CreateUpdateInfo(GitHubRelease release)
+    {
+        var modrixAsset = release.Assets?.FirstOrDefault(a => 
+            a.Name.Equals("Modrix.exe", StringComparison.OrdinalIgnoreCase));
+
+        if (modrixAsset == null)
+            throw new InvalidOperationException("Release does not contain Modrix.exe asset");
+
+        return new UpdateInfo
+        {
+            Version = release.TagName?.TrimStart('v') ?? "Unknown",
+            ReleaseNotes = release.Body ?? "No release notes available.",
+            DownloadUrl = modrixAsset.DownloadUrl,
+            FileSize = modrixAsset.Size,
+            PublishedAt = release.PublishedAt,
+            IsPrerelease = release.IsPrerelease
+        };
+    }
+
     public bool IsUpdateAvailable(UpdateInfo updateInfo)
     {
         try
         {
-            var currentVersion = Version.Parse(GetCurrentVersion());
-            var availableVersion = Version.Parse(updateInfo.Version);
-            return availableVersion > currentVersion;
+            var currentVersionString = GetCurrentVersion().TrimStart('v');
+            var availableVersionString = updateInfo.Version.TrimStart('v');
+            
+            // Try parsing as semantic versions
+            if (Version.TryParse(currentVersionString, out var currentVersion) && 
+                Version.TryParse(availableVersionString, out var availableVersion))
+            {
+                return availableVersion > currentVersion;
+            }
+            
+            // Fallback to string comparison
+            return !string.Equals(currentVersionString, availableVersionString, StringComparison.OrdinalIgnoreCase);
         }
         catch
         {
@@ -92,6 +164,9 @@ public class UpdateService : IUpdateService
             var currentExePath = Process.GetCurrentProcess().MainModule?.FileName ?? 
                                 Environment.ProcessPath ?? 
                                 Assembly.GetExecutingAssembly().Location;
+
+            var currentDirectory = Path.GetDirectoryName(currentExePath) ?? "";
+            var versionFilePath = Path.Combine(currentDirectory, "version.txt");
 
             progress?.Report(new DownloadProgress { Message = "Downloading update...", PercentageComplete = 10 });
 
@@ -135,8 +210,10 @@ public class UpdateService : IUpdateService
 
             progress?.Report(new DownloadProgress { Message = "Preparing installation...", PercentageComplete = 85 });
 
-            // Create update script
+            // Create update script that also updates the version.txt file
             var scriptPath = Path.Combine(tempDir, "update.bat");
+            // Store the full tag name (with or without 'v' prefix) as it appears in the release
+            var versionToWrite = updateInfo.Version.StartsWith("v") ? updateInfo.Version : updateInfo.Version;
             var script = $@"
 @echo off
 echo Waiting for Modrix to close...
@@ -150,6 +227,9 @@ if exist ""{currentExePath}"" (
 
 echo Installing update...
 copy /y ""{updateExePath}"" ""{currentExePath}""
+
+echo Updating version information...
+echo {versionToWrite} > ""{versionFilePath}""
 
 echo Starting Modrix...
 start """" ""{currentExePath}""
