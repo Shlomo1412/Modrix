@@ -48,12 +48,12 @@
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="HelixToolkit.Wpf" Version="2.27.3" />
     <PackageReference Include="LibGit2Sharp" Version="0.31.0" />
-	<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
     <PackageReference Include="PixiEditor.ColorPicker" Version="3.4.2" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.Management" Version="9.0.6" />
     <PackageReference Include="WPF-UI" Version="4.0.2" />
     <PackageReference Include="WPF-UI.DependencyInjection" Version="4.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
   </ItemGroup>
 
