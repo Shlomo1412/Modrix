@@ -80,11 +80,6 @@ public class InstallationService : IInstallationService
 
         await _gitHubService.DownloadModrixAsync(release.ModrixAsset, modrixPath, downloadProgress);
 
-        // Create version.txt file with the release tag name
-        progress?.Report("Creating version tracking file...");
-        var versionFilePath = Path.Combine(installationPath, "version.txt");
-        await File.WriteAllTextAsync(versionFilePath, release.TagName ?? "unknown");
-
         // Create shortcuts based on user preferences
         if (shortcutsSettings.CreateDesktopShortcut)
         {
