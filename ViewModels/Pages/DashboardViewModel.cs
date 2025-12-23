@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Data;
+using Microsoft.Win32;
 using Modrix;
 using Modrix.Models;
 using Modrix.Services;
@@ -109,6 +110,31 @@ public partial class DashboardViewModel : ObservableObject
         {
             // Just reload projects
             LoadProjects();
+        }
+    }
+
+    [RelayCommand]
+    private async Task ImportModrixProject()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Import Modrix Project",
+     Filter = "Modrix Project (*.modrix)|*.modrix",
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+        };
+
+        if (dlg.ShowDialog() != true)
+            return;
+
+    var importDialog = new ImportProjectDialog(dlg.FileName)
+        {
+            Owner = App.Current.MainWindow
+        };
+
+        if (importDialog.ShowDialog() == true)
+     {
+     // Reload projects to show the newly imported one
+        LoadProjects();
         }
     }
 

@@ -50,7 +50,11 @@ namespace Modrix.Services
                 $"MinecraftVersion={data.MinecraftVersion}\n" +
                 $"IconPath=src/main/resources/assets/{data.ModId}/icon.png");
 
-                progress.Report(("Verifying Java environment...", 95));
+                // Save file hashes for custom code detection
+                progress.Report(("Saving project metadata...", 97));
+                await FileHashTracker.SaveProjectHashesAsync(data.Location, data.ModId, "Fabric Mod", data.MinecraftVersion);
+
+                progress.Report(("Verifying Java environment...", 98));
                 await _jdkHelper.EnsureRequiredJdk(data.MinecraftVersion, progress);
 
 

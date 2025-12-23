@@ -64,7 +64,7 @@ namespace Modrix.Services
                 {
                     await CreateReadmeFile(data);
                 }
-                
+    
                 await File.WriteAllTextAsync(
                     Path.Combine(data.Location, "modrix.config"),
                     $"ModId={data.ModId}\n" +
@@ -73,6 +73,10 @@ namespace Modrix.Services
                     $"ModType=Forge Mod\n" +
                     $"MinecraftVersion={data.MinecraftVersion}\n" +
                     $"IconPath=src/main/resources/assets/{data.ModId}/icon.png");
+
+       // Save file hashes for custom code detection
+       progress.Report(("Saving project metadata...", 98));
+      await FileHashTracker.SaveProjectHashesAsync(data.Location, data.ModId, "Forge Mod", data.MinecraftVersion);
 
                 progress.Report(("Project created successfully!", 100));
 

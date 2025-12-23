@@ -75,6 +75,12 @@
                         Margin="4,0"/>
                     <ui:Button
                         Appearance="Secondary"
+                        Icon="{ui:SymbolIcon Share24}"
+                        ToolTip="Share your project as a .modrix file"
+                        Click="ShareButton_Click"
+                        Margin="4,0"/>
+                    <ui:Button
+                        Appearance="Secondary"
                         Icon="{ui:SymbolIcon FolderOpen24}"
                         ToolTip="Open project folder in file explorer"
                         Margin="4,0"

@@ -183,6 +183,21 @@ namespace Modrix.Views.Windows
             dlg.ShowDialog();
         }
 
+        private void ShareButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.CurrentProject == null)
+            {
+                ShowSnackbar("No project loaded", "Please open a project first");
+                return;
+            }
+
+            var dlg = new ShareDialog(ViewModel.CurrentProject)
+            {
+                Owner = this
+            };
+            dlg.ShowDialog();
+        }
+
         private async void RunButton_Click(object sender, RoutedEventArgs e)
         {
             if (ViewModel?.CurrentProject == null)

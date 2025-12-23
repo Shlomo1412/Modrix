@@ -42,6 +42,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
@@ -88,12 +89,24 @@
                             Width="36"
                             Height="36"
                             VerticalAlignment="Center"
-                            Margin="0,0,12,0"
+                            Margin="0,0,6,0"
                             ToolTip="Create New Project"/>
+
+                        <!-- Import .modrix Button -->
+                        <ui:Button
+                            Grid.Column="4"
+                            Appearance="Secondary"
+                            Icon="{ui:SymbolIcon ArrowDownload24}"
+                            Command="{Binding ViewModel.ImportModrixProjectCommand}"
+                            Width="36"
+                            Height="36"
+                            VerticalAlignment="Center"
+                            Margin="0,0,12,0"
+                            ToolTip="Import .modrix Project"/>
 
                         <!-- Search Bar -->
                         <ui:TextBox
-                            Grid.Column="4"
+                            Grid.Column="5"
                             PlaceholderText="Search..."
                             Text="{Binding ViewModel.SearchText, UpdateSourceTrigger=PropertyChanged}"
                             Width="Auto"
@@ -106,7 +119,7 @@
 
                         <!-- Game Version Filter -->
                         <ComboBox
-                            Grid.Column="5"
+                            Grid.Column="6"
                             ItemsSource="{Binding ViewModel.GameVersions}"
                             SelectedItem="{Binding ViewModel.SelectedGameVersion}"
                             Margin="0,0,12,0"
@@ -122,7 +135,7 @@
 
                         <!-- Mod Loader Filter -->
                         <ComboBox
-                            Grid.Column="6"
+                            Grid.Column="7"
                             ItemsSource="{Binding ViewModel.ModLoaders}"
                             SelectedItem="{Binding ViewModel.SelectedModLoader}"
                             Width="110"
