@@ -1401,8 +1401,10 @@ namespace Modrix.Views.Pages.ResourcePack
 
             var languages = new[] { 
                 "en_us", "en_gb", "de_de", "fr_fr", "es_es", "it_it", 
-                "ja_jp", "ko_kr", "zh_cn", "zh_tw", "ru_ru", "pt_br" 
-            };
+                "ja_jp", "ko_kr", "zh_cn", "zh_tw", "ru_ru", "pt_br",
+                "pl_pl", "nl_nl", "sv_se", "fi_fi", "da_dk", "cs_cz",
+                "tr_tr", "hu_hu", "ro_ro", "uk_ua", "hi_in", "ar_sa"
+             };
             var comboBox = new ComboBox 
             { 
                 ItemsSource = languages,

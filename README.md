@@ -5,28 +5,8 @@ It simplifies the process of setting up and managing mod projects for Fabric, Fo
 
 ---
 
-# This product is not ready yet. you can explore the code mean while.
+# This product is not ready yet. you can explore the code meanwhile.
 
-## Features
-<details> 
-<summary>Features</summary>
-
-- Clean, modern WPF UI with support for light and dark themes
-
-- Create ready-to-build mod projects for Fabric, and Forge
-
-- Visual tools to define mod metadata, mod ID, version, and package structure
-
-- Project workspace to manage source files, resources, and configuration
-
-- Built-in resource manager for textures, models, sounds, and mod icon
-
-- Export your mod to a build-ready Gradle project
-
-- Automatic saving and loading of project settings
-
-- Optional Microsoft account integration for Minecraft username/avatar display
-</details>
 
 ---
 

@@ -112,6 +112,11 @@ namespace Modrix.Views.Pages.ResourcePack
             _languages.Add(new LanguageItem("de_de", "German", 0));
             _languages.Add(new LanguageItem("fr_fr", "French", 0));
             _languages.Add(new LanguageItem("es_es", "Spanish", 0));
+            _languages.Add(new LanguageItem("it_it", "Italian", 0));
+            _languages.Add(new LanguageItem("pt_br", "Portuguese (Brazil)", 0));
+            _languages.Add(new LanguageItem("ru_ru", "Russian", 0));
+            _languages.Add(new LanguageItem("zh_cn", "Chinese (Simplified)", 0));
+            _languages.Add(new LanguageItem("ja_jp", "Japanese", 0));
         }
 
         private async Task LoadLanguagesFromAssetsAsync(string minecraftVersion)

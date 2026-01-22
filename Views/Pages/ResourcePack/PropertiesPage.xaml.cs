@@ -37,6 +37,8 @@ namespace Modrix.Views.Pages.ResourcePack
             }
         }
 
+        public void OnNavigatedTo() => RefreshProperties();
+
         private void LoadCurrentPack()
         {
             var workspace = Application.Current.Windows
@@ -236,6 +238,9 @@ namespace Modrix.Views.Pages.ResourcePack
                 var authors = AuthorsBox.Text?.Trim() ?? "";
                 var license = LicenseBox.Text?.Trim() ?? "";
 
+                // Sanitize Mod ID
+                modId = SanitizeId(modId);
+
                 // Get pack format
                 var packFormat = 18; // Default
                 if (PackFormatBox.SelectedItem is ComboBoxItem formatItem && 
@@ -331,7 +336,7 @@ namespace Modrix.Views.Pages.ResourcePack
         }
 
         private void SaveModrixConfig(string name, string modId, string description, 
-                                    string minecraftVersion, int packFormat, string authors, string license)
+                                     string minecraftVersion, int packFormat, string authors, string license)
         {
             var configPath = Path.Combine(_currentPack.Location, "modrix.config");
             var configLines = new List<string>
@@ -466,6 +471,14 @@ namespace Modrix.Views.Pages.ResourcePack
                 PrimaryButtonText = "OK"
             };
             await msgBox.ShowDialogAsync();
+        }
+
+        private string SanitizeId(string input)
+        {
+            var safe = new string(input.ToLowerInvariant().Where(ch => char.IsLetterOrDigit(ch) || ch == '_' || ch == '-').ToArray());
+            if (string.IsNullOrWhiteSpace(safe))
+                safe = "resource_pack";
+            return safe;
         }
     }
 }

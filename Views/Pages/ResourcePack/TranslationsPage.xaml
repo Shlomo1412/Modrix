@@ -47,10 +47,6 @@
                                Text="Browse and create overrides from Minecraft language files" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
-                    <ui:Button Appearance="Primary" Content="Extract Assets" 
-                               Icon="{ui:SymbolIcon ArrowDownload24}" Height="40" 
-                               ToolTip="Extract Minecraft Language Files" 
-                               Click="ExtractAssets_Click"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -124,6 +120,8 @@
                         <ui:TextBox x:Name="SearchBox" 
                                    PlaceholderText="Search translation keys..."
                                    Icon="{ui:SymbolIcon Search24}"
+                                   Padding="36,8,12,8"
+                                   MinHeight="36"
                                    TextChanged="SearchBox_TextChanged"/>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">

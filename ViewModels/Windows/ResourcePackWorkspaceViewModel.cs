@@ -75,7 +75,7 @@ namespace Modrix.ViewModels.Windows
                 new NavigationViewItem()
                 {
                     Content = "Properties",
-                    Icon = new SymbolIcon { Symbol = SymbolRegular.Settings24 },
+                    Icon = new SymbolIcon { Symbol = SymbolRegular.DocumentOnePage24 },
                     TargetPageType = typeof(Views.Pages.ResourcePack.PropertiesPage),
                     ToolTip = "Edit resource pack properties and metadata"
                 }

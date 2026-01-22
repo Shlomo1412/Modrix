@@ -148,13 +148,11 @@
                                 <ui:TextBox x:Name="TextureSearchBox" 
                                            PlaceholderText="Search texture overrides..."
                                            Icon="{ui:SymbolIcon Search24}"
+                                           Padding="36,8,12,8"
+                                           MinHeight="36"
                                            TextChanged="TextureSearchBox_TextChanged"/>
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
-                                    <ui:Button Content="Import Texture" 
-                                              Icon="{ui:SymbolIcon ArrowDownload24}"
-                                              Click="ImportTexture_Click"
-                                              Margin="0,0,8,0"/>
                                     <ui:Button Content="Open Folder" 
                                               Icon="{ui:SymbolIcon FolderOpen24}"
                                               Click="OpenTexturesFolder_Click"/>
@@ -269,13 +267,11 @@
                                 <ui:TextBox x:Name="ModelSearchBox" 
                                            PlaceholderText="Search model overrides..."
                                            Icon="{ui:SymbolIcon Search24}"
+                                           Padding="36,8,12,8"
+                                           MinHeight="36"
                                            TextChanged="ModelSearchBox_TextChanged"/>
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
-                                    <ui:Button Content="Import Model" 
-                                              Icon="{ui:SymbolIcon ArrowDownload24}"
-                                              Click="ImportModel_Click"
-                                              Margin="0,0,8,0"/>
                                     <ui:Button Content="Open Folder" 
                                               Icon="{ui:SymbolIcon FolderOpen24}"
                                               Click="OpenModelsFolder_Click"/>
@@ -391,6 +387,8 @@
                                 <ui:TextBox x:Name="TranslationSearchBox" 
                                            PlaceholderText="Search translation overrides..."
                                            Icon="{ui:SymbolIcon Search24}"
+                                           Padding="36,8,12,8"
+                                           MinHeight="36"
                                            TextChanged="TranslationSearchBox_TextChanged"/>
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
