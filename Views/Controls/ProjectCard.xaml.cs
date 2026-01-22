@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Modrix.Models;
+using Modrix.Views.Windows;
 using Wpf.Ui.Controls;
 using MessageBox = Wpf.Ui.Controls.MessageBox;
 
@@ -25,6 +26,7 @@ namespace Modrix.Views.Controls
         public event RoutedEventHandler EditClicked;
         public event RoutedEventHandler DeleteClicked;
         public event RoutedEventHandler OpenFolderClicked;
+        public event RoutedEventHandler ShareClicked;
 
         public ProjectCard()
         {
@@ -49,6 +51,21 @@ namespace Modrix.Views.Controls
         {
             OptionsFlyout.IsOpen = false;
             OpenFolderClicked?.Invoke(this, e);
+        }
+
+        private void FlyoutShareButton_Click(object sender, RoutedEventArgs e)
+        {
+            OptionsFlyout.IsOpen = false;
+
+            if (ProjectData == null) return;
+
+            // Open the ShareDialog for this project
+            var shareDialog = new ShareDialog(ProjectData);
+            shareDialog.Owner = Window.GetWindow(this);
+            shareDialog.ShowDialog();
+
+            // Also invoke the event if anyone is listening
+            ShareClicked?.Invoke(this, e);
         }
 
         private async void FlyoutOpenInIDEButton_Click(object sender, RoutedEventArgs e)

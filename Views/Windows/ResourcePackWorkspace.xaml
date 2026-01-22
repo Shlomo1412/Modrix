@@ -52,6 +52,12 @@
                         Margin="4,0"/>
                     <ui:Button
                         Appearance="Secondary"
+                        Icon="{ui:SymbolIcon Share24}"
+                        ToolTip="Share your resource pack as a .modrix file"
+                        Click="ShareButton_Click"
+                        Margin="4,0"/>
+                    <ui:Button
+                        Appearance="Secondary"
                         Icon="{ui:SymbolIcon FolderOpen24}"
                         ToolTip="Open resource pack folder in file explorer"
                         Margin="4,0"

@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Modrix.Models;
 using Modrix.Services;
 using Modrix.ViewModels.Windows;
 using Modrix.Views.Pages;
@@ -112,6 +113,32 @@ namespace Modrix.Views.Windows
             {
                 ShowSnackbar("Pack directory not found", "Error", ControlAppearance.Danger);
             }
+        }
+
+        private void ShareButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.CurrentPack == null)
+            {
+                ShowSnackbar("No resource pack loaded", "Please open a resource pack first");
+                return;
+            }
+
+            // Convert ResourcePackData to ModProjectData for ShareDialog
+            var projectData = new ModProjectData
+            {
+                Name = ViewModel.CurrentPack.Name,
+                ModId = ViewModel.CurrentPack.ModId ?? ViewModel.CurrentPack.Name.ToLowerInvariant().Replace(" ", "_"),
+                Package = "",
+                Location = ViewModel.CurrentPack.Location,
+                ModType = "Resource Pack",
+                MinecraftVersion = ViewModel.CurrentPack.MinecraftVersion ?? "1.21",
+                Description = ViewModel.CurrentPack.Description ?? "",
+                IconPath = ViewModel.CurrentPack.IconPath
+            };
+
+            var shareDialog = new ShareDialog(projectData);
+            shareDialog.Owner = this;
+            shareDialog.ShowDialog();
         }
 
         private async void InstallButton_Click(object sender, RoutedEventArgs e)
